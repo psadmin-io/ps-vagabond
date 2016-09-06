@@ -130,12 +130,13 @@ Usage
 
 Once configured, you simply have to change to the Vagabond instance directory and run `vagrant up`. Vagrant will then download the box image, start the VM, and begin the provisioning process.  Since Vagabond is just a set of configuration files and provisioning scripts for Vagrant, all of the delivered Vagrant commands can be used.  The following table lists some of the basic commands.
 
- | Task              | Command           | 
- | -------------     | -------------     | 
- | Start the VM      | `vagrant up`      | 
- | Stop the VM       | `vagrant halt`    | 
- | Delete the VM     | `vagrant destroy` | 
- | Connect to the VM | `vagrant ssh`     | 
+
+| Task              | Command           | 
+| -------------     | -------------     | 
+| Start the VM      | `vagrant up`      | 
+| Stop the VM       | `vagrant halt`    | 
+| Delete the VM     | `vagrant destroy` | 
+| Connect to the VM | `vagrant ssh`     | 
 
 
 TODO List
