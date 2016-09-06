@@ -1,0 +1,42 @@
+---
+
+# NOTE: for some reason it's not merging the hashes, so all values for a hash
+#       array must be copied/pasted
+
+################################################################################
+#                              Required Settings                               #
+################################################################################
+
+db_name:     "PSFT"
+db_port:     1522
+db_user:     "PS"
+db_user_pwd: "PS"
+
+db_connect_id:     "people"
+db_connect_pwd:    "peop1e"
+
+pia_domain_list:
+  "%{hiera('pia_domain_name')}":
+    os_user:               "%{hiera('domain_user')}"
+    ps_cfg_home_dir:       "%{hiera('ps_config_home')}"
+    gateway_user:          "%{hiera('pia_gateway_user')}"
+    gateway_user_pwd:      "%{hiera('pia_gateway_user_pwd')}"
+    webserver_settings:
+      webserver_type:           "%{hiera('webserver_type')}"
+      webserver_home:           "%{hiera('weblogic_location')}"
+      webserver_admin_user:     "system"
+      webserver_admin_user_pwd: "Passw0rd"
+      webserver_admin_port:     "%{hiera('pia_http_port')}"
+      webserver_http_port:      "%{hiera('pia_http_port')}"
+      webserver_https_port:     "%{hiera('pia_https_port')}"
+    site_list:
+      "%{hiera('pia_site_name')}":
+        appserver_connections: "%{hiera('pia_psserver_list')}"
+        domain_conn_pwd:       "%{hiera('domain_conn_pwd')}"
+        webprofile_settings:
+          profile_name:        "%{hiera('pia_webprofile_name')}"
+          profile_user:        "PTWEBSERVER"
+          profile_user_pwd:    "PTWEBSERVER"
+        report_repository_dir: "%{hiera('report_repository_dir')}"
+
+#domain_conn_pwd:

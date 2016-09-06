@@ -1,0 +1,10 @@
+
+# Vagrant files
+.vagrant/
+
+# User Configuration files
+config/config.rb
+config/psft_customizations.yaml
+
+# Local notes file
+NOTES.md
