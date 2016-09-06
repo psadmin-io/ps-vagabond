@@ -29,7 +29,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 # shellcheck disable=2086
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-export DEBUG=true
+#export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
