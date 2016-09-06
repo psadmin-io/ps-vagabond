@@ -1,0 +1,83 @@
+#!/usr/bin/env ruby
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 spelllang=en ft=ruby
+
+##############
+#  Settings  #
+##############
+
+# REQUIRED >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# ORACLE SUPPORT CREDENTIALS
+# MOS username and password must be specified in order to
+# download the DPK files from Oracle.
+
+MOS_USERNAME='USER@EXAMPLE.COM'
+MOS_PASSWORD='MYMOSPASSWORD'
+
+# Alternatively, if you wish to store your credentials in environment
+# variables simply remove the above lines and uncomment the two
+# following lines.
+
+#MOS_USERNAME = ENV['MOS_USERNAME']
+#MOS_PASSWORD = ENV['MOS_PASSWORD']
+
+# PATCH ID
+# Specify the patch id for the PUM you wish to use
+PATCH_ID='23711856'
+
+# OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# DPK_VERSION
+# A name describing which dpk is being used. This is primarily used for
+# defining the virtual machine name to be used within VirtualBox. If
+# undefined it will default to the PATCH_ID.
+#DPK_VERSION = 'FSCM92'
+
+# HOSTONLY NETWORK_SETTINGS (default)
+# Uncomment the following to configure the VM for host-only networking.
+# The VM will only be accessible from your local machine.
+#NETWORK_SETTINGS = {
+  #:type => "hostonly",
+  #:host_http_port => "8000",
+  #:guest_http_port => "8000",
+  #:host_listener_port => "1522",
+  #:guest_listener_port => "1522"
+#}
+
+# BRIDGED NETWORK_SETTINGS
+# Uncomment and modify the following to use bridged networking.  This is useful
+# if you wish to connect to the PUM from another host.
+#NETWORK_SETTINGS = {
+  #:type => "bridged",
+  #:ip_address => "10.10.10.1"
+#}
+
+# DPK_LOCAL_DIR
+# The directory location (relative to the host machine) to download and extract the dpk
+# files. This defaults to the "dpks" directory from where ps-vagabond is started.
+#DPK_LOCAL_DIR = 'C:/peoplesoft/dpk/fn92u020'
+
+# DPK_REMOTE_DIR
+# The directory location on the virtual machine where the dpk files will be
+# downloaded, extracted, and run from.  This defaults to the "/opt/psft/dpks"
+# directory on the VM.
+#DPK_REMOTE_DIR = '/media/dpks'
+
+# FQDN
+# The hostname for the virtual machine.  If undefined, vagrant will
+# automatically generate a hostname.
+# NOTE: this value must be 30 characters or less, otherwise the DPK
+#       scripts will try to "fix" it by stripping off the domain
+#FQDN='host.example.com'
+
+##############
+#  Defaults  #
+##############
+# All of the settings below should be left as-is
+FQDN = 'ps-vagabond' unless defined? FQDN
+DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
+DPK_LOCAL_DIR = 'dpks' unless defined? DPK_LOCAL_DIR
+# NOTE: The pum setup script will fail unless the DPK_REMOTE_DIR (DPK
+#       installation directory) is mounted under "/media/sf_*".
+DPK_REMOTE_DIR = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
+NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522" } unless defined? NETWORK_SETTINGS
