@@ -29,7 +29,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 # shellcheck disable=2086
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-export DEBUG=true
+#export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -227,7 +227,7 @@ function execute_puppet_apply() {
   if [[ -n ${DEBUG+x} ]]; then
     sudo puppet apply --verbose "${PUPPET_HOME}/manifests/site.pp"
   else
-    sudo puppet apply "${PUPPET_HOME}/manifests/site.pp"
+    sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
   fi
   local end=$(date +%s)
   local tottime="$((end - begin))"
