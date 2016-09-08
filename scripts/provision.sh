@@ -29,7 +29,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 # shellcheck disable=2086
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-#export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -40,8 +40,9 @@ readonly AUTH_OUTPUT="${TMPDIR}/auth_output"
 readonly PATCH_SEARCH_OUTPUT="${TMPDIR}/patch_search_output"
 readonly PATCH_FILE_LIST="${TMPDIR}/file_list"
 readonly PUPPET_HOME="/etc/puppet"
+readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq")
+declare -a additional_packages=("vim-enhanced" "htop" "jq" "moreutils")
 declare -A timings
 
 ###############
@@ -85,9 +86,40 @@ printf "${BC}                     d8888P ${GC}\n"
 printf "\n\n"
 }
 
+function check_dpk_install_dir() {
+  if [[ ! -d "${DPK_INSTALL}" ]]; then
+    echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
+    mkdir -p "${DPK_INSTALL}"
+  else
+    echodebug "Found DPK installation directory ${DPK_INSTALL}"
+  fi
+}
+
+function check_vagabond_status() {
+  if [[ ! -e "${VAGABOND_STATUS}" ]]; then
+    echodebug "Vagabond status file ${VAGABOND_STATUS} does not exist"
+    cp /vagrant/scripts/vagabond.json "${DPK_INSTALL}"
+  else
+    echodebug "Found Vagabond status file ${VAGABOND_STATUS}"
+  fi
+}
+
+function record_step_success() {
+  local step=$1
+  echodebug "Recording success for ${step}"
+  echo "${FUNCNAME[0]}"
+}
+
+function record_step_success() {
+  local step=$1
+  local tempfile="$TMPDIR/vagabond_status_temp.json"
+  echodebug "Recording success for ${step}"
+  < "$VAGABOND_STATUS" jq ".$step = \"true\"" > "$tempfile" && mv "$tempfile" "$VAGABOND_STATUS"
+}
+
 function update_packages() {
-  local begin=$(date +%s)
   echoinfo "Updating installed packages"
+  local begin=$(date +%s)
   if [[ -n ${DEBUG+x} ]]; then
     sudo yum update -y
   else
@@ -154,43 +186,48 @@ function extract_download_links() {
 }
 
 function download_patch_files() {
-  # TODO - only download files if they don't already exist
-  # TODO - create a subdirectory based on the patch ID for the files
-  local begin=$(date +%s)
-  create_authorization_cookie
-  download_search_results
-  extract_download_links
-  echoinfo "Downloading patch files"
-  aria2c \
-    --input-file="${PATCH_FILE_LIST}" \
-    --dir="${DPK_INSTALL}" \
-    --load-cookies="${COOKIE_FILE}" \
-    --user-agent="Mozilla/5.0" \
-    --max-connection-per-server=5 \
-    --max-concurrent-downloads=5 \
-    --quiet=true \
-    --file-allocation=none \
-    --log="${DOWNLOAD_LOGFILE}" \
-    --log-level="info"
-    #--log-level="notice"
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[download_patch_files]=$tottime
+  if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
+    echoinfo "Downloading patch files"
+    local begin=$(date +%s)
+    create_authorization_cookie
+    download_search_results
+    extract_download_links
+    aria2c \
+      --input-file="${PATCH_FILE_LIST}" \
+      --dir="${DPK_INSTALL}" \
+      --load-cookies="${COOKIE_FILE}" \
+      --user-agent="Mozilla/5.0" \
+      --max-connection-per-server=5 \
+      --max-concurrent-downloads=5 \
+      --quiet=true \
+      --file-allocation=none \
+      --log="${DOWNLOAD_LOGFILE}" \
+      --log-level="info"
+    record_step_success "${FUNCNAME[0]}"
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[download_patch_files]=$tottime
+  else
+    echoinfo "Patch files already downloaded"
+  fi
 }
 
 function unpack_setup_scripts() {
-  #TODO Test to see if the setup scripts have already been unpacked
-  local begin=$(date +%s)
-  echoinfo "Unpacking DPK setup scripts"
-  unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[unpack_setup_scripts]=$tottime
+  if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
+    local begin=$(date +%s)
+    echoinfo "Unpacking DPK setup scripts"
+    unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    record_step_success "${FUNCNAME[0]}"
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[unpack_setup_scripts]=$tottime
+  else
+    echoinfo "Setup scripts already unpacked"
+  fi
 }
 
 function copy_customizations_file() {
   echoinfo "Copying customizations file"
-  # TODO - validate the customizations file has been created
   if [[ -n ${DEBUG+x} ]]; then
     sudo cp -fv /vagrant/config/psft_customizations.yaml /etc/puppet/data/psft_customizations.yaml
   else
@@ -283,6 +320,9 @@ trap cleanup_before_exit EXIT
 ##########
 
 echobanner
+
+check_dpk_install_dir
+check_vagabond_status
 
 update_packages
 install_additional_packages

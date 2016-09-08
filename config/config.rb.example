@@ -54,14 +54,14 @@ PATCH_ID='23711856'
 
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk
-# files. This defaults to the "dpks" directory from where ps-vagabond is started.
+# files. This defaults to the "dpks/<patch_id>" directory from where ps-vagabond is started.
 #DPK_LOCAL_DIR = 'C:/peoplesoft/dpk/fn92u020'
 
 # DPK_REMOTE_DIR
 # The directory location on the virtual machine where the dpk files will be
-# downloaded, extracted, and run from.  This defaults to the "/opt/psft/dpks"
-# directory on the VM.
-#DPK_REMOTE_DIR = '/media/dpks'
+# downloaded, extracted, and run from.  This defaults to the
+# "/media/sf_<dpk_version>" directory on the VM.
+#DPK_REMOTE_DIR = '/opt/psft/dpks'
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
@@ -76,7 +76,7 @@ PATCH_ID='23711856'
 # All of the settings below should be left as-is
 FQDN = 'ps-vagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
-DPK_LOCAL_DIR = 'dpks' unless defined? DPK_LOCAL_DIR
+DPK_LOCAL_DIR = "dpks" unless defined? DPK_LOCAL_DIR
 # NOTE: The pum setup script will fail unless the DPK_REMOTE_DIR (DPK
 #       installation directory) is mounted under "/media/sf_*".
 DPK_REMOTE_DIR = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
