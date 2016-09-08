@@ -78,7 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         "MOS_USERNAME" => "#{MOS_USERNAME}",
         "MOS_PASSWORD" => "#{MOS_PASSWORD}",
         "PATCH_ID"     => "#{PATCH_ID}",
-        "DPK_INSTALL"  => "#{DPK_REMOTE_DIR}"
+        "DPK_INSTALL"  => "#{DPK_REMOTE_DIR}/#{PATCH_ID}"
       }
     end
 
@@ -90,9 +90,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # install: vagrant plugin install vagrant-pushover
     # initialize: vagrant pushover-init
     # configure: $EDITOR .vagrant/pushover.rb
-    if Vagrant.has_plugin?("vagrant-pushover")
-      config.pushover.read_key
-    end
+    #if Vagrant.has_plugin?("vagrant-pushover")
+      #config.pushover.read_key
+    #end
 
     #################
     #  Workarounds  #
