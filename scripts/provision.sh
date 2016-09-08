@@ -227,7 +227,7 @@ function execute_puppet_apply() {
   if [[ -n ${DEBUG+x} ]]; then
     sudo puppet apply --verbose "${PUPPET_HOME}/manifests/site.pp"
   else
-    sudo puppet apply "${PUPPET_HOME}/manifests/site.pp"
+    sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
   fi
   local end=$(date +%s)
   local tottime="$((end - begin))"

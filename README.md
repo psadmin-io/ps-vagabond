@@ -26,7 +26,7 @@ You'll need the following hardware and software in order to use Vagabond.
     - [VirtualBox](https://www.virtualbox.org)
     - [Vagrant](https://vagrantup.com)
 - Credentials
-    - A [My Oracle Support](https://support.oracle.com) account and access to download PeopleSoft PUM DPK's
+    - [My Oracle Support](https://support.oracle.com) account and access to download PeopleSoft PUM DPK's
 
 __NOTE:__ If you haven't used [Vagrant](https://vagrantup.com) before, it's *highly* recommended that you walk through the [vagrant project setup guide](https://www.vagrantup.com/docs/getting-started/project_setup.html) before getting started.
 
@@ -38,10 +38,10 @@ Setup
 
 ### Download ###
 
-To get started, simply download the zipfile and extract the contents to whichever directory you choose.  If you need to manage more than one PeopleSoft Application, it is recommended that you create separate Vagabond installations for each application. For example:
+To get started, simply download the [zipfile](https://github.com/jrbing/ps-vagabond/archive/master.zip) and extract the contents to whichever directory you choose.  If you need to manage more than one PeopleSoft Application, it is recommended that you create separate Vagabond installations for each application. For example:
 
 ```
-C:\vagabond
+E:\vagabond
    ├─ fscm92
    └─ hcm92
 ```
@@ -65,9 +65,9 @@ $baseDirectory = "E:\pum" # Change this to the base directory you want to use
 Set-Location -Path $baseDirectory
 (New-Object System.Net.WebClient).DownloadFile("https://github.com/jrbing/ps-vagabond/archive/master.zip", "$basedirectory\ps-vagabond.zip")
 (New-Object -com shell.application).namespace($baseDirectory).CopyHere((new-object -com shell.application).namespace("$basedirectory\ps-vagabond.zip").Items(),16)
-Rename-Item "$baseDirectory\ps-vagabond-master" "ps-vagabond-hcm"
-Remove-Item "$basedirectory\ps-vagabond.zip"
-Set-Location -Path "$baseDirectory\ps-vagabond"
+Rename-Item "$baseDirectory\ps-vagabond-master" "ps-vagabond-hcm" # Change this to whichever application you're going to be using
+Remove-Item "$baseDirectory\ps-vagabond.zip"
+Set-Location -Path "$baseDirectory\ps-vagabond-hcm"
 ```
 
 #### WGET Example ####
@@ -82,7 +82,7 @@ rm ps-vagabond.zip
 
 ### Configuration ###
 
-Once you've downloaded Vagabond you should have a directory containing the following files - 
+Once you've downloaded Vagabond you should have a directory containing the following files:
 
 ```
 ps-vagabond
@@ -100,7 +100,7 @@ The first thing you'll want to do is copy both the `config/config.rb.example` an
 
 #### config.rb (required) ####
  
-The `config.rb` file is what Vagabond will use to determine how to go about setting up the base configuration of your virtual machine.  Although some of the settings are optional, you'll need to provide your MOS credentials and the Patch ID for the PUM DPK you wish to use.  The Patch ID can be found on [pum homepage](https://support.oracle.com/epmos/faces/DocumentDisplay?id=1641843.2).  When copying the Patch ID, be sure to select the "Native OS" one.
+The `config.rb` file is what Vagabond will use to determine how to go about setting up the base configuration of your virtual machine.  Although some of the settings are optional, you'll need to provide your MOS credentials and the Patch ID for the PUM DPK you wish to use.  The Patch ID for each application can be found on the [pum homepage](https://support.oracle.com/epmos/faces/DocumentDisplay?id=1641843.2).  When copying the Patch ID, be sure to select the "Native OS" one.
 
 ```ruby
 ##############
@@ -142,6 +142,7 @@ Once configured, you simply have to change to the Vagabond instance directory an
 TODO List
 ---------
 
+- [ ] Add quickstart instructions (including link to http://localhost:8000)
 - [ ] Determine how to make provisioning script idempotent
 - [ ] Implement ability to download multiple PUM images and switch between them
 - [ ] Determine how to store hiera keys for reuse
@@ -153,6 +154,9 @@ TODO List
 - [ ] Disable root ssh login
 - [ ] Implement recommendations for Oracle 12c on Redhat 7 (including hugepages)
 - [ ] Figure out how to prevent sshd from binding to bridged network connections
+- [ ] Additional documentation for setting up bridged network configurations
+- [ ] Additional documentation for notification methods
+- [ ] Documentation on how to manage pum image downloads
 
 
 License
