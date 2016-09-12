@@ -158,6 +158,7 @@ TODO List
 - [ ] Additional documentation for setting up bridged network configurations
 - [ ] Additional documentation for notification methods
 - [ ] Documentation on how to manage pum image downloads
+- [ ] Figure out how to make network provisioning scripts idempotent
 
 
 License
