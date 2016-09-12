@@ -142,6 +142,7 @@ Once configured, you simply have to change to the Vagabond instance directory an
 TODO List
 ---------
 
+- [ ] Break up provisioning script into smaller scripts
 - [ ] Add quickstart instructions (including link to http://localhost:8000)
 - [ ] Determine how to make provisioning script idempotent
 - [ ] Implement ability to download multiple PUM images and switch between them
