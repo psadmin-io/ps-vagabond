@@ -29,7 +29,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 # shellcheck disable=2086
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-export DEBUG=true
+#export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -42,7 +42,7 @@ readonly PATCH_FILE_LIST="${TMPDIR}/file_list"
 readonly PUPPET_HOME="/etc/puppet"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq" "moreutils")
+declare -a additional_packages=("vim-enhanced" "htop" "jq")
 declare -A timings
 
 ###############
