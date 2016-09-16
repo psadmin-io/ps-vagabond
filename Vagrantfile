@@ -43,7 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if NETWORK_SETTINGS[:type] == "bridged"
       vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
       # The following is necessary when using the bridged network adapter
-      # in order to make the Vagrant box available from other networks.
+      # in order to make the machine available from other networks.
       config.vm.provision "shell",
         run: "always",
         inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
