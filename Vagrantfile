@@ -62,9 +62,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vbox.memory = 8192
       vbox.cpus = 2
       #vbox.linked_clone = true if Vagrant::VERSION =~ /^1.8/
-      #vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-      #vbox.customize ["modifyvm", :id, "--natdnsresolver1", "on"]
-      #vbox.gui = true
     end
 
     ##################
