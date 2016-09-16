@@ -211,7 +211,6 @@ Since Vagabond is just a set of configuration files and provisioning scripts for
 TODO List
 ---------
 
-- [ ] Add quickstart instructions (including link to http://localhost:8000)
 - [X] Determine how to make provisioning script idempotent
 - [X] Implement ability to download multiple PUM images and switch between them
 - [ ] Determine how to store hiera keys for reuse
@@ -224,8 +223,11 @@ TODO List
 - [X] Disable root ssh login
 - [ ] Implement recommendations for Oracle 12c on Redhat 7 (including hugepages)
 - [ ] Documentation
+    - [ ] Quickstart instructions
     - [ ] Bridged network configuration setup
     - [ ] Notification (pushover) setup
     - [ ] How to manage pum image downloads
     - [ ] Upgrading the base image and linked clones
+    - [ ] Troubleshooting
+    - [ ] Known Issues
 
