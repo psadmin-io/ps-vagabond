@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/jrbing/ps-vagabond.png?label=ready&title=Ready)](https://waffle.io/jrbing/ps-vagabond)
+
 ps-vagabond
 ===========
 
