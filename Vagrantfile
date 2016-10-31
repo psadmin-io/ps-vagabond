@@ -3,6 +3,22 @@
 
 require_relative 'config/config'
 
+required_plugins = {
+  'vagrant-vbguest' => '~>0.13.0'
+}
+
+needs_restart = false
+required_plugins.each do |name, version|
+  unless Vagrant.has_plugin? name, version
+    system "vagrant plugin install #{name} --plugin-version=\"#{version}\""
+    needs_restart = true
+  end
+end
+
+if needs_restart
+  exec "vagrant #{ARGV.join' '}"
+end
+
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
