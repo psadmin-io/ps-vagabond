@@ -3,6 +3,22 @@
 
 require_relative 'config/config'
 
+required_plugins = {
+  'vagrant-vbguest' => '~>0.13.0'
+}
+
+needs_restart = false
+required_plugins.each do |name, version|
+  unless Vagrant.has_plugin? name, version
+    system "vagrant plugin install #{name} --plugin-version=\"#{version}\""
+    needs_restart = true
+  end
+end
+
+if needs_restart
+  exec "vagrant #{ARGV.join' '}"
+end
+
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -61,10 +77,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vbox.name = "#{DPK_VERSION}"
       vbox.memory = 8192
       vbox.cpus = 2
-      vbox.linked_clone = true if Vagrant::VERSION =~ /^1.8/
-      #vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-      #vbox.customize ["modifyvm", :id, "--natdnsresolver1", "on"]
-      #vbox.gui = true
+      #vbox.linked_clone = true if Vagrant::VERSION =~ /^1.8/
     end
 
     ##################

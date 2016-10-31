@@ -1,4 +1,3 @@
-
 ps-vagabond
 ===========
 
@@ -207,28 +206,4 @@ Since Vagabond is just a set of configuration files and provisioning scripts for
 | Stop the VM       | `vagrant halt`    | 
 | Delete the VM     | `vagrant destroy` | 
 | Connect to the VM | `vagrant ssh`     | 
-
-
-TODO List
----------
-
-- [X] Determine how to make provisioning script idempotent
-- [X] Implement ability to download multiple PUM images and switch between them
-- [ ] Determine how to store hiera keys for reuse
-- [ ] Create additional powershell script for running client installation
-- [ ] Remove unnecessary packages from OEL VM to save space
-- [ ] Add additional providers (AWS, VMWare, HyperV, etc.)
-- [ ] Figure out how to make network provisioning scripts idempotent
-- [ ] Add option to change the vagrant user password
-- [ ] Redirect debug logs to file in provisioning script
-- [X] Disable root ssh login
-- [ ] Implement recommendations for Oracle 12c on Redhat 7 (including hugepages)
-- [ ] Documentation
-    - [ ] Quickstart instructions
-    - [ ] Bridged network configuration setup
-    - [ ] Notification (pushover) setup
-    - [ ] How to manage pum image downloads
-    - [ ] Upgrading the base image and linked clones
-    - [ ] Troubleshooting
-    - [ ] Known Issues
 

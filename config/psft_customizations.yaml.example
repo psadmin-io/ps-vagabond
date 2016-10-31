@@ -2,15 +2,25 @@
 
 # NOTE: for some reason it's not merging the hashes, so all values for a hash
 #       array must be copied/pasted
+# NOTE: later versions of the PUM have issues if the tns_admin_list has is not
+#       included
 
 ################################################################################
 #                              Required Settings                               #
 ################################################################################
 
-db_name:     "PSFT"
+db_name:     "PSFTDB"
 db_port:     1522
 db_user:     "PS"
 db_user_pwd: "PS"
+
+db_service_name: "PSFTDB"
+tns_admin_list:
+  "%{hiera('db_name')}":
+    db_host:         "%{::fqdn}"
+    db_port:         "%{hiera('db_port')}"
+    db_protocol:     TCP
+    db_service_name: "%{hiera('db_service_name')}"
 
 db_connect_id:     "people"
 db_connect_pwd:    "peop1e"
