@@ -112,7 +112,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #################
     # Workaround for issue with Vagrant 1.8.5
     # https://github.com/mitchellh/vagrant/issues/7610
-    vmconfig.ssh.insert_key = false
+    vmconfig.ssh.insert_key = false if Vagrant::VERSION == '1.8.5'
 
   end
 
