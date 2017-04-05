@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=2059,2154,2034,2155,2046
+# shellcheck disable=2059,2154,2034,2155,2046,2086
 #===============================================================================
 # vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 spelllang=en ft=sh
 #===============================================================================
@@ -22,11 +22,8 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 #  Variables  #
 ###############
 
-# shellcheck disable=2086
-: ${MOS_USERNAME?"MOS_USERNAME must be specified in config.rb"}
-# shellcheck disable=2086
+: ${MOS_USERNAME:?"MOS_USERNAME must be specified in config.rb"}
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
-# shellcheck disable=2086
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
 #export DEBUG=true
@@ -305,6 +302,7 @@ function display_timings_summary() {
   printf "\n"
 }
 
+
 function cleanup_before_exit () {
   if [[ -n ${DEBUG+x} ]]; then
     echodebug "Temporary files and logs can be found in ${TMPDIR}"
@@ -321,19 +319,25 @@ trap cleanup_before_exit EXIT
 
 echobanner
 
+# Prerequisites
 check_dpk_install_dir
 check_vagabond_status
-
 update_packages
 install_additional_packages
 
+# Downloading and unpacking patch files
 download_patch_files
 unpack_setup_scripts
 
+# Running the setup script
 execute_psft_dpk_setup
 
+# Applying the puppet manifests
 copy_customizations_file
 execute_puppet_apply
+
+# Postrequisite fixes
 fix_init_script
 
+# Summary information
 display_timings_summary
