@@ -38,7 +38,7 @@ Setup
 
 ### Download ###
 
-To get started, simply download the [zipfile](https://github.com/jrbing/ps-vagabond/archive/master.zip) and extract the contents to whichever directory you choose.  If you need to manage more than one PeopleSoft Application, it is recommended that you create separate Vagabond installations for each application. For example:
+To get started, simply download the [zipfile](https://github.com/psadmin-io/ps-vagabond/archive/master.zip) and extract the contents to whichever directory you choose.  If you need to manage more than one PeopleSoft Application, it is recommended that you create separate Vagabond installations for each application. For example:
 
 ```
 E:\vagabond
@@ -54,7 +54,7 @@ If you have git installed, this is the preferred method as it will allow future 
 
 ```bat
 cd E:\pum
-git clone https://github.com/jrbing/ps-vagabond.git ps-vagabond-hcm
+git clone https://github.com/psadmin-io/ps-vagabond.git ps-vagabond-hcm
 cd ps-vagabond
 ```
 
@@ -63,7 +63,7 @@ cd ps-vagabond
 ```powershell
 $baseDirectory = "E:\pum" # Change this to the base directory you want to use
 Set-Location -Path $baseDirectory
-(New-Object System.Net.WebClient).DownloadFile("https://github.com/jrbing/ps-vagabond/archive/master.zip", "$basedirectory\ps-vagabond.zip")
+(New-Object System.Net.WebClient).DownloadFile("https://github.com/psadmin-io/ps-vagabond/archive/master.zip", "$basedirectory\ps-vagabond.zip")
 (New-Object -com shell.application).namespace($baseDirectory).CopyHere((new-object -com shell.application).namespace("$basedirectory\ps-vagabond.zip").Items(),16)
 Rename-Item "$baseDirectory\ps-vagabond-master" "ps-vagabond-hcm" # Change this to whichever application you're going to be using
 Remove-Item "$baseDirectory\ps-vagabond.zip"
@@ -74,7 +74,7 @@ Set-Location -Path "$baseDirectory\ps-vagabond-hcm"
 
 ```bash
 cd ~/pum # Change this to the base directory you want to use
-wget https://github.com/jrbing/ps-vagabond/archive/master.zip --output-document="ps-vagabond.zip"
+wget https://github.com/psadmin-io/ps-vagabond/archive/master.zip --output-document="ps-vagabond.zip"
 unzip ps-vagabond.zip
 mv ps-vagabond-master ps-vagabond-hcm
 rm ps-vagabond.zip
