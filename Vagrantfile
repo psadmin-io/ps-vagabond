@@ -31,12 +31,46 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Increase the timeout limit for halting the VM
     vmconfig.vm.graceful_halt_timeout = 600
 
-    # Define the box we'll be using and automatically download the latest version
-    vmconfig.vm.box = "jrbing/ps-vagabond"
+    # Automatically download the latest version of whatever box we're using
     vmconfig.vm.box_check_update = true
 
-    # Sync folder to be used for downloading the dpks
-    vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR}"
+    ##############
+    #  Provider  #
+    ##############
+
+    # VirtualBox
+    vmconfig.vm.provider "virtualbox" do |vbox,override|
+      vbox.name = "#{DPK_VERSION}"
+      vbox.memory = 4096
+      #vbox.memory = 8192
+      vbox.cpus = 2
+      vbox.gui = false
+    end
+
+    ######################
+    #  Operating System  #
+    ######################
+
+    case OPERATING_SYSTEM.upcase
+    when "WINDOWS"
+      # Base box
+      #vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
+      vmconfig.vm.box = "iversond/psadmin2012r2"
+      # Sync folder to be used for downloading the dpks
+      vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
+      # WinRM communication settings
+      vmconfig.vm.communicator = "winrm"
+      config.winrm.username = "vagrant"
+      config.winrm.password = "vagrant"
+      config.winrm.timeout = 10000
+    when "LINUX"
+      # Base box
+      vmconfig.vm.box = "jrbing/ps-vagabond"
+      # Sync folder to be used for downloading the dpks
+      vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
+    else
+      raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
+    end
 
     #############
     #  Network  #
@@ -57,42 +91,50 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Bridged network adapter
     if NETWORK_SETTINGS[:type] == "bridged"
-      vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
-      # The following is necessary when using the bridged network adapter
-      # in order to make the machine available from other networks.
-      config.vm.provision "shell",
-        run: "always",
-        inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
-      config.vm.provision "shell",
-        run: "always",
-        inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
-    end
-
-    ################################
-    #  Provider-specific Settings  #
-    ################################
-
-    # VirtualBox
-    vmconfig.vm.provider "virtualbox" do |vbox,override|
-      vbox.name = "#{DPK_VERSION}"
-      vbox.memory = 8192
-      vbox.cpus = 2
-      #vbox.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+      case OPERATING_SYSTEM.upcase
+      when "WINDOWS"
+        vmconfig.vm.network "public_network"
+      when "LINUX"
+        vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
+        # The following is necessary when using the bridged network adapter
+        # with Linux in order to make the machine available from other networks.
+        config.vm.provision "shell",
+          run: "always",
+          inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
+        config.vm.provision "shell",
+          run: "always",
+          inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+      else
+        raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
+      end
     end
 
     ##################
     #  Provisioning  #
     ##################
 
-    vmconfig.vm.provision "shell" do |script|
-      script.path = "scripts/provision.sh"
-      script.upload_path = "/tmp/provision.sh"
-      script.env = {
-        "MOS_USERNAME" => "#{MOS_USERNAME}",
-        "MOS_PASSWORD" => "#{MOS_PASSWORD}",
-        "PATCH_ID"     => "#{PATCH_ID}",
-        "DPK_INSTALL"  => "#{DPK_REMOTE_DIR}/#{PATCH_ID}"
-      }
+    if OPERATING_SYSTEM.upcase == "WINDOWS"
+      vmconfig.vm.provision "shell" do |script|
+        script.path = "scripts/provision.ps1"
+        script.upload_path = "C:/temp/provision.ps1"
+        script.env = {
+          "MOS_USERNAME" => "#{MOS_USERNAME}",
+          "MOS_PASSWORD" => "#{MOS_PASSWORD}",
+          "PATCH_ID"     => "#{PATCH_ID}",
+          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+        }
+      end
+    elsif OPERATING_SYSTEM == "LINUX"
+      vmconfig.vm.provision "shell" do |script|
+        script.path = "scripts/provision.sh"
+        script.upload_path = "/tmp/provision.sh"
+        script.env = {
+          "MOS_USERNAME" => "#{MOS_USERNAME}",
+          "MOS_PASSWORD" => "#{MOS_PASSWORD}",
+          "PATCH_ID"     => "#{PATCH_ID}",
+          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}"
+        }
+      end
     end
 
     ##################

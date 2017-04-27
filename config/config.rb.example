@@ -27,6 +27,12 @@ PATCH_ID='23711856'
 
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+# OPERATING_SYSTEM
+# Which OS to use as the base box for the DPK.  The available options
+# are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
+# (Windows 2012 R2). If left undefined, it will default to Linux.
+OPERATING_SYSTEM = 'WINDOWS'
+
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
 # defining the virtual machine name to be used within VirtualBox. If
@@ -62,7 +68,8 @@ PATCH_ID='23711856'
 # The directory location on the virtual machine where the dpk files will be
 # downloaded, extracted, and run from.  This defaults to the
 # "/media/sf_<dpk_version>" directory on the VM.
-#DPK_REMOTE_DIR = '/opt/psft/dpks'
+#DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
+#DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
@@ -75,10 +82,12 @@ PATCH_ID='23711856'
 #  Defaults  #
 ##############
 # All of the settings below should be left as-is
-FQDN = 'ps-vagabond' unless defined? FQDN
+OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
+FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks" unless defined? DPK_LOCAL_DIR
-# NOTE: The pum setup script will fail unless the DPK_REMOTE_DIR (DPK
+# NOTE: The pum setup script for linux will fail unless the DPK_REMOTE_DIR (DPK
 #       installation directory) is mounted under "/media/sf_*".
-DPK_REMOTE_DIR = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
+DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
+DPK_REMOTE_DIR_WIN = "C:/psft/dpks/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522" } unless defined? NETWORK_SETTINGS
