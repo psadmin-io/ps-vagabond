@@ -55,7 +55,7 @@ If ( ${MOS_USERNAME} -eq '' ) { Write-Host "MOS_USERNAME must be specified in co
 If ( ${MOS_PASSWORD} -eq '' ) { Write-Host "MOS_PASSWORD must be specified in config.rb or `$env:MOS_PASSWORD" }
 If ( ${PATCH_ID} -eq '' ) { Write-Host "PATCH_ID must be specified in config.rb" }
 
-$DEBUG = "false"
+$DEBUG = "true"
 
 $PATCH_FILE_LIST  = "${env:TEMP}\file_list"
 $COOKIE_FILE      = "${env:TEMP}\mos.cookies"
