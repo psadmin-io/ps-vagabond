@@ -50,8 +50,6 @@ OPERATING_SYSTEM = 'WINDOWS'
   #:guest_listener_port => "1522",
   #:host_rdp_port => "33389",
   #:guest_rdp_port => "3389"
-  #:host_winrm_port => "55985",
-  #:guest_winrm_port => "5985"
 #}
 
 # BRIDGED NETWORK_SETTINGS

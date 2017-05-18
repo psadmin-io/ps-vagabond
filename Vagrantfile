@@ -77,7 +77,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #  Network  #
     #############
 
-    vmconfig.vm.hostname = "#{FQDN}"
+    case OPERATING_SYSTEM.upcase
+    when "WINDOWS"
+      vmconfig.vm.hostname = "#{DPK_VERSION}"
+    when "LINUX"
+      vmconfig.vm.hostname = "#{FQDN}"
+    else
+      raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
+    end
 
     # Host-only network adapter
     if NETWORK_SETTINGS[:type] == "hostonly"
