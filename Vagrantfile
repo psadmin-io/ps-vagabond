@@ -62,6 +62,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.winrm.username = "vagrant"
       config.winrm.password = "vagrant"
       config.winrm.timeout = 10000
+      # Plugin settings
+      vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
       vmconfig.vm.box = "jrbing/ps-vagabond"
