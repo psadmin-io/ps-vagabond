@@ -88,6 +88,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_listener_port],
         host: NETWORK_SETTINGS[:host_listener_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_rdp_port],
+        host: NETWORK_SETTINGS[:host_rdp_port]
     end
 
     # Bridged network adapter
