@@ -54,8 +54,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "WINDOWS"
       # Base box
-      #vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
-      vmconfig.vm.box = "iversond/psadmin2012r2"
+      vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
       # WinRM communication settings
@@ -63,6 +62,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.winrm.username = "vagrant"
       config.winrm.password = "vagrant"
       config.winrm.timeout = 10000
+      # Plugin settings
+      vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
       vmconfig.vm.box = "jrbing/ps-vagabond"
@@ -87,6 +88,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_listener_port],
         host: NETWORK_SETTINGS[:host_listener_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_rdp_port],
+        host: NETWORK_SETTINGS[:host_rdp_port]
     end
 
     # Bridged network adapter
