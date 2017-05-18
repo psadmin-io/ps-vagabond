@@ -78,6 +78,8 @@ OPERATING_SYSTEM = 'WINDOWS'
 # automatically generate a hostname.
 # NOTE: this value must be 30 characters or less, otherwise the DPK
 #       scripts will try to "fix" it by stripping off the domain
+# NOTE: On Windows, use only the hostname, not the domain name. 
+#       VirtualBox will error if the hostname has "." in it
 #FQDN='host.example.com'
 
 ##############
