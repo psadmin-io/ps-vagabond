@@ -331,7 +331,7 @@ function execute_puppet_apply() {
   if ($DEBUG -eq "true") {
     puppet apply --verbose "${PUPPET_HOME}\manifests\site.pp"
   } else {
-    puppet apply "${PUPPET_HOME}\manifests\site.pp"
+    puppet apply "${PUPPET_HOME}\manifests\site.pp" | Out-Null
   }
   # local end=$(date +%s)
   # local tottime="$((end - begin))"
