@@ -38,8 +38,15 @@ Param(
   [String]$PATCH_ID     = $env:PATCH_ID,
   [String]$MOS_USERNAME = $env:MOS_USERNAME,
   [String]$MOS_PASSWORD = $env:MOS_PASSWORD,
-  [String]$DPK_INSTALL  = $env:DPK_INSTALL
-)
+  [String]$DPK_INSTALL  = $env:DPK_INSTALL,
+  [String]$CA_SETUP     = $env:CA_SETUP,
+  [String]$CA_PATH      = $env:CA_PATH,
+  [String]$CA_TYPE      = $env:CA_TYPE,
+  [String]$CA_BACKUP    = $env:CA_BACKUP,
+  [String]$PTF_SETUP    = $env:PTF_SETUP,
+  [String]$DPK_BOOTSTRAP = $env:DPK_BOOTSTRAP,
+  [String]$PUPPET_APPLY = $env:PUPPET_APPLY
+  )
 
 
 #---------------------------------------------------------[Initialization]--------------------------------------------------------
@@ -291,7 +298,6 @@ function unpack_setup_scripts() {
 }
 
 function execute_psft_dpk_setup() {
-
   $begin=$(get-date)
   Write-Host "Executing DPK setup script"
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
@@ -338,6 +344,18 @@ function execute_puppet_apply() {
   # timings[execute_puppet_apply]=$tottime
 }
 
+function execute_ca_setup() {
+  # CA
+  Write-Host "Setting Up Change Assistant"
+  & $Env:PS_HOME\setup\PsCA\silentInstall.bat "$CA_PATH" $CA_TYPE $CA_BACKUP
+}
+
+function execute_ptf_setup() {
+  # PTF
+  Write-Host "Setting Up PeopleSoft Test Framework"
+  & $Env:PS_HOME\setup\PsTestFramework\installTestFramework.exe /s /f1"$Env:PS_HOME\setup\PsTestFramework\response-file.txt"
+}
+
 # function display_timings_summary {
 #   $divider='============================================================'
 #   $total_duration = 0
@@ -375,23 +393,23 @@ function cleanup_before_exit {
 #  Main  #
 ##########
 
+# Init
 . echobanner
-
 . check_dpk_install_dir
 . check_vagabond_status
-
 . install_additional_packages
 
+# DPK
 . download_patch_files
 . unpack_setup_scripts
-
-. execute_psft_dpk_setup
-
+If ($DPK_BOOTSTRAP -eq 'true') {. execute_psft_dpk_setup}
 . copy_customizations_file
-. execute_puppet_apply
+If ($PUPPET_APPLY-eq 'true') {. execute_puppet_apply}
 
+# Client Tools
+if ($CA_SETUP -eq 'true') {. execute_ca_setup}
+if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
+
+# Cleanup
 # display_timings_summary
-
 . cleanup_before_exit
-
-

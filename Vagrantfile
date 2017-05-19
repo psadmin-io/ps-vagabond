@@ -122,10 +122,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         script.path = "scripts/provision.ps1"
         script.upload_path = "C:/temp/provision.ps1"
         script.env = {
-          "MOS_USERNAME" => "#{MOS_USERNAME}",
-          "MOS_PASSWORD" => "#{MOS_PASSWORD}",
-          "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+          "MOS_USERNAME"  => "#{MOS_USERNAME}",
+          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+          "PATCH_ID"      => "#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "CA_SETUP"      => "#{CA_SETTINGS[:setup]}",
+          "CA_PATH"       => "#{CA_SETTINGS[:path]}",
+          "CA_TYPE"       => "#{CA_SETTINGS[:type]}",
+          "CA_BACKUP"     => "#{CA_SETTINGS[:backup]}",
+          "PTF_SETUP"     => "#{PTF_SETUP}",
+          "DPK_BOOTSTRAP" => "#{DPK_BOOTSTRAP}",
+          "PUPPET_APPLY"  => "#{PUPPET_APPLY}"
         }
       end
     elsif OPERATING_SYSTEM == "LINUX"
