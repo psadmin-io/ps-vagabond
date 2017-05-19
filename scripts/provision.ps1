@@ -277,9 +277,9 @@ function unpack_setup_scripts() {
     # local begin=$(date +%s)
     Write-Host "Unpacking DPK setup scripts"
     if ($DEBUG = "true") {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force} 2>&1 | out-null
+      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force} 
     } else {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
+      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force} 2>&1 | out-null
     }
     record_step_success "unpack_setup_scripts"
     # local end=$(date +%s)
@@ -314,9 +314,9 @@ function execute_psft_dpk_setup() {
 function copy_customizations_file() {
   Write-Host "Copying customizations file"
   if ($DEBUG = "true") {
-    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Verbose
+    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Verbose -Force
   } else {
-    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml
+    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Force 2>&1 | out-null
   }
 }
 
@@ -329,7 +329,7 @@ function execute_puppet_apply() {
   $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
   . refreshenv
   if ($DEBUG = "true") {
-    puppet apply --verbose "${PUPPET_HOME}\manifests\site.pp"
+    puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
   } else {
     puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
   }
@@ -362,7 +362,7 @@ function cleanup_before_exit {
     Write-Host "Temporary files and logs can be found in ${env:TEMP}"
   } else {
     Write-Host "Cleaning up temporary files"
-    Remove-Item $env:TEMP -recurse
+    Remove-Item $env:TEMP -recurse 2>&1 | out-null
   }
 
   $fqdn = facter fqdn

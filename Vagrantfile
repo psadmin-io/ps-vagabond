@@ -77,7 +77,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #  Network  #
     #############
 
-    vmconfig.vm.hostname = "#{FQDN}"
+    vmconfig.vm.hostname = "#{FQDN}".downcase
 
 
     # Host-only network adapter
