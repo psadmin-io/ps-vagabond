@@ -57,7 +57,7 @@ OPERATING_SYSTEM = 'WINDOWS'
 # if you wish to connect to the PUM from another host.
 #NETWORK_SETTINGS = {
   #:type => "bridged",
-  #:ip_address => "10.10.10.100"
+  #:ip_address => "10.10.10.100",
   #:gateway => "10.10.10.1"
 #}
 
