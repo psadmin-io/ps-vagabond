@@ -129,6 +129,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
+      vmconfig.vm.provision "puppet", type: "shell"  do |puppet|
+        puppet.path = "scripts/provision-puppet.ps1"
+        puppet.upload_path = "C:/temp/provision-puppet.ps1"
+        puppet.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+        }
+      end
+
       vmconfig.vm.provision "client", type: "shell"  do |client|
         client.path = "scripts/provision-client.ps1"
         client.upload_path = "C:/temp/provision-client.ps1"
