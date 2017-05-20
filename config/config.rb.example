@@ -111,3 +111,4 @@ DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
 CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
 PTF_SETUP = 'false' unless defined? PTF_SETUP
+PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME

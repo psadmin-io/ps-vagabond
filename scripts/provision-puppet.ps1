@@ -46,9 +46,10 @@ $DEBUG = "false"
 function copy_customizations_file() {
   Write-Host "Copying customizations file"
   if ($DEBUG -eq "true") {
-    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Verbose
+    Write-Host "Copying to ${PUPPET_HOME}\data"
+    Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml" -Verbose
   } else {
-    Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml
+    Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml"
   }
 }
 
