@@ -363,4 +363,5 @@ function cleanup_before_exit {
 
 # display_timings_summary
 
-. cleanup_before_exit
+# Issue 27 - commenting out for now
+# . cleanup_before_exit
