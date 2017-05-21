@@ -55,7 +55,7 @@ If ( ${MOS_USERNAME} -eq '' ) { Write-Host "MOS_USERNAME must be specified in co
 If ( ${MOS_PASSWORD} -eq '' ) { Write-Host "MOS_PASSWORD must be specified in config.rb or `$env:MOS_PASSWORD" }
 If ( ${PATCH_ID} -eq '' ) { Write-Host "PATCH_ID must be specified in config.rb" }
 
-$DEBUG = "false"
+$DEBUG = $false
 
 $PATCH_FILE_LIST  = "${env:TEMP}\file_list"
 $COOKIE_FILE      = "${env:TEMP}\mos.cookies"
@@ -134,10 +134,10 @@ function check_dpk_install_dir {
 function check_vagabond_status {
   if (-Not (Test-Path "${VAGABOND_STATUS}" )) {
     Write-Host "Vagabond status file ${VAGABOND_STATUS} does not exist"
-    if ($DEBUG = "true") {
+    if ($DEBUG = $true) {
       Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL -Verbose
     } else {
-      Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL
+      Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL 2>&1 | out-null
     }
   } else {
     Write-Host "Found Vagabond status file ${VAGABOND_STATUS}"
@@ -155,16 +155,16 @@ function install_additional_packages {
 
   if (-Not (Test-Path C:\ProgramData\chocolatey\bin)) {
     Write-Host "Installing Chocolatey Package Manager"
-    if ($DEBUG = "true") {
-      (Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1')))2>&1 | out-null
-    } else {
+    if ($DEBUG = $true) {
       (Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1')))
+    } else {
+      (Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1')))2>&1 | out-null
     }
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
   }
   if (-Not (Test-Path C:\ProgramData\chocolatey\bin\wget.exe)) {
     Write-Host "Installing wget"
-    if ($DEBUG = "true") {
+    if ($DEBUG = $true) {
       choco install wget -y
     } else {
       choco install wget -y 2>&1 | out-null
@@ -174,7 +174,7 @@ function install_additional_packages {
   If (Test-Path Alias:wget) { Remove-Item Alias:wget 2>&1 | out-null }
   if (-Not (Test-Path C:\ProgramData\chocolatey\bin\jq.exe)) {
     Write-Host "Installing jq"
-    if ($DEBUG = "true") {
+    if ($DEBUG = $true) {
       choco install jq -y
     } else {
       choco install jq -y 2>&1 | out-null
@@ -239,7 +239,7 @@ function download_patch_files {
       . download_search_results
       . extract_download_links
 
-      if ($DEBUG = "true") {
+      if ($DEBUG = $true) {
         aria2c --input-file $PATCH_FILE_LIST `
           --dir $DPK_INSTALL `
           --load-cookies "${env:TEMP}/mos.cookies" `
@@ -276,7 +276,7 @@ function unpack_setup_scripts() {
   if ( $status.unpack_setup_scripts -eq "false") {
     # local begin=$(date +%s)
     Write-Host "Unpacking DPK setup scripts"
-    if ($DEBUG = "true") {
+    if ($DEBUG = $true) {
       get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force} 
     } else {
       get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force} 2>&1 | out-null
@@ -295,7 +295,7 @@ function execute_psft_dpk_setup() {
   $begin=$(get-date)
   Write-Host "Executing DPK setup script"
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
-  if ($DEBUG = "true") {
+  if ($DEBUG = $true) {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
       -silent `
@@ -313,7 +313,7 @@ function execute_psft_dpk_setup() {
 
 function copy_customizations_file() {
   Write-Host "Copying customizations file"
-  if ($DEBUG = "true") {
+  if ($DEBUG = $true) {
     Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Verbose -Force
   } else {
     Copy-Item c:\vagrant\config\psft_customizations.yaml $PUPPET_HOME\data\psft_customizations.yaml -Force 2>&1 | out-null
@@ -328,7 +328,7 @@ function execute_puppet_apply() {
   # Reset Environment and PATH to include bin\puppet
   $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
   . refreshenv
-  if ($DEBUG = "true") {
+  if ($DEBUG = $true) {
     puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
   } else {
     puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
@@ -358,7 +358,7 @@ function execute_puppet_apply() {
 # }
 
 function cleanup_before_exit {
-  if ($DEBUG = "true") {
+  if ($DEBUG = $true) {
     Write-Host "Temporary files and logs can be found in ${env:TEMP}"
   } else {
     Write-Host "Cleaning up temporary files"

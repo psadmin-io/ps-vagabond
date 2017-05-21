@@ -55,6 +55,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     when "WINDOWS"
       # Base box
       vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
+      # vmconfig.vm.box_check_update = true
+      vmconfig.vm.box_version = "1.0.4"
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
       # WinRM communication settings
