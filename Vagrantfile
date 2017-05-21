@@ -41,8 +41,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # VirtualBox
     vmconfig.vm.provider "virtualbox" do |vbox,override|
       vbox.name = "#{DPK_VERSION}"
-      vbox.memory = 4096
-      #vbox.memory = 8192
+      # vbox.memory = 4096
+      vbox.memory = 8192
       vbox.cpus = 2
       vbox.gui = false
     end
@@ -100,9 +100,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if NETWORK_SETTINGS[:type] == "bridged"
       case OPERATING_SYSTEM.upcase
       when "WINDOWS"
-        vmconfig.vm.network "public_network"
+        vmconfig.vm.network "public_network", bridge: "en0: Ethernet"
       when "LINUX"
-        vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
+        vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", bridge: "en0: Ethernet"
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
         config.vm.provision "shell",
@@ -121,14 +121,35 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
-      vmconfig.vm.provision "shell" do |script|
-        script.path = "scripts/provision.ps1"
-        script.upload_path = "C:/temp/provision.ps1"
-        script.env = {
-          "MOS_USERNAME" => "#{MOS_USERNAME}",
-          "MOS_PASSWORD" => "#{MOS_PASSWORD}",
-          "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+      vmconfig.vm.provision "boot", type: "shell" do |boot|
+        boot.path = "scripts/provision-boot.ps1"
+        boot.upload_path = "C:/temp/provision-boot.ps1"
+        boot.env = {
+          "MOS_USERNAME"  => "#{MOS_USERNAME}",
+          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+          "PATCH_ID"      => "#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+        }
+      end
+
+      vmconfig.vm.provision "puppet", type: "shell"  do |puppet|
+        puppet.path = "scripts/provision-puppet.ps1"
+        puppet.upload_path = "C:/temp/provision-puppet.ps1"
+        puppet.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+        }
+      end
+
+      vmconfig.vm.provision "client", type: "shell"  do |client|
+        client.path        = "scripts/provision-client.ps1"
+        client.upload_path = "C:/temp/provision-client.ps1"
+        client.privileged  = "true"
+        client.env = {
+          "CA_SETUP"       => "#{CA_SETTINGS[:setup]}",
+          "CA_PATH"        => "#{CA_SETTINGS[:path]}",
+          "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
+          "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
+          "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end
     elsif OPERATING_SYSTEM == "LINUX"
