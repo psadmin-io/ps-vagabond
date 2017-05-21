@@ -137,7 +137,7 @@ function check_vagabond_status {
     if ($DEBUG -eq "true") {
       Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL -Verbose
     } else {
-      Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL 
+      Copy-Item C:\vagrant\scripts\vagabond.json $DPK_INSTALL
     }
   } else {
     Write-Host "Found Vagabond status file ${VAGABOND_STATUS}"
@@ -338,6 +338,7 @@ function cleanup_before_exit {
     Remove-Item $env:TEMP -Recurse -Force 2>&1 | out-null
   }
 
+  $fqdn = facter fqdn
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
@@ -360,8 +361,5 @@ function cleanup_before_exit {
 
 # . display_timings_summary
 
+# Issue 27 - commenting out for now
 # . cleanup_before_exit
-
-
-
-
