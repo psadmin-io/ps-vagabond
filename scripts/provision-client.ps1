@@ -54,11 +54,31 @@ $VerbosePreference = "SilentlyContinue"
 
 #-----------------------------------------------------------[Variables]-----------------------------------------------------------
 $SHORTCUTS = 'true'
+$SECURITY  = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
-function execute_security_setup() {
-    #TODO
+function execute_security_setup() {    
+    Write-Host "Adding execute permisions to Client Tools"
+    # Rights
+    $readOnly = [System.Security.AccessControl.FileSystemRights]"ReadAndExecute"
+    #$readWrite = [System.Security.AccessControl.FileSystemRights]"Modify"
+    # Inheritance
+    $inheritanceFlag = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
+    # Propagation
+    $propagationFlag = [System.Security.AccessControl.PropagationFlags]::None
+    # User
+    #$userRW = New-Object System.Security.Principal.NTAccount($groupNameRW)
+    $userR = New-Object System.Security.Principal.NTAccount("vagrant")
+    # Type
+    $type = [System.Security.AccessControl.AccessControlType]::Allow
+    
+    $accessControlEntryDefault = New-Object System.Security.AccessControl.FileSystemAccessRule @("Domain Users", $readOnly, $inheritanceFlag, $propagationFlag, $type)
+    $accessControlEntryX = New-Object System.Security.AccessControl.FileSystemAccessRule @($userR, $readOnly, $inheritanceFlag, $propagationFlag, $type)
+    $ClientBin = "$Env:PS_HOME\bin\client\winx86"
+    $objACL = Get-ACL $ClientBin
+    $objACL.AddAccessRule($accessControlEntryX)
+    Set-ACL $ClientBin $objACL
 }
 
 function execute_ca_setup() {
@@ -93,7 +113,7 @@ function execute_shortcut_setup() {
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
-#if ('TODO'     -eq 'true') {. execute_security_setup}
+if ($SECURITY  -eq 'true') {. execute_security_setup}
 if ($CA_SETUP  -eq 'true') {. execute_ca_setup}
 if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
 if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
