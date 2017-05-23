@@ -55,6 +55,7 @@ $VerbosePreference = "SilentlyContinue"
 #-----------------------------------------------------------[Variables]-----------------------------------------------------------
 $SHORTCUTS = 'true'
 $SECURITY  = 'true'
+$BROWSER   = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
@@ -111,9 +112,18 @@ function execute_shortcut_setup() {
     $Shortcut.Save()
 }
 
+function execute_browser_setup {
+    # Set Homepage
+    $path = 'HKCU:\Software\Microsoft\Internet Explorer\Main\'
+    $name = 'start page'
+    $value = 'http://localhost:8000/ps/signon.html'
+    Set-Itemproperty -Path $path -Name $name -Value $value
+}
+
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 if ($SECURITY  -eq 'true') {. execute_security_setup}
 if ($CA_SETUP  -eq 'true') {. execute_ca_setup}
 if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
 if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
+if ($BROWSER   -eq 'true') {. execute_browser_setup}
