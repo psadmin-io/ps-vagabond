@@ -53,8 +53,13 @@ $DebugPreference = "SilentlyContinue"
 $VerbosePreference = "SilentlyContinue"
 
 #-----------------------------------------------------------[Variables]-----------------------------------------------------------
+$SHORTCUTS = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
+
+function execute_security_setup() {
+    #TODO
+}
 
 function execute_ca_setup() {
   # CA
@@ -68,7 +73,27 @@ function execute_ptf_setup() {
   & ${Env:PS_HOME}\setup\PsTestFramework\setup.bat
 }
 
+function execute_shortcut_setup() {
+    # App Designer
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\AppDesigner.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\pside.exe"
+    $Shortcut.Save()
+    # Data Mover
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\DataMover.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\psdmt.exe"
+    $Shortcut.Save()
+    # Config Manager
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\ConfigManager.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\pscfg.exe"
+    $Shortcut.Save()
+}
+
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
+#if ('TODO'     -eq 'true') {. execute_security_setup}
 if ($CA_SETUP  -eq 'true') {. execute_ca_setup}
 if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
+if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
