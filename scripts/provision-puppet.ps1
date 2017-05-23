@@ -57,10 +57,12 @@ function execute_puppet_apply() {
   Write-Host "Applying Puppet manifests"
   # Reset Environment and PATH to include bin\puppet
   $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-  . refreshenv
+
   if ($DEBUG -eq "true") {
+    . refreshenv
     puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
   } else {
+    . refreshenv | out-null
     puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
   }
 }
