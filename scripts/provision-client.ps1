@@ -53,8 +53,34 @@ $DebugPreference = "SilentlyContinue"
 $VerbosePreference = "SilentlyContinue"
 
 #-----------------------------------------------------------[Variables]-----------------------------------------------------------
+$SHORTCUTS = 'true'
+$SECURITY  = 'true'
+$BROWSER   = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
+
+function execute_security_setup() {    
+    Write-Host "Adding execute permisions to Client Tools"
+    # Rights
+    $readOnly = [System.Security.AccessControl.FileSystemRights]"ReadAndExecute"
+    #$readWrite = [System.Security.AccessControl.FileSystemRights]"Modify"
+    # Inheritance
+    $inheritanceFlag = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
+    # Propagation
+    $propagationFlag = [System.Security.AccessControl.PropagationFlags]::None
+    # User
+    #$userRW = New-Object System.Security.Principal.NTAccount($groupNameRW)
+    $userR = New-Object System.Security.Principal.NTAccount("vagrant")
+    # Type
+    $type = [System.Security.AccessControl.AccessControlType]::Allow
+    
+    $accessControlEntryDefault = New-Object System.Security.AccessControl.FileSystemAccessRule @("Domain Users", $readOnly, $inheritanceFlag, $propagationFlag, $type)
+    $accessControlEntryX = New-Object System.Security.AccessControl.FileSystemAccessRule @($userR, $readOnly, $inheritanceFlag, $propagationFlag, $type)
+    $ClientBin = "$Env:PS_HOME\bin\client\winx86"
+    $objACL = Get-ACL $ClientBin
+    $objACL.AddAccessRule($accessControlEntryX)
+    Set-ACL $ClientBin $objACL
+}
 
 function execute_ca_setup() {
   # CA
@@ -68,7 +94,36 @@ function execute_ptf_setup() {
   & ${Env:PS_HOME}\setup\PsTestFramework\setup.bat
 }
 
+function execute_shortcut_setup() {
+    # App Designer
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\AppDesigner.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\pside.exe"
+    $Shortcut.Save()
+    # Data Mover
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\DataMover.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\psdmt.exe"
+    $Shortcut.Save()
+    # Config Manager
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\ConfigManager.lnk")
+    $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\pscfg.exe"
+    $Shortcut.Save()
+}
+
+function execute_browser_setup {
+    # Set Homepage
+    $path = 'HKCU:\Software\Microsoft\Internet Explorer\Main\'
+    $name = 'start page'
+    $value = 'http://localhost:8000/ps/signon.html'
+    Set-Itemproperty -Path $path -Name $name -Value $value
+}
+
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
+if ($SECURITY  -eq 'true') {. execute_security_setup}
 if ($CA_SETUP  -eq 'true') {. execute_ca_setup}
 if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
+if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
+if ($BROWSER   -eq 'true') {. execute_browser_setup}
