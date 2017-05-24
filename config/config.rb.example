@@ -57,7 +57,7 @@ OPERATING_SYSTEM = 'WINDOWS'
 # if you wish to connect to the PUM from another host.
 #NETWORK_SETTINGS = {
   #:type => "bridged",
-  #:ip_address => "10.10.10.100"
+  #:ip_address => "10.10.10.100",
   #:gateway => "10.10.10.1"
 #}
 
@@ -78,7 +78,22 @@ OPERATING_SYSTEM = 'WINDOWS'
 # automatically generate a hostname.
 # NOTE: this value must be 30 characters or less, otherwise the DPK
 #       scripts will try to "fix" it by stripping off the domain
+# NOTE: On Windows, use only the hostname, not the domain name. 
+#       VirtualBox will error if the hostname has "." in it
 #FQDN='host.example.com'
+
+# CA_SETTINGS
+# Uncomment and modify the following to setup Change Assistant.
+#CA_SETTINGS = {
+  #:setup  => 'true',
+  #:path   => 'C:\Program Files\PeopleSoft\Change Assistant',
+  #:type   => 'upgrade', # new upgrade uninstall
+  #:backup => 'backup' # backup nobackup
+#}
+
+# PTF_SETUP
+# Uncomment and modify the following to setup PeopleSoft Test Framework.
+#PTF_SETUP = 'true'
 
 ##############
 #  Defaults  #
@@ -93,3 +108,9 @@ DPK_LOCAL_DIR = "dpks" unless defined? DPK_LOCAL_DIR
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 DPK_REMOTE_DIR_WIN = "C:/psft/dpks/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522" } unless defined? NETWORK_SETTINGS
+
+DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
+PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
+CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
+PTF_SETUP = 'false' unless defined? PTF_SETUP
+PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME

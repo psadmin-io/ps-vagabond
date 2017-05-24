@@ -41,10 +41,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # VirtualBox
     vmconfig.vm.provider "virtualbox" do |vbox,override|
       vbox.name = "#{DPK_VERSION}"
-      vbox.memory = 4096
-      #vbox.memory = 8192
+      # vbox.memory = 4096
+      vbox.memory = 8192
       vbox.cpus = 2
       vbox.gui = false
+      if NETWORK_SETTINGS[:type] == "hostonly"
+        vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
     end
 
     ######################
@@ -55,6 +58,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     when "WINDOWS"
       # Base box
       vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
+      # vmconfig.vm.box_check_update = true
+      vmconfig.vm.box_version = "1.0.4"
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
       # WinRM communication settings
@@ -77,7 +82,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #  Network  #
     #############
 
-    vmconfig.vm.hostname = "#{FQDN}"
+    vmconfig.vm.hostname = "#{FQDN}".downcase
+
 
     # Host-only network adapter
     if NETWORK_SETTINGS[:type] == "hostonly"
@@ -118,14 +124,40 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
-      vmconfig.vm.provision "shell" do |script|
-        script.path = "scripts/provision.ps1"
-        script.upload_path = "C:/temp/provision.ps1"
-        script.env = {
-          "MOS_USERNAME" => "#{MOS_USERNAME}",
-          "MOS_PASSWORD" => "#{MOS_PASSWORD}",
-          "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+      vmconfig.vm.provision "boot", type: "shell" do |boot|
+        boot.path = "scripts/provision-boot.ps1"
+        boot.upload_path = "C:/temp/provision-boot.ps1"
+        boot.env = {
+          "MOS_USERNAME"  => "#{MOS_USERNAME}",
+          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+          "PATCH_ID"      => "#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+        }
+      end
+
+      vmconfig.vm.provision "yaml", type: "shell"  do |yaml|
+        yaml.path = "scripts/provision-yaml.ps1"
+        yaml.upload_path = "C:/temp/provision-yaml.ps1"
+        yaml.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+        }
+      end
+
+      vmconfig.vm.provision "puppet" do |puppet|
+        puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
+        puppet.manifest_file = "site.pp"
+      end
+
+      vmconfig.vm.provision "client", type: "shell"  do |client|
+        client.path        = "scripts/provision-client.ps1"
+        client.upload_path = "C:/temp/provision-client.ps1"
+        client.privileged  = "true"
+        client.env = {
+          "CA_SETUP"       => "#{CA_SETTINGS[:setup]}",
+          "CA_PATH"        => "#{CA_SETTINGS[:path]}",
+          "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
+          "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
+          "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end
     elsif OPERATING_SYSTEM == "LINUX"
