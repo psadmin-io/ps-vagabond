@@ -45,6 +45,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vbox.memory = 8192
       vbox.cpus = 2
       vbox.gui = false
+      if NETWORK_SETTINGS[:type] == "hostonly"
+        vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
     end
 
     ######################
@@ -102,7 +105,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "WINDOWS"
         vmconfig.vm.network "public_network"
       when "LINUX"
-        vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", bridge: "en0: Ethernet"
+        vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
         config.vm.provision "shell",

@@ -39,7 +39,7 @@ $VerbosePreference = "SilentlyContinue"
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
-$DEBUG = "true"
+$DEBUG = "false"
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
@@ -76,4 +76,4 @@ Write-Host "YAML Sync Complete"
 # $port = hiera pia_http_port
 # $sitename = hiera pia_site_name
 
-# Write-Host "Your login URL is http://${fqdn}:${port}/${sitename}/signon.html"
+# Write-Host "Your login URL is http://${fqdn}:${port}/${sitename}/signon.html" -ForegroundColor White
