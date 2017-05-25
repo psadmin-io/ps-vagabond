@@ -160,7 +160,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end
-    elsif OPERATING_SYSTEM == "LINUX"
+    elsif OPERATING_SYSTEM.upcase == "LINUX"
       vmconfig.vm.provision "shell" do |script|
         script.path = "scripts/provision.sh"
         script.upload_path = "/tmp/provision.sh"
@@ -171,6 +171,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}"
         }
       end
+    else
+      raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
     end
 
     ##################
