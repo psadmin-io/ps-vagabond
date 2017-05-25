@@ -31,7 +31,7 @@ PATCH_ID='23711856'
 # Which OS to use as the base box for the DPK.  The available options
 # are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
 # (Windows 2012 R2). If left undefined, it will default to Linux.
-OPERATING_SYSTEM = 'WINDOWS'
+#OPERATING_SYSTEM = 'WINDOWS'
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
