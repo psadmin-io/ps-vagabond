@@ -84,7 +84,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     vmconfig.vm.hostname = "#{FQDN}".downcase
 
-
     # Host-only network adapter
     if NETWORK_SETTINGS[:type] == "hostonly"
       config.vm.network "private_network", type: "dhcp"
@@ -195,6 +194,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vmconfig.ssh.insert_key = false if Vagrant::VERSION == '1.8.5'
 
   end
-
 
 end
