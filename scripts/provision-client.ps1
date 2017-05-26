@@ -110,6 +110,11 @@ function execute_shortcut_setup() {
     $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\ConfigManager.lnk")
     $Shortcut.TargetPath = "$Env:PS_HOME\bin\client\winx86\pscfg.exe"
     $Shortcut.Save()
+    # SQL Developer
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\SQLDeveloper.lnk")
+    $Shortcut.TargetPath = "C:\psft\db\oracle-server\12.1.0.2\sqldeveloper\sqldeveloper.exe"
+    $Shortcut.Save()    
 }
 
 function execute_browser_setup {
