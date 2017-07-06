@@ -202,7 +202,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
         boot.env = {
           "PATCH_ID"      => "#{PTP_PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 

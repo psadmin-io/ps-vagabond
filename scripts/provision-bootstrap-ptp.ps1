@@ -36,7 +36,8 @@
 [CmdletBinding()]
 Param(
   [String]$PATCH_ID     = $env:PATCH_ID,
-  [String]$DPK_INSTALL  = $env:DPK_INSTALL
+  [String]$DPK_INSTALL  = $env:DPK_INSTALL,
+  [String]$PUPPET_HOME  = $env:PUPPET_HOME
 )
 
 
@@ -51,6 +52,11 @@ $VerbosePreference = "SilentlyContinue"
 
 $DEBUG = "false"
 
+function change_to_midtier() {
+  Write-Host "Change env_type to 'midtier'"
+  (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
+
+}
 function execute_psft_dpk_setup() {
 
   # $begin=$(get-date)

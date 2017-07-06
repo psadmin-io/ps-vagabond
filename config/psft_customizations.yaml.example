@@ -25,6 +25,10 @@ tns_admin_list:
 db_connect_id:     "people"
 db_connect_pwd:    "peop1e"
 
+# The oracle_client hash is required for a fulltier to midtier change when using the PeopleTools Patch provisioner
+oracle_client:
+  location: "%{hiera('peoplesoft_base')}/pt/oracle-client"
+
 pia_domain_list:
   "%{hiera('pia_domain_name')}":
     os_user:               "%{hiera('domain_user')}"
