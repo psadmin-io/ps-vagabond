@@ -277,9 +277,9 @@ function unpack_setup_scripts() {
     # local begin=$(date +%s)
     Write-Host "Unpacking DPK setup scripts"
     if ($DEBUG -eq "true") {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
+      get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
     } else {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
+      get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
     }
     record_step_success "unpack_setup_scripts"
     # local end=$(date +%s)
@@ -290,24 +290,9 @@ function unpack_setup_scripts() {
   }
 }
 
-function execute_psft_dpk_setup() {
 
-  $begin=$(get-date)
-  Write-Host "Executing DPK setup script"
-  Write-Host "DPK INSTALL: ${DPK_INSTALL}"
-  if ($DEBUG -eq "true") {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup
-  } else {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup 2>&1 | out-null
-  }
-  $end=$(get-date)
-  $duration=$end - $begin
+  # $end=$(get-date)
+  # $duration=$end - $begin
   # $timings.add("", $duration)
 }
 
@@ -338,7 +323,7 @@ function cleanup_before_exit {
     Remove-Item $env:TEMP -Recurse -Force 2>&1 | out-null
   }
 
-  $fqdn = facter fqdn
+  # $fqdn = facter fqdn
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
@@ -357,7 +342,7 @@ function cleanup_before_exit {
 . download_patch_files
 . unpack_setup_scripts
 
-. execute_psft_dpk_setup
+# . execute_psft_dpk_setup
 
 # . display_timings_summary
 

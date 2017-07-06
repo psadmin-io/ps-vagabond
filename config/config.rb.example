@@ -24,6 +24,8 @@ MOS_PASSWORD='MYMOSPASSWORD'
 # PATCH ID
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
+#ES_PATCH_ID=''
+#PTP_PATCH_ID=''
 
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
