@@ -123,7 +123,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
-      
+
       vmconfig.vm.provision "banner", type: "shell" do |boot|
         boot.path = "scripts/banner.ps1"
         boot.upload_path = "C:/temp/banner.ps1"
@@ -192,8 +192,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         boot.path = "scripts/provision-download.ps1"
         boot.upload_path = "C:/temp/provision-download.ps1"
         boot.env = {
-          "MOS_USERNAME"  => "#{MOS_USERNAME}",
-          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+          "PATCH_ID"      => "#{PTP_PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
+        }
+      end
+
+      vmconfig.vm.provision "bootstrap-ptp", type: "shell" do |boot|
+        boot.path = "scripts/provision-bootstrap-ptp.ps1"
+        boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
+        boot.env = {
           "PATCH_ID"      => "#{PTP_PATCH_ID}",
           "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
         }
