@@ -123,6 +123,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
+      
+      vmconfig.vm.provision "banner", type: "shell" do |boot|
+        boot.path = "scripts/banner.ps1"
+        boot.upload_path = "C:/temp/banner.ps1"
+      end
+
       vmconfig.vm.provision "download", type: "shell" do |boot|
         boot.path = "scripts/provision-download.ps1"
         boot.upload_path = "C:/temp/provision-download.ps1"

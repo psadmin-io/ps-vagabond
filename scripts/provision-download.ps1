@@ -109,19 +109,6 @@ $VAGABOND_STATUS  = "${DPK_INSTALL}\vagabond.json"
     #}
 #}
 
-function echobanner {
-  Write-Host "`n`n"
-  Write-Host "                                      dP                               dP         " -foregroundcolor Blue
-  Write-Host "                                      88                               88         " -foregroundcolor Blue
-  Write-Host "  dP   .dP .d8888b. .d8888b. .d8888b. 88d888b. .d8888b. 88d888b. .d888b88         " -foregroundcolor Blue
-  Write-Host "  88   d8' 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88  " -foregroundcolor Blue
-  Write-Host "  88 .88'  88.  .88 88.  .88 88.  .88 88.  .88 88.  .88 88    88 88.  .88         " -foregroundcolor Blue
-  Write-Host "  8888P'   \`88888P8 \`8888P88 \`88888P8 88Y8888' \`88888P' dP    dP \`88888P8    " -foregroundcolor Blue
-  Write-Host "                         .88                                                      " -foregroundcolor Blue
-  Write-Host "                     d8888P                                                       " -foregroundcolor Blue
-  Write-Host "`n`n"
-}
-
 function check_dpk_install_dir {
   if (-Not (test-path $DPK_INSTALL)) {
     Write-Host "DPK installation directory ${DPK_INSTALL} does not exist"
@@ -290,12 +277,6 @@ function unpack_setup_scripts() {
   }
 }
 
-
-  # $end=$(get-date)
-  # $duration=$end - $begin
-  # $timings.add("", $duration)
-}
-
 # function display_timings_summary {
 #   $divider='============================================================'
 #   $total_duration = 0
@@ -332,7 +313,7 @@ function cleanup_before_exit {
 #  Main  #
 ##########
 
-. echobanner
+# . echobanner
 
 . check_dpk_install_dir
 . check_vagabond_status
