@@ -64,6 +64,10 @@ function change_to_midtier() {
 function execute_dpk_cleanup() {
   Write-Host "[${computername}][Task] Run the DPK cleanup script"
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
+
+  Stop-Service psft*
+  Stop-Service -name "ORACLE ProcMGR V12.1.3.0.0_VS2012"
+
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -cleanup
