@@ -29,6 +29,13 @@ db_connect_pwd:    "peop1e"
 oracle_client:
   location: "%{hiera('peoplesoft_base')}/pt/oracle-client"
 
+# Set remove: false so that cleanup won't remove it so we can use it with Change Assistant
+ps_home:
+  db_type:    "%{hiera('db_platform')}"
+  unicode_db: "%{hiera('unicode_db')}"
+  location:   "%{hiera('ps_home_location')}"
+  remove:     false
+
 pia_domain_list:
   "%{hiera('pia_domain_name')}":
     os_user:               "%{hiera('domain_user')}"
