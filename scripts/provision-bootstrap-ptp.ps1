@@ -54,6 +54,19 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 $computername = $env:computername
 
+function remove_from_PATH() {
+  [CmdletBinding()]
+    Param ( [String]$RemovedFolder )
+  # Get the Current Search Path from the environment keys in the registry
+  $NewPath=(Get-ItemProperty -Path ‘Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment’ -Name PATH).Path
+  # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
+  $NewPath=$NewPath –replace $RemovedFolder,$NULL
+  # Update the Environment Path
+  Set-ItemProperty -Path ‘Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment’ -Name PATH –Value $newPath
+  # Show what we just did
+  # Return $NewPath
+}
+
 function change_to_midtier() {
   Write-Host "[${computername}][Task] Change env_type to 'midtier'"
   (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
@@ -67,6 +80,8 @@ function execute_dpk_cleanup() {
 
   Stop-Service psft*
   Stop-Service -name "ORACLE ProcMGR V12.1.3.0.0_VS2012"
+
+  . remove_from_PATH("C:\Program Files\Git\bin")
 
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
