@@ -51,18 +51,18 @@ $VerbosePreference = "SilentlyContinue"
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
 $DEBUG = "false"
-
+$computername = $env:computername
 
 function change_to_midtier() {
-  Write-Host "Change env_type to 'midtier'"
+  Write-Host "[${computername}][Task] Change env_type to 'midtier'"
   (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
-  # TODO - change site.pp role?
-  (Get-Content "${PUPPET_HOME}\manifests\site.pp").replace("include.*", "include ::pt_role::pt_tools_deployment") | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+  "node default { include ::pt_role::pt_tools_deployment }" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+  Write-Host "[${computername}][Done] Change env_type to 'midtier'"
 }
 function execute_psft_dpk_setup() {
 
   # $begin=$(get-date)
-  Write-Host "Executing PeopleTools Patch DPK setup script"
+  Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
@@ -79,6 +79,8 @@ function execute_psft_dpk_setup() {
       -silent `
       -no_env_setup 2>&1 | out-null
   }
+
+  Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
 
 . change_to_midtier
