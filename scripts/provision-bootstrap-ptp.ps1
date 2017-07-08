@@ -96,6 +96,7 @@ function execute_dpk_cleanup() {
       -cleanup 2>&1 | out-null
   }
 }
+
 function execute_psft_dpk_setup() {
 
   # $begin=$(get-date)
@@ -122,7 +123,7 @@ function execute_psft_dpk_setup() {
 
 . change_to_midtier
 . execute_dpk_cleanup
-# . execute_psft_dpk_setup
+. execute_psft_dpk_setup
 # . change_dpk_role
 # . patch_database
 # . deploy_new_domains
