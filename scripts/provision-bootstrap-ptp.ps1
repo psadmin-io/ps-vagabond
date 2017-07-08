@@ -51,7 +51,7 @@ $VerbosePreference = "SilentlyContinue"
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
-$DEBUG = "false"
+$DEBUG = "true"
 $computername = $env:computername
 
 function change_to_midtier() {
