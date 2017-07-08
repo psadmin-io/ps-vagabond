@@ -57,8 +57,7 @@ function change_to_midtier() {
   Write-Host "Change env_type to 'midtier'"
   (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
   # TODO - change site.pp role?
-  (Get-Content "${PUPPET_HOME}\manifests\site.pp").replace("include*", "include ::pt_role::pt_tools_deployment") | Set-Content "${PUPPET_HOME}\manifests\site.pp"
-  include ::pt_role::pt_tools_deployment
+  (Get-Content "${PUPPET_HOME}\manifests\site.pp").replace("include.*", "include ::pt_role::pt_tools_deployment") | Set-Content "${PUPPET_HOME}\manifests\site.pp"
 }
 function execute_psft_dpk_setup() {
 
