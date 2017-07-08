@@ -105,14 +105,14 @@ function execute_psft_dpk_setup() {
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -env_type=midtier `
+      -env_type midtier `
       -deploy_only `
       -silent `
       -no_env_setup
   } else {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -env_type=midtier `
+      -env_type midtier `
       -deploy_only `
       -silent `
       -no_env_setup 2>&1 | out-null
