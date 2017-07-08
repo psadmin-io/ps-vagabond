@@ -58,11 +58,11 @@ function remove_from_PATH() {
   [CmdletBinding()]
     Param ( [String]$RemovedFolder )
   # Get the Current Search Path from the environment keys in the registry
-  $NewPath=(Get-ItemProperty -Path ‘Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment’ -Name PATH).Path
+  $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment' -Name PATH).Path
   # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
   $NewPath=$NewPath –replace $RemovedFolder,$NULL
   # Update the Environment Path
-  Set-ItemProperty -Path ‘Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment’ -Name PATH –Value $newPath
+  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment' -Name PATH –Value $newPath
   # Show what we just did
   # Return $NewPath
 }
