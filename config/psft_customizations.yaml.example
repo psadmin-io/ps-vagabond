@@ -13,15 +13,6 @@ db_name:     "PSFTDB"
 db_port:     1522
 db_user:     "PS"
 db_user_pwd: "PS"
-
-db_service_name: "PSFTDB"
-tns_admin_list:
-  "%{hiera('db_name')}":
-    db_host:         "%{::fqdn}"
-    db_port:         "%{hiera('db_port')}"
-    db_protocol:     TCP
-    db_service_name: "%{hiera('db_service_name')}"
-
 db_connect_id:     "people"
 db_connect_pwd:    "peop1e"
 
@@ -35,6 +26,17 @@ ps_home:
   unicode_db: "%{hiera('unicode_db')}"
   location:   "%{hiera('ps_home_location')}"
   remove:     false
+
+# Set ps_app_home for Puppet rebuild when applying a PT Patch
+ps_app_home:  "%{hiera('peoplesoft_base')}/pt/ps_app_home"
+
+db_service_name: "PSFTDB"
+tns_admin_list:
+  "%{hiera('db_name')}":
+    db_host:         "%{::fqdn}"
+    db_port:         "%{hiera('db_port')}"
+    db_protocol:     TCP
+    db_service_name: "%{hiera('db_service_name')}"
 
 pia_domain_list:
   "%{hiera('pia_domain_name')}":
