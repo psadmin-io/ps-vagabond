@@ -37,6 +37,7 @@
 Param(
   [String]$PATCH_ID     = $env:PATCH_ID,
   [String]$DPK_INSTALL  = $env:DPK_INSTALL,
+  [String]$PTP_INSTALL  = $env:PTP_INSTALL,
   [String]$PUPPET_HOME  = $env:PUPPET_HOME
 )
 
@@ -59,11 +60,23 @@ function change_to_midtier() {
   "node default { include ::pt_role::pt_tools_deployment }" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
   Write-Host "[${computername}][Done] Change env_type to 'midtier'"
 }
+
+function execute_dpk_cleanup() {
+  Write-Host "[${computername}][Task] Run the DPK cleanup script"
+  Write-Host "PTP INSTALL: ${PTP_INSTALL}"
+  if ($DEBUG -eq "true") {
+    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+      -cleanup
+  } else {
+    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+      -cleanup 2>&1 | out-null
+  }
+}
 function execute_psft_dpk_setup() {
 
   # $begin=$(get-date)
-  Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
-  Write-Host "DPK INSTALL: ${DPK_INSTALL}"
+  Write-Host "[${computername}][Task] Executing PeopleTools Patch DPK setup script"
+  Write-Host "PTP INSTALL: ${PTP_INSTALL}"
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
@@ -84,7 +97,7 @@ function execute_psft_dpk_setup() {
 }
 
 . change_to_midtier
-# . cleanup
+. execute_dpk_cleanup
 # . execute_psft_dpk_setup
 # . change_dpk_role
 # . patch_database
