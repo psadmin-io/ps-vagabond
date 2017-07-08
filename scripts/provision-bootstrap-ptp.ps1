@@ -81,6 +81,7 @@ function execute_dpk_cleanup() {
   Stop-Service psft*
   Stop-Service -name "ORACLE ProcMGR V12.1.3.0.0_VS2012"
 
+  # Remove Git from PATH to prevent `id` error when running Puppet
   . remove_from_PATH("C:\Program Files\Git\bin")
 
   if ($DEBUG -eq "true") {
