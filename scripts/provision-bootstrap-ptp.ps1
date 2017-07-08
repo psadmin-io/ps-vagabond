@@ -79,7 +79,9 @@ function execute_dpk_cleanup() {
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
 
   Stop-Service psft*
-  Stop-Service -name "ORACLE ProcMGR V12.1.3.0.0_VS2012"
+  if (get-service -name "*ProcMgr*") {
+    Stop-Service -name "*ProcMGR*"
+  }
 
   # Remove Git from PATH to prevent `id` error when running Puppet
   . remove_from_PATH("C:\Program Files\Git\bin")
