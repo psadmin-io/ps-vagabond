@@ -58,12 +58,12 @@ function remove_from_PATH() {
   [CmdletBinding()]
     Param ( [String]$RemovedFolder )
   # Get the Current Search Path from the environment keys in the registry
-  if (Test-Path "Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment") {
-    $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment' -Name PATH).Path
+  if (Test-Path "Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment") {
+    $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
     # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
     $NewPath=$NewPath -replace $RemovedFolder,$NULL
     # Update the Environment Path
-    Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINESystemCurrentControlSetControlSession ManagerEnvironment' -Name PATH -Value $newPath
+    Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
     # Show what we just did
     # Return $NewPath
   }
@@ -81,12 +81,13 @@ function execute_dpk_cleanup() {
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
 
   Stop-Service psft*
+  get-process -name rmiregistry | stop-process -force
   if (get-service -name "*ProcMgr*") {
     Stop-Service -name "*ProcMGR*"
   }
 
   # Remove Git from PATH to prevent `id` error when running Puppet
-  . remove_from_PATH("C:\Program Files\Git\bin")
+  . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
 
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
