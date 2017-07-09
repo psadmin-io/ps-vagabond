@@ -79,7 +79,9 @@ function execute_dpk_cleanup() {
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
 
   Stop-Service psft*
-  get-process -name rmiregistry | stop-process -force
+  if (get-process -name rmiregistry) {
+    get-process -name rmiregistry | stop-process -force
+  }
   if (get-service -name "*ProcMgr*") {
     Stop-Service -name "*ProcMGR*"
   }
