@@ -208,6 +208,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
+      # vmconfig.vm.provision "deploy-ptp" do |puppet|
+      #   puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
+      #   puppet.manifest_file = "site.pp"
+      # end
+
     elsif OPERATING_SYSTEM.upcase == "LINUX"
       vmconfig.vm.provision "shell" do |script|
         script.path = "scripts/provision.sh"

@@ -107,16 +107,15 @@ function execute_psft_dpk_setup() {
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
       -env_type midtier `
       -deploy_only `
-      -silent `
-      -no_env_setup
+      -silent 
   } else {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
       -env_type midtier `
       -deploy_only `
-      -silent `
-      -no_env_setup 2>&1 | out-null
+      -silent 2>&1 | out-null
   }
+
 
   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
