@@ -91,10 +91,12 @@ function execute_dpk_cleanup() {
 
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -cleanup
+      -cleanup `
+      -ErrorAction SilentlyContinue
   } else {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -cleanup 2>&1 | out-null
+      -cleanup `
+      -ErrorAction SilentlyContinue 2>&1 | out-null
   }
 }
 
