@@ -76,7 +76,7 @@ function change_to_midtier() {
 
 function execute_dpk_cleanup() {
   Write-Host "[${computername}][Task] Run the DPK cleanup script"
-  Write-Host "PTP INSTALL: ${PTP_INSTALL}"
+  Write-Host "DPK INSTALL: ${DPK_INSTALL}"
 
   Stop-Service psft*
   if (get-process -name rmiregistry -ErrorAction SilentlyContinue) {
@@ -106,14 +106,14 @@ function execute_psft_dpk_setup() {
   Write-Host "[${computername}][Task] Executing PeopleTools Patch DPK setup script"
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
   if ($DEBUG -eq "true") {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
+    . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
+      -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
       -env_type midtier `
       -deploy_only `
       -silent 
   } else {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
+    . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
+      -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
       -env_type midtier `
       -deploy_only `
       -silent 2>&1 | out-null
