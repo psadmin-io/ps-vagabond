@@ -28,7 +28,7 @@ ps_home:
   remove:     false
 
 # Set ps_app_home for Puppet rebuild when applying a PT Patch
-ps_app_home:  "%{hiera('peoplesoft_base')}/pt/ps_app_home"
+ps_apphome_location:  "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
 db_service_name: "PSFTDB"
 tns_admin_list:

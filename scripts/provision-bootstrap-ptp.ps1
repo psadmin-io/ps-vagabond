@@ -88,6 +88,7 @@ function execute_dpk_cleanup() {
 
   # Remove Git from PATH to prevent `id` error when running Puppet
   . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
+  move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
 
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
@@ -110,13 +111,15 @@ function execute_psft_dpk_setup() {
       -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
       -env_type midtier `
       -deploy_only `
-      -silent 
+      -silent `
+      -ErrorAction SilentlyContinue
   } else {
     . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
       -env_type midtier `
       -deploy_only `
-      -silent 2>&1 | out-null
+      -silent `
+      -ErrorAction SilentlyContinue 2>&1 | out-null
   }
 
 
