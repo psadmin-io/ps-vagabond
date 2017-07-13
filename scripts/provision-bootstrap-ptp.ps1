@@ -54,18 +54,18 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 $computername = $env:computername
 
-function remove_from_PATH() {
-  [CmdletBinding()]
-    Param ( [String]$RemovedFolder )
-  # Get the Current Search Path from the environment keys in the registry
-  $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-  # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
-  $NewPath=$NewPath -replace $RemovedFolder,$NULL
-  # Update the Environment Path
-  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
-  # Show what we just did
-  # Return $NewPath
-}
+# function remove_from_PATH() {
+#   [CmdletBinding()]
+#     Param ( [String]$RemovedFolder )
+#   # Get the Current Search Path from the environment keys in the registry
+#   $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+#   # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
+#   $NewPath=$NewPath -replace $RemovedFolder,$NULL
+#   # Update the Environment Path
+#   Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
+#   # Show what we just did
+#   # Return $NewPath
+# }
 
 function change_to_midtier() {
   Write-Host "[${computername}][Task] Change env_type to 'midtier'"
@@ -87,7 +87,7 @@ function execute_dpk_cleanup() {
   }
 
   # Remove Git from PATH to prevent `id` error when running Puppet
-  . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
+  # . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
   move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
 
   if ($DEBUG -eq "true") {
@@ -99,6 +99,7 @@ function execute_dpk_cleanup() {
       -cleanup `
       -ErrorAction SilentlyContinue 2>&1 | out-null
   }
+  Write-Host "[${computername}][Done] Run the DPK cleanup script"
 }
 
 function execute_psft_dpk_setup() {
@@ -121,14 +122,64 @@ function execute_psft_dpk_setup() {
       -silent `
       -ErrorAction SilentlyContinue 2>&1 | out-null
   }
-
-
+  Write-Host "`tUpdate env:PS_HOME to the new location"
+  [System.Environment]::SetEnvironmentVariable('PS_HOME', "$(hiera ps_home_location)", 'Machine');
   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
 
+function create_ca_environment() {
+  $base = hiera peoplesoft_base
+  Write-Host "[${computername}][Task] Configure Change Assistant"
+  if (-Not (test-path "${base}\ca")) {
+    Write-Host "`tBuild CA output/stage folders"
+    mkdir $base\ca
+    mkdir $base\ca\output
+    mkdir $base\ca\stage
+  }
+
+  Write-Host "`tSet permissions on the base folder for the Administrators group"
+  icacls $base /grant "Administrators:(OI)(CI)(M)" /T /C
+
+  Write-Host "`tCreate an environment in Change Assistant"
+  # Create CA Environment
+  & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -INI c:\vagrant\config\ca.ini
+
+  Write-Host "`tConfigure Change Assistant's General Options"
+  # Configure CA
+  & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM -ACTION OPTIONS -OUT "${base}\ca\output\ca.log" -REPLACE Y -EXONERR Y -SWP False -MCP 5 -PSH "${env:PS_HOME}" -STG "${base}\ca\stage" -OD "${base}\ca\output" -DL "${env:PS_HOME}\PTP" -SQH C:\psft\db\oracle-server\12.1.0.2\BIN\sqlplus.exe -EMYN N 
+  Write-Host "[${computername}][Done] Configure Change Assistant"
+}
+
+function patch_database (){
+  # Apply PTP
+  Write-Host "[${computername}][Task] Apply the PeopleTools Patch to the Database"
+  if ($DEBUG -eq "true") {
+    & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
+    -ACTION PTPAPPLY `
+    -TGTENV PSFTDB `
+    -UPD PTP85516
+  } else {
+    & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
+    -ACTION PTPAPPLY `
+    -TGTENV PSFTDB `
+    -UPD PTP85516 2>&1 | out-null
+  }
+  Write-Host "[${computername}][Done] Apply the PeopleTools Patch to the Database"
+}
+
+function deploy_patched_domains() {
+  Write-Host "[${computername}][Task] Deploy patched domains"
+  (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+  if ($DEBUG -eq "true") {
+    puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
+  } else {
+    puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null 
+  }
+  Write-Host "[${computername}][Done] Deploy patched domains"
+}
 . change_to_midtier
 . execute_dpk_cleanup
 . execute_psft_dpk_setup
-# . change_dpk_role
-# . patch_database
-# . deploy_new_domains
+. create_ca_environment
+. patch_database
+. deploy_patched_domains
