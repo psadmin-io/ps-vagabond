@@ -88,8 +88,10 @@ function execute_dpk_cleanup() {
 
   # Remove Git from PATH to prevent `id` error when running Puppet
   # . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
-  move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
-
+  if (Test-Path "C:\Program Files\Git\usr\bin\id.exe") {
+    move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
+  }
+  
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -cleanup `
@@ -100,9 +102,6 @@ function execute_dpk_cleanup() {
       -ErrorAction SilentlyContinue 2>&1 | out-null
   }
 
-  $cfg_home = hiera ps_config_home
-  remove-item "${cfg_home}" -recurse -force
-
   Write-Host "[${computername}][Done] Run the DPK cleanup script"
 }
 
@@ -111,6 +110,10 @@ function execute_psft_dpk_setup() {
   # $begin=$(get-date)
   Write-Host "[${computername}][Task] Executing PeopleTools Patch DPK setup script"
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
+  
+  $cfg_home = hiera ps_config_home
+  remove-item "${cfg_home}" -recurse -force
+
   if ($DEBUG -eq "true") {
     . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
       -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
@@ -128,6 +131,7 @@ function execute_psft_dpk_setup() {
   }
   Write-Host "`tUpdate env:PS_HOME to the new location"
   [System.Environment]::SetEnvironmentVariable('PS_HOME', "$(hiera ps_home_location)", 'Machine');
+  Write-Host "`t`tPS_HOME: ${env:PS_HOME}"
   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
 
