@@ -99,6 +99,10 @@ function execute_dpk_cleanup() {
       -cleanup `
       -ErrorAction SilentlyContinue 2>&1 | out-null
   }
+
+  $cfg_home = hiera ps_config_home
+  remove-item "${cfg_home}" -recurse -force
+
   Write-Host "[${computername}][Done] Run the DPK cleanup script"
 }
 
