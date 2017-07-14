@@ -169,6 +169,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           boot.path = "scripts/provision-download.ps1"
           boot.upload_path = "C:/temp/provision-download.ps1"
           boot.env = {
+            "MOS_USERNAME"  => "#{MOS_USERNAME}",
+            "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
             "PATCH_ID"      => "#{PTP_PATCH_ID}",
             "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
           }
