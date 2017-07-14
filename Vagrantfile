@@ -164,7 +164,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         puppet.manifest_file = "site.pp"
       end
 
-      if APPLY_PT_PATCH.lowercase == 'true' 
+      if APPLY_PT_PATCH.downcase == 'true' 
         vmconfig.vm.provision "download-ptp", type: "shell" do |boot|
           boot.path = "scripts/provision-download.ps1"
           boot.upload_path = "C:/temp/provision-download.ps1"
@@ -199,7 +199,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
-      if APPLY_PT_PATCH.lowercase == 'true'
+      if APPLY_PT_PATCH.downcase == 'true'
         vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
           boot.path = "scripts/provision-apply-ptp.ps1"
           boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
@@ -211,7 +211,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           }
         end
       end
-      
+
       # Uncomment to download the Elasticsearch DPK
       # vmconfig.vm.provision "download-es", type: "shell" do |boot|
       #   boot.path = "scripts/provision-download.ps1"
