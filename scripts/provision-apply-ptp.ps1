@@ -138,7 +138,7 @@ function create_ca_environment() {
   }
 
   Write-Host "`tSet permissions on the base folder for the Administrators group"
-  icacls $base /grant "Administrators:(OI)(CI)(M)" /T /C
+  icacls "${base}/pt/ps_home*" /grant "Administrators:(OI)(CI)(M)" /T /C
 
   Write-Host "`tCreate an environment in Change Assistant"
   # Create CA Environment
