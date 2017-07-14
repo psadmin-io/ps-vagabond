@@ -38,7 +38,8 @@ Param(
   [String]$PATCH_ID     = $env:PATCH_ID,
   [String]$DPK_INSTALL  = $env:DPK_INSTALL,
   [String]$PTP_INSTALL  = $env:PTP_INSTALL,
-  [String]$PUPPET_HOME  = $env:PUPPET_HOME
+  [String]$PUPPET_HOME  = $env:PUPPET_HOME,
+  [String]$CA_PATH      = $env:CA_PATH
 )
 
 
@@ -142,11 +143,12 @@ function create_ca_environment() {
 
   Write-Host "`tCreate an environment in Change Assistant"
   # Create CA Environment
-  & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -INI c:\vagrant\config\ca.ini
+  Set-Location $CA_PATH
+  & "${CA_PATH}\changeassistant.bat" -INI c:\vagrant\config\ca.ini
 
   Write-Host "`tConfigure Change Assistant's General Options"
   # Configure CA
-  & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM -ACTION OPTIONS -OUT "${base}\ca\output\ca.log" -REPLACE Y -EXONERR Y -SWP False -MCP 5 -PSH "${env:PS_HOME}" -STG "${base}\ca\stage" -OD "${base}\ca\output" -DL "${env:PS_HOME}\PTP" -SQH C:\psft\db\oracle-server\12.1.0.2\BIN\sqlplus.exe -EMYN N 
+  & "${CA_PATH}\changeassistant.bat" -MODE UM -ACTION OPTIONS -OUT "${base}\ca\output\ca.log" -REPLACE Y -EXONERR Y -SWP False -MCP 5 -PSH "${env:PS_HOME}" -STG "${base}\ca\stage" -OD "${base}\ca\output" -DL "${env:PS_HOME}\PTP" -SQH C:\psft\db\oracle-server\12.1.0.2\BIN\sqlplus.exe -EMYN N 
   Write-Host "[${computername}][Done] Configure Change Assistant"
 }
 

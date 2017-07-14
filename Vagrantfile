@@ -207,7 +207,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             "PATCH_ID"      => "#{PTP_PATCH_ID}",
             "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
             "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
-            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+            "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "CA_PATH"        => "#{CA_SETTINGS[:path]}",
           }
         end
       end
