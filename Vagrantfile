@@ -206,6 +206,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
+
+      vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
+        boot.path = "scripts/provision-apply-ptp.ps1"
+        boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
+        boot.env = {
+          "PATCH_ID"      => "#{PTP_PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+        }
       end
 
       # vmconfig.vm.provision "deploy-ptp" do |puppet|
