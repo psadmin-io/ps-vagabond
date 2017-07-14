@@ -164,6 +164,28 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         puppet.manifest_file = "site.pp"
       end
 
+      if APPLY_PT_PATCH.lowercase == 'true' 
+        vmconfig.vm.provision "download-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-download.ps1"
+          boot.upload_path = "C:/temp/provision-download.ps1"
+          boot.env = {
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
+          }
+        end
+
+        vmconfig.vm.provision "bootstrap-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-bootstrap-ptp.ps1"
+          boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
+          boot.env = {
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+          }
+        end
+      end
+
       vmconfig.vm.provision "client", type: "shell"  do |client|
         client.path        = "scripts/provision-client.ps1"
         client.upload_path = "C:/temp/provision-client.ps1"
@@ -177,50 +199,29 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
-      vmconfig.vm.provision "download-es", type: "shell" do |boot|
-        boot.path = "scripts/provision-download.ps1"
-        boot.upload_path = "C:/temp/provision-download.ps1"
-        boot.env = {
-          "MOS_USERNAME"  => "#{MOS_USERNAME}",
-          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
-          "PATCH_ID"      => "#{ES_PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{ES_PATCH_ID}"
-        }
+      if APPLY_PT_PATCH.lowercase == 'true'
+        vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-apply-ptp.ps1"
+          boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
+          boot.env = {
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+          }
+        end
       end
-
-      vmconfig.vm.provision "download-ptp", type: "shell" do |boot|
-        boot.path = "scripts/provision-download.ps1"
-        boot.upload_path = "C:/temp/provision-download.ps1"
-        boot.env = {
-          "PATCH_ID"      => "#{PTP_PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
-        }
-      end
-
-      vmconfig.vm.provision "bootstrap-ptp", type: "shell" do |boot|
-        boot.path = "scripts/provision-bootstrap-ptp.ps1"
-        boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
-        boot.env = {
-          "PATCH_ID"      => "#{PTP_PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
-          "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
-          "PUPPET_HOME"   => "#{PUPPET_HOME}"
-        }
-
-      vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
-        boot.path = "scripts/provision-apply-ptp.ps1"
-        boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
-        boot.env = {
-          "PATCH_ID"      => "#{PTP_PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
-          "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
-          "PUPPET_HOME"   => "#{PUPPET_HOME}"
-        }
-      end
-
-      # vmconfig.vm.provision "deploy-ptp" do |puppet|
-      #   puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
-      #   puppet.manifest_file = "site.pp"
+      
+      # Uncomment to download the Elasticsearch DPK
+      # vmconfig.vm.provision "download-es", type: "shell" do |boot|
+      #   boot.path = "scripts/provision-download.ps1"
+      #   boot.upload_path = "C:/temp/provision-download.ps1"
+      #   boot.env = {
+      #     "MOS_USERNAME"  => "#{MOS_USERNAME}",
+      #     "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+      #     "PATCH_ID"      => "#{ES_PATCH_ID}",
+      #     "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{ES_PATCH_ID}"
+      #   }
       # end
 
     elsif OPERATING_SYSTEM.upcase == "LINUX"
