@@ -128,6 +128,56 @@ $computername = $env:computername
 #   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 # }
 
+Function create-ca-ini
+{
+  $base           = hiera peoplesoft_base
+  $db_name        = hiera db_name
+  $access_id      = hiera access_id
+  $access_pwd     = hiera access_pwd
+  $db_user        = hiera db_user
+  $db_user_pwd    = hiera db_user_pwd
+  $db_connect_id  = hiera db_connect_id
+  $db_connect_pwd = hiera db_connect_pwd
+  $oracle_client_location = hiera oracle_client_location
+  $ps_home_location = hiera ps_home_location
+
+  $file = New-Item -type file "${base}\ca.ini" -force
+  $template=@"
+[GENERAL]
+MODE=UM
+ACTION=ENVCREATE
+OUT=${base}\ca\ca.log
+EXONERR=Y
+
+[ENVCREATE]
+TGTENV=${db_name}
+CT=2
+UNI=Y
+CA=${access_id}
+CAP=${access_pwd}
+CO=${db_user}
+CP=${db_user_pwd}
+CI=${db_connect_id} 
+CW=${db_connect_id} 
+CZYN=N 
+SQH=${oracle_client_location}\BIN\sqlplus.exe
+INP=All 
+PL=PEOPLETOOLS 
+IND=ALL 
+INL=All
+INBL=ENG 
+PSH=${ps_home_location}
+PAH=${ps_home_location}
+PCH=${ps_home_location}
+REPLACE=N
+"@ 
+  if ($DEBUG -eq "true") {
+    Write-Host "This is the template: ${template}"
+    Write-Host "Writing to location: ${file}"
+  }
+  $template | out-file $file
+}
+
 function create_ca_environment() {
   $base = hiera peoplesoft_base
   Write-Host "[${computername}][Task] Configure Change Assistant"
@@ -182,6 +232,7 @@ function deploy_patched_domains() {
 # . change_to_midtier
 # . execute_dpk_cleanup
 # . execute_psft_dpk_setup
+. create-ca-ini
 . create_ca_environment
 . patch_database
 . deploy_patched_domains
