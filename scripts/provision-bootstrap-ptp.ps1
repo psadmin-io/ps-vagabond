@@ -91,7 +91,7 @@ function execute_dpk_cleanup() {
   if (Test-Path "C:\Program Files\Git\usr\bin\id.exe") {
     move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
   }
-  
+
   if ($DEBUG -eq "true") {
     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
       -cleanup `
@@ -112,7 +112,9 @@ function execute_psft_dpk_setup() {
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
   
   $cfg_home = hiera ps_config_home
-  remove-item "${cfg_home}" -recurse -force
+  if (test-path $cfg_home) {
+    remove-item "${cfg_home}" -recurse -force
+  }
 
   if ($DEBUG -eq "true") {
     . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
