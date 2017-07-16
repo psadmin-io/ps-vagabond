@@ -39,9 +39,10 @@ Param(
   [String]$DPK_INSTALL  = $env:DPK_INSTALL,
   [String]$PTP_INSTALL  = $env:PTP_INSTALL,
   [String]$PUPPET_HOME  = $env:PUPPET_HOME,
-  [String]$CA_PATH      = $env:CA_PATH
+  [String]$CA_PATH      = $env:CA_PATH,
+  [string]$database     = 'true',
+  [string]$puppet       = 'false'
 )
-
 
 #---------------------------------------------------------[Initialization]--------------------------------------------------------
 
@@ -55,82 +56,9 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 $computername = $env:computername
 
-# function remove_from_PATH() {
-#   [CmdletBinding()]
-#     Param ( [String]$RemovedFolder )
-#   # Get the Current Search Path from the environment keys in the registry
-#   $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-#   # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
-#   $NewPath=$NewPath -replace $RemovedFolder,$NULL
-#   # Update the Environment Path
-#   Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
-#   # Show what we just did
-#   # Return $NewPath
-# }
-
-# function change_to_midtier() {
-#   Write-Host "[${computername}][Task] Change env_type to 'midtier'"
-#   (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
-#   (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_deployment" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
-#   Write-Host "[${computername}][Done] Change env_type to 'midtier'"
-# }
-
-# function execute_dpk_cleanup() {
-#   Write-Host "[${computername}][Task] Run the DPK cleanup script"
-#   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
-
-#   Stop-Service psft*
-#   if (get-process -name rmiregistry -ErrorAction SilentlyContinue) {
-#     get-process -name rmiregistry | stop-process -force
-#   }
-#   if (get-service -name "*ProcMgr*") {
-#     Stop-Service -name "*ProcMGR*"
-#   }
-
-#   # Remove Git from PATH to prevent `id` error when running Puppet
-#   # . remove_from_PATH("C\:\\Program\ Files\\Git\\usr\\bin")
-#   move-item "C:\Program Files\Git\usr\bin\id.exe" "C:\Program Files\Git\usr\bin\_id.exe"
-
-#   if ($DEBUG -eq "true") {
-#     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-#       -cleanup `
-#       -ErrorAction SilentlyContinue
-#   } else {
-#     . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-#       -cleanup `
-#       -ErrorAction SilentlyContinue 2>&1 | out-null
-#   }
-#   Write-Host "[${computername}][Done] Run the DPK cleanup script"
-# }
-
-# function execute_psft_dpk_setup() {
-
-#   # $begin=$(get-date)
-#   Write-Host "[${computername}][Task] Executing PeopleTools Patch DPK setup script"
-#   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
-#   if ($DEBUG -eq "true") {
-#     . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
-#       -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
-#       -env_type midtier `
-#       -deploy_only `
-#       -silent `
-#       -ErrorAction SilentlyContinue
-#   } else {
-#     . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
-#       -dpk_src_dir=$(resolve-path $PTP_INSTALL).path `
-#       -env_type midtier `
-#       -deploy_only `
-#       -silent `
-#       -ErrorAction SilentlyContinue 2>&1 | out-null
-#   }
-#   Write-Host "`tUpdate env:PS_HOME to the new location"
-#   [System.Environment]::SetEnvironmentVariable('PS_HOME', "$(hiera ps_home_location)", 'Machine');
-#   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
-# }
-
 Function create-ca-ini
 {
-  $base           = hiera peoplesoft_base
+  $base           = hiera peoplesoft_base | Resolve-Path
   $db_name        = hiera db_name
   $access_id      = hiera access_id
   $access_pwd     = hiera access_pwd
@@ -138,8 +66,8 @@ Function create-ca-ini
   $db_user_pwd    = hiera db_user_pwd
   $db_connect_id  = hiera db_connect_id
   $db_connect_pwd = hiera db_connect_pwd
-  $oracle_client_location = hiera oracle_client_location
-  $ps_home_location = hiera ps_home_location
+  $sqlplus_location = hiera oracle_client_location | Resolve-Path
+  $ps_home_location = hiera ps_home_location | Resolve-Path
 
   $file = New-Item -type file "${base}\ca.ini" -force
   $template=@"
@@ -157,15 +85,15 @@ CA=${access_id}
 CAP=${access_pwd}
 CO=${db_user}
 CP=${db_user_pwd}
-CI=${db_connect_id} 
-CW=${db_connect_id} 
-CZYN=N 
-SQH=${oracle_client_location}\BIN\sqlplus.exe
-INP=All 
-PL=PEOPLETOOLS 
-IND=ALL 
+CI=${db_connect_id}
+CW=${db_connect_pwd}
+CZYN=N
+SQH=${sqlplus_location}\BIN\sqlplus.exe
+INP=All
+PL=PEOPLETOOLS
+IND=ALL
 INL=All
-INBL=ENG 
+INBL=ENG
 PSH=${ps_home_location}
 PAH=${ps_home_location}
 PCH=${ps_home_location}
@@ -175,11 +103,12 @@ REPLACE=N
     Write-Host "This is the template: ${template}"
     Write-Host "Writing to location: ${file}"
   }
-  $template | out-file $file
+  $template | out-file $file -Encoding ascii
 }
 
 function create_ca_environment() {
   $base = hiera peoplesoft_base
+  $jdk = hiera jdk_location | Resolve-Path
   Write-Host "[${computername}][Task] Configure Change Assistant"
   if (-Not (test-path "${base}\ca")) {
     Write-Host "`tBuild CA output/stage folders"
@@ -188,17 +117,32 @@ function create_ca_environment() {
     mkdir $base\ca\stage
   }
 
-  Write-Host "`tSet permissions on the base folder for the Administrators group"
-  icacls "${base}/pt/ps_home*" /grant "Administrators:(OI)(CI)(M)" /T /C
+  Write-Host "`tSet permissions on the ps_home folder for the Administrators group"
+  icacls "${ps_home_location}" /grant "Administrators:(OI)(CI)(M)" /T /C
 
-  Write-Host "`tCreate an environment in Change Assistant"
-  # Create CA Environment
   Set-Location $CA_PATH
-  & "${CA_PATH}\changeassistant.bat" -INI c:\vagrant\config\ca.ini
-
+  $env:JAVA_HOME="${jdk}"
+  (Get-Content "${CA_PATH}\changeassistant.bat").replace('jre\bin\java -Xms512m -Xmx1g com.peoplesoft.pt.changeassistant.client.main.frmMain %*', 'jre\bin\java -Xms256m -Xmx512m com.peoplesoft.pt.changeassistant.client.main.frmMain %*') | Set-Content "${CA_PATH}\changeassistant.bat"
   Write-Host "`tConfigure Change Assistant's General Options"
   # Configure CA
-  & "${CA_PATH}\changeassistant.bat" -MODE UM -ACTION OPTIONS -OUT "${base}\ca\output\ca.log" -REPLACE Y -EXONERR Y -SWP False -MCP 5 -PSH "${env:PS_HOME}" -STG "${base}\ca\stage" -OD "${base}\ca\output" -DL "${env:PS_HOME}\PTP" -SQH C:\psft\db\oracle-server\12.1.0.2\BIN\sqlplus.exe -EMYN N 
+  & "${CA_PATH}\changeassistant.bat" -MODE UM `
+      -ACTION OPTIONS `
+      -OUT "${base}\ca\output\ca.log" `
+      -REPLACE Y `
+      -EXONERR Y `
+      -SWP False `
+      -MCP 5 `
+      -PSH "${ps_home_location}" `
+      -STG "${base}\ca\stage" `
+      -OD "${base}\ca\output" `
+      -DL "${ps_home_location}\PTP" `
+      -SQH "${sqlplus_location}\BIN\sqlplus.exe" `
+      -EMYN N 
+  
+  Write-Host "`tCreate an environment in Change Assistant"
+  # Create CA Environment
+  & "${CA_PATH}\changeassistant.bat" -INI "${base}\ca.ini"
+
   Write-Host "[${computername}][Done] Configure Change Assistant"
 }
 
@@ -219,6 +163,51 @@ function patch_database (){
   Write-Host "[${computername}][Done] Apply the PeopleTools Patch to the Database"
 }
 
+function install_utilities() {
+
+  # Install Hiera-eyaml
+  # -------------------
+  Write-Host "[${computername}][Task] Install Hiera-eyaml"
+  copy-item c:\vagrant\scripts\RubyGemsRootCA.pem "C:\Program Files\Puppet Labs\Puppet\sys\ruby\lib\ruby\2.0.0\rubygems\ssl_certs\" -force
+  $env:PATH += ";C:\Program Files\Puppet Labs\Puppet\sys\ruby\bin"
+  gem install hiera-eyaml
+  Write-Host "[${computername}][Done] Install Hiera-eyaml" -ForegroundColor green
+
+  # Configure Hiera-eyaml
+  # ---------------------
+  Write-Host "[${computername}][Task] Configure Hiera-eyaml"
+  # copy-item c:\vagrant\hiera.yaml C:\ProgramData\PuppetLabs\hiera\etc\hiera.yaml -force
+  # copy-item c:\vagrant\eyaml.yaml C:\ProgramData\PuppetLabs\hiera\etc\eyaml.yaml -force
+  [System.Environment]::SetEnvironmentVariable("EYAML_CONFIG", "C:\ProgramData\PuppetLabs\hiera\etc\eyaml.yaml", "Machine")
+  if ( -not ( test-path C:\ProgramData\PuppetLabs\puppet\etc\secure\keys) ) { mkdir C:\ProgramData\PuppetLabs\puppet\etc\secure\keys }
+  copy-item c:\vagrant\keys\* C:\ProgramData\PuppetLabs\puppet\etc\secure\keys\ -force
+  # [System.Environment]::SetEnvironmentVariable("EDITOR", "C:\Program Files\Sublime Text 3\sublime_text.exe -n -w", "Machine")
+  Write-Host "[${computername}][Done] Configure Hiera-eyaml" -ForegroundColor green
+
+}
+
+function fix_dpk_bugs() {
+  # Fix Tuxedo Features Separator Bug
+  # ---------------------------------
+  Write-Host "[${computername}][Task] Fix DPK Bugs"
+  (Get-Content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb).replace("feature_settings_separator = '#'","feature_settings_separator = '/'") | set-content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb
+  Write-Host "[${computername}][Done] Fix DPK Bugs" -ForegroundColor green
+
+}
+function copy_modules() {
+
+  # Copy io_ DPK code
+  # -----------------------------
+  Write-Host "[${computername}][Task] Update DPK with custom modules"
+  # copy-item c:\vagrant\site.pp C:\ProgramData\PuppetLabs\puppet\etc\manifests\site.pp -force
+  copy-item c:\vagrant\modules\* "${PUPPET_HOME}\modules\" -recurse -force
+  Write-Host "[${computername}][Done] Update DPK with custom modules" -ForegroundColor green
+
+}
+
+function set_dpk_role() {
+
+}
 function deploy_patched_domains() {
   Write-Host "[${computername}][Task] Deploy patched domains"
   (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
@@ -232,7 +221,15 @@ function deploy_patched_domains() {
 # . change_to_midtier
 # . execute_dpk_cleanup
 # . execute_psft_dpk_setup
-. create-ca-ini
-. create_ca_environment
-. patch_database
-. deploy_patched_domains
+if ($database -eq 'true') {
+  . create-ca-ini
+  . create_ca_environment
+  . patch_database
+}
+if ($puppet -eq 'true') {
+  . fix_dpk_bugs
+  # . install_utilities
+  . copy_modules
+  # . set_dpk_role
+  . deploy_patched_domains
+}

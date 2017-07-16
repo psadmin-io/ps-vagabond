@@ -50,6 +50,10 @@ PATCH_ID='23711856'
 # Vagabond can download the Elasticsarch DPK, but won't configure it yet.
 #ES_PATCH_ID=''
 
+# CUSTOM DPK ROLE
+# Change the DPK Role in site.pp to something custom. 
+# DPK_ROLE = '::io_role::io_tools_demo'
+
 # HOSTONLY NETWORK_SETTINGS (default)
 # Uncomment the following to configure the VM for host-only networking.
 # The VM will only be accessible from your local machine.

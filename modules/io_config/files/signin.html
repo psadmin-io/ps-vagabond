@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html dir=<%=direction%> lang=<%=language%>>
+<!-- Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved. -->
+<!--
+* ***************************************************************
+*  This software and related documentation are provided under a
+*  license agreement containing restrictions on use and
+*  disclosure and are protected by intellectual property
+*  laws. Except as expressly permitted in your license agreement
+*  or allowed by law, you may not use, copy, reproduce,
+*  translate, broadcast, modify, license, transmit, distribute,
+*  exhibit, perform, publish or display any part, in any form or
+*  by any means. Reverse engineering, disassembly, or
+*  decompilation of this software, unless required by law for
+*  interoperability, is prohibited.
+*  The information contained herein is subject to change without
+*  notice and is not warranted to be error-free. If you find any
+*  errors, please report them to us in writing.
+*
+*  Copyright (C) 1988, 2015, Oracle and/or its affiliates.
+*  All Rights Reserved.
+* ***************************************************************
+-->
+<head>
+<title><%=138%></title>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">    
+<meta name="viewport" content="<%=viewportInfo%>">  
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<script language="JavaScript">
+    var sDomain = "<%=AuthTokenDomain%>";
+    try {
+        document.domain = "<%=AuthTokenDomain%>";
+    }
+    catch (err) {; }
+</script>
+<%=framebreak%>
+<link  type="text/css" href="<%=psCtxPath%><%=psHome%>/signin.css" rel="stylesheet">
+<script type="text/javascript" src="<%=psCtxPath%><%=psHome%>/signin.js"></script>
+
+</head>
+<body onload="ptSignon().login();">
+<div id="pswrapper">
+  <form id="login" name="login" method="post" action="?<%=AfterLoginQS%>&cmd=login&languageCd=<%=languageCd%>" autocomplete="off">
+      <input type="hidden" id="timezoneOffset" name="timezoneOffset" value="0">
+      <input type="hidden" id="ptmode" name="ptmode" value="f">
+      <input type="hidden" id="ptlangcd" name="ptlangcd" value="<%=languageCd%>">
+      <input type="hidden" id="ptinstalledlang" name="ptinstalledlang" value="<%=installedLangs%>">
+      <div class="signonMain">
+          <img src="<%=psCtxPath%><%=psHome%>/images/io_logo.png" class="ps-staticimg" alt="<%=138%>" title="<%=138%>" >
+          <div class="ps_signinentry" >            
+            <div id="ptloginerrorcont" class="ps_login_error" >
+              <div class="ps_login_error_inner" role="heading" aria-level="2">
+		<a id="error_link" name="error_link" tabindex="1"><img src="<%=psCtxPath%><%=psHome%>/images/PT_LOGIN_ERROR.gif" alt="<%=130%>"></a>
+                <div class="psloginerror" id="discovery_error" name="discovery_error" role="alert" aria-live="assertive" ><%=ps.discovery.error%></div>
+                <span class="psloginerror" id="login_error" name="login_error" role="alert" aria-live="assertive"><%=error%></span>                     
+		   </div>
+		   <div class="ps_box-control psloginerror" id="browsercheck_error" name="browsercheck_error" aria-live="assertive" role="alert"><%=browserCheck%></div>
+            </div>
+	       
+           <div> 
+               <span class="ps_label-show" id="ptLabelUserid"><label for="userid"><%=133%></label></span>
+           </div>
+            <div class="ps_box-control">
+               <input type="text" id="userid" name="userid" value="<%=USERID%>" title="<%=133%>">
+            </div>
+           <div>
+               <span class="ps_label-show" id="ptLabelPassword"><label for="pwd"><%=134%></label></span>
+           </div>
+            <div class="ps_box-control">
+               <input type="password" id="pwd" name="pwd" title="<%=134%>" >
+            </div>
+	    <div>
+               <span class="ps_label-show" id="ptLabelSelect"><label for="ps_select_box"><%=132%></label></span>
+           </div>
+            <div id="ps_select_parent" >
+              <div id= "ps_select_box" class="ps_box-control">            
+                <select id="ptlangsel" name="ptlangsel"  title="<%=132%>" class="ps_select" onChange="ptSignon().changeLangFunc(this, event)">
+                  <option value="ENG" title="<%=psENG%>">English</option>
+                  <option value="UKE" title="<%=psUKE%>">UK English</option>
+                  <option value="ESP" title="<%=psESP%>">Espa&ntilde;ol</option>
+                  <option value="DAN" title="<%=psDAN%>">Dansk</option>
+                  <option value="GER" title="<%=psGER%>">Deutsch</option>
+                  <option value="FRA" title="<%=psFRA%>">Fran&ccedil;ais</option>
+                  <option value="CFR" title="<%=psCFR%>">Fran&ccedil;ais&nbsp;du&nbsp;Canada</option>
+                  <option value="ITA" title="<%=psITA%>">Italiano</option>
+                  <option value="HUN" title="<%=psHUN%>">Magyar</option>
+                  <option value="DUT" title="<%=psDUT%>">Nederlands</option>
+                  <option value="NOR" title="<%=psNOR%>">Norsk</option>
+                  <option value="POL" title="<%=psPOL%>">Polski</option>
+                  <option value="POR" title="<%=psPOR%>">Portugu&ecirc;s</option>
+                  <option value="ROM" title="<%=psROM%>">Rom&#x00E2;n&#x0103;</option>
+                  <option value="FIN" title="<%=psFIN%>">Suomi</option>
+                  <option value="SVE" title="<%=psSVE%>">Svenska</option>
+                  <option value="TUR" title="<%=psTUR%>">T&#x00FC;rk&#x00E7;e</option>
+                  <option value="CZE" title="<%=psCZE%>">&#x010C;e&#x0161;tina</option>
+                  <option value="JPN" title="<%=psJPN%>">&#x65E5;&#x672C;&#x8A9E;</option>
+                  <option value="KOR" title="<%=psKOR%>">&#xD55C;&#xAD6D;&#xC5B4;</option>
+                  <option value="RUS" title="<%=psRUS%>">&#x0420;&#x0443;&#x0441;&#x0441;&#x043A;&#x0438;&#x0439;</option>
+                  <option value="THA" title="<%=psTHA%>">&#x0E20;&#x0E32;&#x0E29;&#x0E32;&#x0E44;&#x0E17;&#x0E22;</option>
+                  <option value="ZHS" title="<%=psZHS%>">&#x7B80;&#x4F53;&#x4E2D;&#x6587;</option>
+                  <option value="ZHT" title="<%=psZHT%>">&#x7E41;&#x9AD4;&#x4E2D;&#x6587;</option>
+                  <option value="ARA" title="<%=psARA%>">&#x0627;&#x0644;&#x0639;&#x0631;&#x0628;&#x064A;&#x0629;</option>
+                  <option value="VIE" title="<%=psVIE%>">Ti&#7869;ng Vi&#7879;t</option>
+                  <option value="BUL" title="<%=psBUL%>">&#x0431;&#x044a;&#x043b;&#x0433;&#x0430;&#x0440;&#x0441;&#x043a;&#x0438;</option>
+                  <option value="CRO" title="<%=psCRO%>">hrvatski</option>
+                  <option value="GRK" title="<%=psGRK%>">&#x0395;&#x03bb;&#x03bb;&#x03b7;&#x03bd;&#x03b9;&#x03ba;&#x03ac;</option>
+                  <option value="HEB" title="<%=psHEB%>">&#x05e2;&#x05d1;&#x05e8;&#x05d9;&#x05ea;</option>
+                  <option value="MAY" title="<%=psMAY%>">Bahasa Melayu</option>
+                  <option value="SER" title="<%=psSER%>">&#x0441;&#x0440;&#x043f;&#x0441;&#x043a;&#x0438;</option>
+                  <option value="SLK" title="<%=psSLK%>">sloven&#x010d;ina</option>
+                  <option value="SLV" title="<%=psSLV%>">sloven&#x0161;&#x010d;ina</option>
+                </select>
+              </div>     
+            </div>
+            <div class="ps_box-button">
+                <input name="Submit" type="submit" class="ps-button" value="<%=137%>" aria-label='<%=201%>'>
+            </div>
+            <div class="ps_box-button">
+                <input type="checkbox" name="accessible" id="accessible">
+               	<label for="accessible"><%=147%></label>
+           	</div>          
+          </div>
+          <div class="ps_box-link">
+              <span class="ps-link"><%=traceLink%></span>
+          </div>
+	      <IMG SRC="<%=psCtxPath%><%=psHome%>/images/Footer.png" width="100%" alt="">
+      	  <footer id="ptfooter" class="ps_footer_text "><%=146%></footer>
+      </div>  
+  </form>
+</div>
+</body>
+</html>

@@ -54,19 +54,6 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 $computername = $env:computername
 
-# function remove_from_PATH() {
-#   [CmdletBinding()]
-#     Param ( [String]$RemovedFolder )
-#   # Get the Current Search Path from the environment keys in the registry
-#   $NewPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-#   # Find the value to remove, replace it with $NULL. If it’s not found, nothing will change.
-#   $NewPath=$NewPath -replace $RemovedFolder,$NULL
-#   # Update the Environment Path
-#   Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
-#   # Show what we just did
-#   # Return $NewPath
-# }
-
 function change_to_midtier() {
   Write-Host "[${computername}][Task] Change env_type to 'midtier'"
   (Get-Content "${PUPPET_HOME}\data\defaults.yaml").replace("env_type: fulltier", "env_type: midtier") | Set-Content "${PUPPET_HOME}\data\defaults.yaml"
