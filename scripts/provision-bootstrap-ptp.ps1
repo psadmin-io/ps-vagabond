@@ -124,59 +124,6 @@ function execute_psft_dpk_setup() {
   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
 
-# function create_ca_environment() {
-#   $base = hiera peoplesoft_base
-#   Write-Host "[${computername}][Task] Configure Change Assistant"
-#   if (-Not (test-path "${base}\ca")) {
-#     Write-Host "`tBuild CA output/stage folders"
-#     mkdir $base\ca
-#     mkdir $base\ca\output
-#     mkdir $base\ca\stage
-#   }
-
-#   Write-Host "`tSet permissions on the base folder for the Administrators group"
-#   icacls $base /grant "Administrators:(OI)(CI)(M)" /T /C
-
-#   Write-Host "`tCreate an environment in Change Assistant"
-#   # Create CA Environment
-#   & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -INI c:\vagrant\config\ca.ini
-
-#   Write-Host "`tConfigure Change Assistant's General Options"
-#   # Configure CA
-#   & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM -ACTION OPTIONS -OUT "${base}\ca\output\ca.log" -REPLACE Y -EXONERR Y -SWP False -MCP 5 -PSH "${env:PS_HOME}" -STG "${base}\ca\stage" -OD "${base}\ca\output" -DL "${env:PS_HOME}\PTP" -SQH C:\psft\db\oracle-server\12.1.0.2\BIN\sqlplus.exe -EMYN N 
-#   Write-Host "[${computername}][Done] Configure Change Assistant"
-# }
-
-# function patch_database (){
-#   # Apply PTP
-#   Write-Host "[${computername}][Task] Apply the PeopleTools Patch to the Database"
-#   if ($DEBUG -eq "true") {
-#     & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
-#     -ACTION PTPAPPLY `
-#     -TGTENV PSFTDB `
-#     -UPD PTP85516
-#   } else {
-#     & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
-#     -ACTION PTPAPPLY `
-#     -TGTENV PSFTDB `
-#     -UPD PTP85516 2>&1 | out-null
-#   }
-#   Write-Host "[${computername}][Done] Apply the PeopleTools Patch to the Database"
-# }
-
-# function deploy_patched_domains() {
-#   Write-Host "[${computername}][Task] Deploy patched domains"
-#   (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
-#   if ($DEBUG -eq "true") {
-#     puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
-#   } else {
-#     puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null 
-#   }
-#   Write-Host "[${computername}][Done] Deploy patched domains"
-# }
 . change_to_midtier
 . execute_dpk_cleanup
 . execute_psft_dpk_setup
-# . create_ca_environment
-# . patch_database
-# . deploy_patched_domains

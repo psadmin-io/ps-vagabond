@@ -40,8 +40,9 @@ Param(
   [String]$PTP_INSTALL  = $env:PTP_INSTALL,
   [String]$PUPPET_HOME  = $env:PUPPET_HOME,
   [String]$CA_PATH      = $env:CA_PATH,
+  [String]$DPK_ROLE     = $env:DPK_ROLE,
   [string]$database     = 'true',
-  [string]$puppet       = 'false'
+  [string]$puppet       = 'true'
 )
 
 #---------------------------------------------------------[Initialization]--------------------------------------------------------
@@ -206,7 +207,9 @@ function copy_modules() {
 }
 
 function set_dpk_role() {
-
+  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
+  (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
 }
 function deploy_patched_domains() {
   Write-Host "[${computername}][Task] Deploy patched domains"
@@ -230,6 +233,8 @@ if ($puppet -eq 'true') {
   . fix_dpk_bugs
   # . install_utilities
   . copy_modules
-  # . set_dpk_role
+  if (!($DPK_ROLE -eq '')){
+    . set_dpk_role
+  }
   . deploy_patched_domains
 }
