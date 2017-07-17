@@ -163,7 +163,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         yaml.path = "scripts/provision-dpk-modules.ps1"
         yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
         yaml.env = {
-          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+          "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "DPK_ROLE"      => "#{DPK_ROLE}"
         }
       end
 
@@ -215,7 +216,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           yaml.path = "scripts/provision-dpk-modules.ps1"
           yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
           yaml.env = {
-            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+            "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "DPK_ROLE"      => "#{DPK_ROLE}"
           }
         end
 
@@ -227,8 +229,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
             "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
             "PUPPET_HOME"   => "#{PUPPET_HOME}",
-            "CA_PATH"       => "#{CA_SETTINGS[:path]}",
-            "DPK_ROLE"      => "#{DPK_ROLE}"
+            "CA_PATH"       => "#{CA_SETTINGS[:path]}"
           }
         end
       end

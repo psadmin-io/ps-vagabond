@@ -26,7 +26,8 @@
 
 [CmdletBinding()]
 Param(
-  [String]$PUPPET_HOME = $env:PUPPET_HOME
+  [String]$PUPPET_HOME = $env:PUPPET_HOME,
+  [String]$DPK_ROLE    = $env:DPK_ROLE
 )
 
 
@@ -63,6 +64,8 @@ function set_dpk_role() {
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 . copy_modules
-. set_dpk_role
+if (! ($DPK_ROLE -eq '')) {
+  . set_dpk_role
+}
 
 Write-Host "DPK Module Sync Complete"
