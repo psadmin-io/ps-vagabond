@@ -167,6 +167,24 @@ function install_additional_packages {
       choco install jq -y 2>&1 | out-null
     }
   }
+ $psa = "C:\psft\psadmin-plus"
+ $git = "C:\Program Files\Git\bin\git.exe"
+ $branch = "powershell"
+ if (-Not (Test-Path "$psa\PSAdminPlus.ps1")) {
+    Write-Host "Installing psadmin-plus"
+    if ($DEBUG -eq "true") {
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch"
+    } else {
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"  2>&1 | out-null
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
+    }
+    #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  } else {
+    Write-Host "Updating psadmin-plus"
+    Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
+    Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
+  }
 
 }
 
