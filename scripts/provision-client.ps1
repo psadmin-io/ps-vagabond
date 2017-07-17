@@ -189,7 +189,7 @@ MfCobolDir=REG_SZ=
     # $cfg_file | out-file $file -Encoding ascii
     # Write-Host "pscfg.ini: `n ${cfg_file}"
     set-location "${ps_home}\bin\client\winx86"
-    & "${ps_home}\bin\client\winx86\pscfg.exe" -import:c:\vagrant\config\PSCFG.CFG
+    & "${ps_home}\bin\client\winx86\pscfg.exe" -import:c:\vagrant\config\PSCFG.CFG -encrypt:$db_connect_pwd
 
 }
 

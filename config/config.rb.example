@@ -129,7 +129,7 @@ PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
 CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
 PTF_SETUP = 'false' unless defined? PTF_SETUP
 APPLY_PT_PATCH = 'false' unless defined? APPLY_PT_PATCH
-
+DPK_ROLE = '::pt_role::pt_tools_midtier' unless defined? DPK_ROLE
 
 if OPERATING_SYSTEM.upcase == "WINDOWS"
   PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME
