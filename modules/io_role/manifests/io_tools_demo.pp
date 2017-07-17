@@ -25,9 +25,9 @@ class io_role::io_tools_demo inherits pt_role::pt_base {
   $ensure   = hiera('ensure')
   $env_type = hiera('env_type')
 
-  if $env_type != 'fulltier' {
-    fail('The io_tools_demo role can only be applied to env_type of fulltier')
-  }
+  # if $env_type != 'fulltier' {
+  #   fail('The io_tools_demo role can only be applied to env_type of fulltier')
+  # }
   contain ::pt_profile::pt_tools_deployment
   contain ::pt_profile::pt_psft_environment
   contain ::pt_profile::pt_appserver

@@ -164,7 +164,7 @@ function patch_database (){
   Write-Host "[${computername}][Done] Apply the PeopleTools Patch to the Database"
 }
 
-function install_utilities() {
+function install_hiera_eyaml() {
 
   # Install Hiera-eyaml
   # -------------------
@@ -213,7 +213,7 @@ function set_dpk_role() {
 }
 function deploy_patched_domains() {
   Write-Host "[${computername}][Task] Deploy patched domains"
-  (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+  # (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
   if ($DEBUG -eq "true") {
     puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
   } else {
@@ -231,10 +231,8 @@ if ($database -eq 'true') {
 }
 if ($puppet -eq 'true') {
   . fix_dpk_bugs
-  # . install_utilities
+  # . install_hiera_eyaml
   . copy_modules
-  if (!($DPK_ROLE -eq '')){
-    . set_dpk_role
-  }
+  . set_dpk_role
   . deploy_patched_domains
 }

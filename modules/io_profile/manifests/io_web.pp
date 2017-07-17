@@ -14,12 +14,6 @@ class io_profile::io_web {
 				pia_domain_info => $pia_domain_info,
 			}
 
-			# Build key on pscipher
-			io_config::io_pscipher {"${domain_name}-buildKey":
-				ps_cfg_home_dir		=> $pia_domain_info['ps_cfg_home_dir'],
-				domain_name			=> $domain_name,
-			}
-
 		}
 	}
 }

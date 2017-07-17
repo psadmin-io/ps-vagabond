@@ -32,7 +32,7 @@ define io_config::io_signon (
 		file {"io-logo-${domain_name}-${site_name}":
 			ensure 	=> $ensure,
 			path	=> "${baseWebPath}/${site_name}/images/io_logo.png",
-			source  => "puppet:///modules/io_config/psadmin_io_blue_400.png",
+			source  => "puppet:///modules/io_config/psadmin_io_white_400.png",
 			source_permissions => ignore,
 		}
 
