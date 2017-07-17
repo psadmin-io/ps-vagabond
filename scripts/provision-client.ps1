@@ -56,6 +56,7 @@ $VerbosePreference = "SilentlyContinue"
 $SHORTCUTS = 'true'
 $SECURITY  = 'true'
 $BROWSER   = 'true'
+$CFG_MGR   = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
@@ -117,6 +118,81 @@ function execute_shortcut_setup() {
     $Shortcut.Save()    
 }
 
+function config_manager_setup () {
+    Write-Host "Importing Config Manager Setup"
+    $base           = hiera peoplesoft_base | Resolve-Path
+    $db_name        = hiera db_name
+    $db_user        = hiera db_user
+    $db_connect_id  = hiera db_connect_id
+    $db_connect_pwd = hiera db_connect_pwd
+    $ps_home        = hiera ps_home_location | Resolve-Path
+
+    $cfg_file = @"
+[PSTOOLS]
+Start=REG_SZ=APPLICATION_DESIGNER
+Language=REG_SZ=
+WindowWidth=REG_DWORD=640
+WindowHeight=REG_DWORD=448
+PanelSize=REG_SZ=CLIP
+StartNavigator=REG_SZ=
+PanelInNavigator=REG_SZ=
+HighlightPopupMenuFlds=REG_SZ=
+ShowDBName=REG_DWORD=0
+MaxWorkInstances=REG_DWORD=250
+TenKeyMode=REG_SZ=NO
+DbFlags=REG_DWORD=0
+Business Interlink Driver Directory=REG_SZ=
+JDeveloper Directory=REG_SZ=
+JDeveloper Launch Mapper CPath=REG_SZ=
+FontFace=REG_SZ=MS Sans Serif
+FontPoints=REG_DWORD=8
+[Startup]
+DBType=REG_SZ=ORACLE
+ServerName=REG_SZ=
+DBName=REG_SZ=${db_name}
+DBChange=REG_SZ=YES
+UserId=REG_SZ=${db_user}
+ConnectId=REG_SZ=${db_connect_id}
+ClientConnectPswd=REG_SZ=${db_connect_pwd}
+[Cache Settings]
+CacheBaseDir=REG_SZ=C:\PS
+[Trace]
+TraceSql=REG_DWORD=0
+TracePC=REG_DWORD=0
+TraceAE=REG_DWORD=0
+AETFileSize=REG_DWORD=500
+TraceFile=REG_SZ=
+[PSIDE\PCDebugger]
+PSDBGSRV Listener Port=REG_DWORD=9500
+
+[Crystal]
+Trace=REG_SZ=
+CrystalDir=REG_SZ=
+TraceFile=REG_SZ=
+CustomReports=REG_SZ=
+
+[RemoteCall]
+RCCBL Timeout=REG_DWORD=50
+RCCBL Redirect=REG_DWORD=0
+RCCBL Animate=REG_DWORD=0
+Show Window=REG_DWORD=0
+
+[Setup]
+GroupName=REG_SZ=
+Icons=REG_DWORD=0
+MfCobolDir=REG_SZ=
+
+[PSIDE]
+"@
+
+    # $file = New-Item -type file "${base}\pscfg.ini" -force
+    # $cfg_file | out-file $file -Encoding ascii
+    # Write-Host "pscfg.ini: `n ${cfg_file}"
+    set-location "${ps_home}\bin\client\winx86"
+    & "${ps_home}\bin\client\winx86\pscfg.exe" -import:c:\vagrant\config\PSCFG.CFG
+
+}
+
 function execute_browser_setup {
     # Set Homepage
     $path = 'HKCU:\Software\Microsoft\Internet Explorer\Main\'
@@ -132,3 +208,4 @@ if ($CA_SETUP  -eq 'true') {. execute_ca_setup}
 if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
 if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
 if ($BROWSER   -eq 'true') {. execute_browser_setup}
+if ($CFG_MGR   -eq 'true') {. config_manager_setup}
