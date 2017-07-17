@@ -185,11 +185,13 @@ MfCobolDir=REG_SZ=
 [PSIDE]
 "@
 
-    # $file = New-Item -type file "${base}\pscfg.ini" -force
+    # $file = New-Item -type file "${base}\pscfg.cfg" -force
     # $cfg_file | out-file $file -Encoding ascii
-    # Write-Host "pscfg.ini: `n ${cfg_file}"
+    # Write-Host "pscfg.cfg: `n ${cfg_file}"
     set-location "${ps_home}\bin\client\winx86"
-    & "${ps_home}\bin\client\winx86\pscfg.exe" -import:c:\vagrant\config\PSCFG.CFG -encrypt:$db_connect_pwd
+    $pscfg = "${ps_home}\bin\client\winx86\pscfg.exe"
+    # Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"
+    Start-Process -FilePath $pscfg -ArgumentList "-import:c:\vagrant\config\pscfg.cfg -encrypt:${db_connect_pwd}"
 
 }
 
