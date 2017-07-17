@@ -125,6 +125,21 @@ PATCH_ID='23711856'
 
 Additionally, if you wish to change the defaults that are used by the DPK you can use the psft_customizations.yaml file.
 
+If you make changes to the `psft_customizations.yaml` file, you can tell Vagabond to re-sync the file. Use the command `vagrant provision --provision-with=yaml` and the local `psft_customizations.yaml` file will be copied to `$PUPPET_HOME\etc\data\`
+
+#### Custom DPK Modules (optional) ####
+
+If you want to deploy and test custom DPK modules with Vagabond, copy your Puppet modules and code to `$vagabond_home\config\modules`. Vagabond will check if you have code in the `modules` folder and will copy it to the `$PUPPET_HOME` folder. You can also run `vagrant provision --provision-with=dpk-modules` to re-copy the files into the VM.
+
+If you have a custom DPK Role you want to execute, you can set that in the `config.rb` file. 
+
+```ruby
+# CUSTOM DPK ROLE
+# Change the DPK Role in site.pp to something custom.
+# Use `vagrant provision --provision-with=dpk-modules` to update the site.pp file.
+DPK_ROLE = '::io_role::io_tools_demo'
+```
+
 Usage
 -----
 

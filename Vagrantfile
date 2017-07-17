@@ -159,6 +159,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
+      vmconfig.vm.provision "dpk-modules", type: "shell"  do |yaml|
+        yaml.path = "scripts/provision-dpk-modules.ps1"
+        yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
+        yaml.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
+        }
+      end
+
       vmconfig.vm.provision "puppet" do |puppet|
         puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
         puppet.manifest_file = "site.pp"
@@ -202,6 +210,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
 
       if APPLY_PT_PATCH.downcase == 'true'
+
+        vmconfig.vm.provision "dpk-modules-ptp", type: "shell"  do |yaml|
+          yaml.path = "scripts/provision-dpk-modules.ps1"
+          yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
+          yaml.env = {
+            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+          }
+        end
+
         vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
           boot.path = "scripts/provision-apply-ptp.ps1"
           boot.upload_path = "C:/temp/provision-apply-ptp.ps1"

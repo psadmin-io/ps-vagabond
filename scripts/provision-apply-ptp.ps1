@@ -195,22 +195,7 @@ function fix_dpk_bugs() {
   Write-Host "[${computername}][Done] Fix DPK Bugs" -ForegroundColor green
 
 }
-function copy_modules() {
 
-  # Copy io_ DPK code
-  # -----------------------------
-  Write-Host "[${computername}][Task] Update DPK with custom modules"
-  # copy-item c:\vagrant\site.pp C:\ProgramData\PuppetLabs\puppet\etc\manifests\site.pp -force
-  copy-item c:\vagrant\modules\* "${PUPPET_HOME}\modules\" -recurse -force
-  Write-Host "[${computername}][Done] Update DPK with custom modules" -ForegroundColor green
-
-}
-
-function set_dpk_role() {
-  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
-  (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
-  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
-}
 function deploy_patched_domains() {
   Write-Host "[${computername}][Task] Deploy patched domains"
   # (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
@@ -232,7 +217,5 @@ if ($database -eq 'true') {
 if ($puppet -eq 'true') {
   . fix_dpk_bugs
   # . install_hiera_eyaml
-  . copy_modules
-  . set_dpk_role
   . deploy_patched_domains
 }
