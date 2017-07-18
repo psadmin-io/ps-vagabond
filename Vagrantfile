@@ -206,6 +206,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "CA_PATH"        => "#{CA_SETTINGS[:path]}",
           "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
           "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
+          "IE_HOMEPAGE"      => "#{IE_HOMEPAGE}",
           "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end

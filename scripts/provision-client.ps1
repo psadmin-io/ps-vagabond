@@ -41,7 +41,8 @@ Param(
   [String]$CA_PATH      = $env:CA_PATH,
   [String]$CA_TYPE      = $env:CA_TYPE,
   [String]$CA_BACKUP    = $env:CA_BACKUP,
-  [String]$PTF_SETUP    = $env:PTF_SETUP
+  [String]$PTF_SETUP    = $env:PTF_SETUP,
+  [String]$IE_HOMEPAGE  = $env:IE_HOMEPAGE
 )
 
 
@@ -75,11 +76,10 @@ function execute_security_setup() {
     # Type
     $type = [System.Security.AccessControl.AccessControlType]::Allow
     
-    $accessControlEntryDefault = New-Object System.Security.AccessControl.FileSystemAccessRule @("Domain Users", $readOnly, $inheritanceFlag, $propagationFlag, $type)
-    $accessControlEntryX = New-Object System.Security.AccessControl.FileSystemAccessRule @($userR, $readOnly, $inheritanceFlag, $propagationFlag, $type)
+    $accessControlEntry = New-Object System.Security.AccessControl.FileSystemAccessRule @($userR, $readOnly, $inheritanceFlag, $propagationFlag, $type)
     $ClientBin = "$Env:PS_HOME\bin\client\winx86"
     $objACL = Get-ACL $ClientBin
-    $objACL.AddAccessRule($accessControlEntryX)
+    $objACL.AddAccessRule($accessControlEntry)
     Set-ACL $ClientBin $objACL
 }
 
@@ -199,7 +199,7 @@ function execute_browser_setup {
     # Set Homepage
     $path = 'HKCU:\Software\Microsoft\Internet Explorer\Main\'
     $name = 'start page'
-    $value = 'http://localhost:8000/ps/signon.html'
+    $value = "${IE_HOMEPAGE}"
     Set-Itemproperty -Path $path -Name $name -Value $value
 }
 
