@@ -5,6 +5,7 @@
 # User Configuration files
 config/config.rb
 config/psft_customizations.yaml
+config/PSCFG.CFG
 
 # Local notes file
 NOTES.md

@@ -1,5 +1,5 @@
 peoplesoft_base:   c:/psft
-db_name:           psftdb
+db_name:           PSFTDB
 psft_db:
   type:            elm
   location:        "%{hiera('psft_db_location')}"
