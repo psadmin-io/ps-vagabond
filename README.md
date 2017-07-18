@@ -140,6 +140,22 @@ If you have a custom DPK Role you want to execute, you can set that in the `conf
 DPK_ROLE = '::io_role::io_tools_demo'
 ```
 
+#### Apply a PeopleTools Patch (optional) ####
+
+The Windows version of Vagabond can download and apply a PeopleTools Patch to the PeopleSoft Image. To apply a patch, uncomment two values in the `config.rb` file:
+
+```ruby
+# PEOPLETOOLS_PATCH
+# To apply a PeopleTools Patch to the PeopleSoft Image, you must be using 
+# a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the 
+# Patch ID for PTP_PATCH_ID.
+APPLY_PT_PATCH='true'
+PTP_PATCH_ID='26201347' # 8.55.17
+```
+
+Uncommenting the `APPLY_PT_PATCH` line will tell Vagabond to run additional provisions that apply a PT Patch to a fully build PeopleSoft Image. You must also provide a valid Patch ID for the PeopleTools Patch you want to apply. Vagabond will automatically download the patch files for you. Once the files are downloaded, Vagabond will apply the patch to the database and rebuild the domains on the new PeopleTools version.
+
+
 Usage
 -----
 
