@@ -173,11 +173,9 @@ function install_additional_packages {
  if (-Not (Test-Path "$psa")) {
     Write-Host "Installing psadmin-plus"
     if ($DEBUG -eq "true") {
-      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"
-      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch"
-      Start-Process -FilePath "$git" -ArgumentList "-C $psa pull 2>&1"
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch"
     } else {
-      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"  2>&1 | out-null
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch " 2>&1 | out-null
       Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch 2>&1" | out-null
       Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
     }
