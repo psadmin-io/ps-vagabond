@@ -215,10 +215,11 @@ C:\pum_images\hcm92>
 Since Vagabond is just a set of configuration files and provisioning scripts for Vagrant, all of the delivered Vagrant commands can be used.  The following table lists some of the basic commands.
 
 
-| Task              | Command           | 
-| -------------     | -------------     | 
-| Start the VM      | `vagrant up`      | 
-| Stop the VM       | `vagrant halt`    | 
-| Delete the VM     | `vagrant destroy` | 
-| Connect to the VM | `vagrant ssh`     | 
-
+| Task                                         | Command                                          | 
+| -------------                                | -------------                                    | 
+| Start the VM                                 | `vagrant up`                                     | 
+| Stop the VM                                  | `vagrant halt`                                   | 
+| Delete the VM                                | `vagrant destroy`                                | 
+| Connect to the VM                            | `vagrant ssh`                                    | 
+| Copy your `psft_customizations.yaml` file    | `vagrant provision --provision-with=yaml`        |
+| Copy custom DPK modules                      | `vagrant provision --provision-with=dpk-modules` |
