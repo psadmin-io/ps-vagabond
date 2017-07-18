@@ -170,16 +170,20 @@ function install_additional_packages {
  $psa = "C:\psft\psadmin-plus"
  $git = "C:\Program Files\Git\bin\git.exe"
  $branch = "powershell"
- if (-Not (Test-Path "$psa\PSAdminPlus.ps1")) {
+ if (-Not (Test-Path "$psa")) {
     Write-Host "Installing psadmin-plus"
     if ($DEBUG -eq "true") {
       Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"
       Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch"
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa pull 2>&1"
     } else {
       Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa"  2>&1 | out-null
-      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch 2>&1" | out-null
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
     }
-    #$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $NewPath = [System.Environment]::GetEnvironmentVariable("Path","User") + ";$psa"
+    [Environment]::SetEnvironmentVariable("Path", "$NewPath", "User")
+    
   } else {
     Write-Host "Updating psadmin-plus"
     Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
