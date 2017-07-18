@@ -55,6 +55,14 @@ function copy_modules() {
 
 }
 
+function fix_dpk_bugs() {
+  # Fix Tuxedo Features Separator Bug
+  # ---------------------------------
+  Write-Host "[${computername}][Task] Fix DPK Bugs"
+  (Get-Content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb).replace("feature_settings_separator = '#'","feature_settings_separator = '/'") | set-content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb
+  Write-Host "[${computername}][Done] Fix DPK Bugs" -ForegroundColor green
+
+}
 function set_dpk_role() {
   Write-Host "[${computername}][Task] Update DPK Role in site.pp"
   (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
@@ -64,6 +72,7 @@ function set_dpk_role() {
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 . copy_modules
+. fix_dpk_bugs
 if (! ($DPK_ROLE -eq '')) {
   . set_dpk_role
 }

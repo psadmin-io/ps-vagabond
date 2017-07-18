@@ -17,9 +17,10 @@ db_connect_id:     "people"
 db_connect_pwd:    "peop1e"
 
 # The oracle_client hash is required for a fulltier to midtier change when using the PeopleTools Patch provisioner
+oracle_client_location: "%{hiera('pt_location')}/oracle-client/12.1.0.2"
 oracle_client:
-  location: "%{hiera('peoplesoft_base')}/pt/oracle-client"
-
+  location: "%{hiera('oracle_client_location')}"
+  
 # Set remove: false so that cleanup won't remove it so we can use it with Change Assistant
 ps_home:
   db_type:    "%{hiera('db_platform')}"

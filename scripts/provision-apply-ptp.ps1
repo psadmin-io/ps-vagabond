@@ -187,15 +187,6 @@ function install_hiera_eyaml() {
 
 }
 
-function fix_dpk_bugs() {
-  # Fix Tuxedo Features Separator Bug
-  # ---------------------------------
-  Write-Host "[${computername}][Task] Fix DPK Bugs"
-  (Get-Content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb).replace("feature_settings_separator = '#'","feature_settings_separator = '/'") | set-content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb
-  Write-Host "[${computername}][Done] Fix DPK Bugs" -ForegroundColor green
-
-}
-
 function deploy_patched_domains() {
   Write-Host "[${computername}][Task] Deploy patched domains"
   # (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ::pt_role::pt_tools_midtier" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
@@ -215,7 +206,6 @@ if ($database -eq 'true') {
   . patch_database
 }
 if ($puppet -eq 'true') {
-  . fix_dpk_bugs
   # . install_hiera_eyaml
   . deploy_patched_domains
 }
