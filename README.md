@@ -5,7 +5,7 @@ __NOTE__:  This project is still in beta and currently incomplete.
 
 Vagabond is a project to help more easily create and manage PeopleSoft PUM environments on your local machine by using [Vagrant](https://vagrantup.com).  Once downloaded and configured, running `vagrant up` from within your Vagabond instance will...
 
-* Download, configure, and start a base OEL Virtual Machine for use with the PUM
+* Download, configure, and start a base OEL or Windows (evaluation) Virtual Machine for use with the PUM
 * Download the PUM DPK files from Oracle Support
 * Unpack the DPK setup zip file and run the psft-dpk-setup script on the VM
 * Copy the psft_customizations.yaml file from the local directory to the VM
@@ -88,6 +88,7 @@ Once you've downloaded Vagabond you should have a directory containing the follo
 ps-vagabond
  ├── config
  │   ├── config.rb.example
+ │   ├── PSCFG.CFG.example
  │   └── psft_customizations.yaml.example
  ├── dpks
  ├── scripts
@@ -96,7 +97,7 @@ ps-vagabond
  └── Vagrantfile
 ```
 
-The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`.
+The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`. The `PSCFG.CFG.example` file is used if you want to apply a PeopleTools Patch when provisioning the PeopleSoft Image.
 
 #### config.rb (required) ####
  
