@@ -65,12 +65,12 @@ function execute_dpk_cleanup() {
   Write-Host "[${computername}][Task] Run the DPK cleanup script"
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
 
-  Stop-Service psft*
+  Stop-Service psft* -ErrorAction SilentlyContinue
   if (get-process -name rmiregistry -ErrorAction SilentlyContinue) {
     get-process -name rmiregistry | stop-process -force
   }
   if (get-service -name "*ProcMgr*") {
-    Stop-Service -name "*ProcMGR*"
+    Stop-Service -name "*ProcMGR*" -ErrorAction SilentlyContinue
   }
 
   # Remove Git from PATH to prevent `id` error when running Puppet
