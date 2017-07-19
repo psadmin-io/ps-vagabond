@@ -1,5 +1,6 @@
 peoplesoft_base:   c:/psft
 db_name:           PSFTDB
+db_name_downcase:  psftdb
 psft_db:
   type:            elm
   location:        "%{hiera('psft_db_location')}"
@@ -16,9 +17,9 @@ access_pwd:        SYSADM
 pia_webprofile_name:    DEV
 ps_config_home:         c:/psft/cfg
 
-appserver_domain_name:   "%{hiera('db_name')}"
-prcs_domain_name:        "%{hiera('db_name')}"
-pia_domain_name:         "%{hiera('db_name')}"
+appserver_domain_name:   "%{hiera('db_name_downcase')}"
+prcs_domain_name:        "%{hiera('db_name_downcase')}"
+pia_domain_name:         "%{hiera('db_name_downcase')}"
 
 # The oracle_client hash is required for a fulltier to midtier change when using the PeopleTools Patch provisioner
 oracle_client_location: "%{hiera('pt_location')}/oracle-client/12.1.0.2"
