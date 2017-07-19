@@ -178,16 +178,15 @@ function install_additional_packages {
       Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch " 2>&1 | out-null
       Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch 2>&1" | out-null
       Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
-    }
-    $NewPath = [System.Environment]::GetEnvironmentVariable("Path","User") + ";$psa"
-    [Environment]::SetEnvironmentVariable("Path", "$NewPath", "User")
-    
+    }    
   } else {
     Write-Host "Updating psadmin-plus"
     Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
     Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
   }
-
+    #New-Item -path $profile -type file –force
+    $new_profile = "new-alias psa $psa\psadminplus.ps1"
+    $new_profile | Set-Content $profile
 }
 
 function create_authorization_cookie {
