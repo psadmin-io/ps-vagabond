@@ -109,19 +109,6 @@ $VAGABOND_STATUS  = "${DPK_INSTALL}\vagabond.json"
     #}
 #}
 
-function echobanner {
-  Write-Host "`n`n"
-  Write-Host "                                      dP                               dP         " -foregroundcolor Blue
-  Write-Host "                                      88                               88         " -foregroundcolor Blue
-  Write-Host "  dP   .dP .d8888b. .d8888b. .d8888b. 88d888b. .d8888b. 88d888b. .d888b88         " -foregroundcolor Blue
-  Write-Host "  88   d8' 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88  " -foregroundcolor Blue
-  Write-Host "  88 .88'  88.  .88 88.  .88 88.  .88 88.  .88 88.  .88 88    88 88.  .88         " -foregroundcolor Blue
-  Write-Host "  8888P'   \`88888P8 \`8888P88 \`88888P8 88Y8888' \`88888P' dP    dP \`88888P8    " -foregroundcolor Blue
-  Write-Host "                         .88                                                      " -foregroundcolor Blue
-  Write-Host "                     d8888P                                                       " -foregroundcolor Blue
-  Write-Host "`n`n"
-}
-
 function check_dpk_install_dir {
   if (-Not (test-path $DPK_INSTALL)) {
     Write-Host "DPK installation directory ${DPK_INSTALL} does not exist"
@@ -179,6 +166,26 @@ function install_additional_packages {
     } else {
       choco install jq -y 2>&1 | out-null
     }
+  }
+ $psa = "C:\psft\psadmin-plus"
+ $git = "C:\Program Files\Git\bin\git.exe"
+ $branch = "powershell"
+ if (-Not (Test-Path "$psa")) {
+    Write-Host "Installing psadmin-plus"
+    if ($DEBUG -eq "true") {
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch"
+    } else {
+      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch " 2>&1 | out-null
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch 2>&1" | out-null
+      Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
+    }
+    $NewPath = [System.Environment]::GetEnvironmentVariable("Path","User") + ";$psa"
+    [Environment]::SetEnvironmentVariable("Path", "$NewPath", "User")
+    
+  } else {
+    Write-Host "Updating psadmin-plus"
+    Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
+    Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
   }
 
 }
@@ -277,9 +284,9 @@ function unpack_setup_scripts() {
     # local begin=$(date +%s)
     Write-Host "Unpacking DPK setup scripts"
     if ($DEBUG -eq "true") {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
+      get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
     } else {
-      get-childitem "${DPK_INSTALL}/*_1of*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
+      get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
     }
     record_step_success "unpack_setup_scripts"
     # local end=$(date +%s)
@@ -288,27 +295,6 @@ function unpack_setup_scripts() {
   } else {
     Write-Host "Setup scripts already unpacked"
   }
-}
-
-function execute_psft_dpk_setup() {
-
-  $begin=$(get-date)
-  Write-Host "Executing DPK setup script"
-  Write-Host "DPK INSTALL: ${DPK_INSTALL}"
-  if ($DEBUG -eq "true") {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup
-  } else {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup 2>&1 | out-null
-  }
-  $end=$(get-date)
-  $duration=$end - $begin
-  # $timings.add("", $duration)
 }
 
 # function display_timings_summary {
@@ -338,7 +324,7 @@ function cleanup_before_exit {
     Remove-Item $env:TEMP -Recurse -Force 2>&1 | out-null
   }
 
-  $fqdn = facter fqdn
+  # $fqdn = facter fqdn
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
@@ -347,7 +333,7 @@ function cleanup_before_exit {
 #  Main  #
 ##########
 
-. echobanner
+# . echobanner
 
 . check_dpk_install_dir
 . check_vagabond_status
@@ -357,7 +343,7 @@ function cleanup_before_exit {
 . download_patch_files
 . unpack_setup_scripts
 
-. execute_psft_dpk_setup
+# . execute_psft_dpk_setup
 
 # . display_timings_summary
 

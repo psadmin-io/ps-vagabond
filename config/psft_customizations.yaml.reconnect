@@ -1,0 +1,150 @@
+---
+
+# NOTE: for some reason it's not merging the hashes, so all values for a hash
+#       array must be copied/pasted
+# NOTE: later versions of the PUM have issues if the tns_admin_list has is not
+#       included
+
+################################################################################
+#                              Required Settings                               #
+################################################################################
+
+db_name:     "PSFTDB"
+db_port:     1522
+db_user:     "PS"
+db_user_pwd: "PS"
+db_connect_id:     "people"
+db_connect_pwd:    "peop1e"
+
+# The oracle_client hash is required for a fulltier to midtier change when using the PeopleTools Patch provisioner
+oracle_client_location: "%{hiera('pt_location')}/oracle-client/12.1.0.2"
+oracle_client:
+  location: "%{hiera('oracle_client_location')}"
+  
+# Set remove: false so that cleanup won't remove it so we can use it with Change Assistant
+ps_home:
+  db_type:    "%{hiera('db_platform')}"
+  unicode_db: "%{hiera('unicode_db')}"
+  location:   "%{hiera('ps_home_location')}"
+  remove:     false
+
+# Set ps_app_home for Puppet rebuild when applying a PT Patch
+ps_apphome_location:  "%{hiera('peoplesoft_base')}/pt/ps_app_home"
+
+appserver_domain_name:   "psftdb"
+prcs_domain_name:        "psftdb"
+
+db_service_name: "PSFTDB"
+tns_admin_list:
+  "%{hiera('db_name')}":
+    db_host:         "%{::fqdn}"
+    db_port:         "%{hiera('db_port')}"
+    db_protocol:     TCP
+    db_service_name: "%{hiera('db_service_name')}"
+
+appserver_domain_list:
+  "%{hiera('appserver_domain_name')}":
+    os_user:         "%{hiera('domain_user')}"
+    ps_cfg_home_dir: "%{hiera('ps_config_home')}"
+    template_type:   "%{hiera('appserver_template')}"
+
+    db_settings:
+      db_name:        "%{hiera('db_name')}"
+      db_type:        "%{hiera('db_platform')}"
+      db_opr_id:      "%{hiera('db_user')}"
+      db_opr_pwd:     "%{hiera('db_user_pwd')}"
+      db_connect_id:  "%{hiera('db_connect_id')}"
+      db_connect_pwd: "%{hiera('db_connect_pwd')}"
+
+    config_settings:
+      Domain Settings/Domain ID:    "%{hiera('appserver_domain_name')}"
+      PSAPPSRV/Min Instances:       2
+      PSAPPSRV/Max Instances:       2
+      PSAPPSRV/Max Fetch Size:      15000
+      Security/DomainConnectionPwd: "%{hiera('domain_conn_pwd')}"
+      JOLT Listener/Port:           "%{hiera('jolt_port')}"
+      JOLT Listener/Address:        0.0.0.0
+      Workstation Listener/Port:    "%{hiera('wsl_port')}"
+
+    feature_settings:
+      PUBSUB:        "Yes"
+      QUICKSRV:      "No"
+      QUERYSRV:      "No"
+      JOLT:          "Yes"
+      JRAD:          "No"
+      WSL:           "Yes"
+      DBGSRV:        "No"
+      RENSRV:        "No"
+      MCF:           "No"
+      PPM:           "No"
+      PSPPMSRV:      "No"
+      ANALYTICSRV:   "No"
+      SERVER_EVENTS: "No"
+      DOMAIN_GW:     "No"
+
+prcs_domain_list:
+  "%{hiera('prcs_domain_name')}":
+    os_user:         "%{hiera('domain_user')}"
+    ps_cfg_home_dir: "%{hiera('ps_config_home')}"
+
+    db_settings:
+      db_name:        "%{hiera('db_name')}"
+      db_type:        "%{hiera('db_platform')}"
+      db_opr_id:      "%{hiera('db_user')}"
+      db_opr_pwd:     "%{hiera('db_user_pwd')}"
+      db_connect_id:  "%{hiera('db_connect_id')}"
+      db_connect_pwd: "%{hiera('db_connect_pwd')}"
+
+    config_settings:
+      Process Scheduler/PrcsServerName: "%{hiera('prcs_domain_id')}"
+      Security/DomainConnectionPwd:     "%{hiera('domain_conn_pwd')}"
+
+    feature_settings:
+      MSTRSRV:      "Yes"
+      APPENG:       "Yes"
+
+  "%{hiera('prcs_domain_name')}_new1":
+    os_user:         "%{hiera('domain_user')}"
+    ps_cfg_home_dir: "%{hiera('ps_config_home')}"
+
+    db_settings:
+      db_name:        "%{hiera('db_name')}"
+      db_type:        "%{hiera('db_platform')}"
+      db_opr_id:      "%{hiera('db_user')}"
+      db_opr_pwd:     "%{hiera('db_user_pwd')}"
+      db_connect_id:  "%{hiera('db_connect_id')}"
+      db_connect_pwd: "%{hiera('db_connect_pwd')}"
+
+    config_settings:
+      Process Scheduler/PrcsServerName: "PSNEW1"
+      Security/DomainConnectionPwd:     "%{hiera('domain_conn_pwd')}"
+
+    feature_settings:
+      MSTRSRV:      "Yes"
+      APPENG:       "Yes"
+
+pia_domain_list:
+  "%{hiera('pia_domain_name')}":
+    os_user:               "%{hiera('domain_user')}"
+    ps_cfg_home_dir:       "%{hiera('ps_config_home')}"
+    gateway_user:          "%{hiera('pia_gateway_user')}"
+    gateway_user_pwd:      "%{hiera('pia_gateway_user_pwd')}"
+    webserver_settings:
+      webserver_type:           "%{hiera('webserver_type')}"
+      webserver_home:           "%{hiera('weblogic_location')}"
+      webserver_admin_user:     "system"
+      webserver_admin_user_pwd: "Passw0rd"
+      webserver_admin_port:     "%{hiera('pia_http_port')}"
+      webserver_http_port:      "%{hiera('pia_http_port')}"
+      webserver_https_port:     "%{hiera('pia_https_port')}"
+    site_list:
+      "%{hiera('pia_site_name')}":
+        appserver_connections: "%{hiera('pia_psserver_list')}"
+        domain_conn_pwd:       "%{hiera('domain_conn_pwd')}"
+        webprofile_settings:
+          profile_name:        "%{hiera('pia_webprofile_name')}"
+          profile_user:        "PTWEBSERVER"
+          profile_user_pwd:    "PTWEBSERVER"
+        report_repository_dir: "%{hiera('report_repository_dir')}"
+
+#domain_conn_pwd:

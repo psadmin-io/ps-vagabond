@@ -123,9 +123,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
-      vmconfig.vm.provision "boot", type: "shell" do |boot|
-        boot.path = "scripts/provision-boot.ps1"
-        boot.upload_path = "C:/temp/provision-boot.ps1"
+
+      vmconfig.vm.provision "banner", type: "shell" do |boot|
+        boot.path = "scripts/banner.ps1"
+        boot.upload_path = "C:/temp/banner.ps1"
+      end
+
+      vmconfig.vm.provision "download", type: "shell" do |boot|
+        boot.path = "scripts/provision-download.ps1"
+        boot.upload_path = "C:/temp/provision-download.ps1"
+        boot.env = {
+          "MOS_USERNAME"  => "#{MOS_USERNAME}",
+          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+          "PATCH_ID"      => "#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+        }
+      end
+
+      vmconfig.vm.provision "bootstrap-ps", type: "shell" do |boot|
+        boot.path = "scripts/provision-bootstrap-ps.ps1"
+        boot.upload_path = "C:/temp/provision-bootstrap-ps.ps1"
         boot.env = {
           "MOS_USERNAME"  => "#{MOS_USERNAME}",
           "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
@@ -142,9 +159,42 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
+      vmconfig.vm.provision "dpk-modules", type: "shell"  do |yaml|
+        yaml.path = "scripts/provision-dpk-modules.ps1"
+        yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
+        yaml.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "DPK_ROLE"      => "#{DPK_ROLE}"
+        }
+      end
+
       vmconfig.vm.provision "puppet" do |puppet|
         puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
         puppet.manifest_file = "site.pp"
+      end
+
+      if APPLY_PT_PATCH.downcase == 'true' 
+        vmconfig.vm.provision "download-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-download.ps1"
+          boot.upload_path = "C:/temp/provision-download.ps1"
+          boot.env = {
+            "MOS_USERNAME"  => "#{MOS_USERNAME}",
+            "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
+          }
+        end
+
+        vmconfig.vm.provision "bootstrap-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-bootstrap-ptp.ps1"
+          boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
+          boot.env = {
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+            "PUPPET_HOME"   => "#{PUPPET_HOME}"
+          }
+        end
       end
 
       vmconfig.vm.provision "client", type: "shell"  do |client|
@@ -156,9 +206,47 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "CA_PATH"        => "#{CA_SETTINGS[:path]}",
           "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
           "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
+          "IE_HOMEPAGE"      => "#{IE_HOMEPAGE}",
           "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end
+
+      if APPLY_PT_PATCH.downcase == 'true'
+
+        vmconfig.vm.provision "dpk-modules-ptp", type: "shell"  do |yaml|
+          yaml.path = "scripts/provision-dpk-modules.ps1"
+          yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
+          yaml.env = {
+            "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "DPK_ROLE"      => "#{DPK_ROLE}"
+          }
+        end
+
+        vmconfig.vm.provision "apply-ptp", type: "shell" do |boot|
+          boot.path = "scripts/provision-apply-ptp.ps1"
+          boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
+          boot.env = {
+            "PATCH_ID"      => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+            "PUPPET_HOME"   => "#{PUPPET_HOME}",
+            "CA_PATH"       => "#{CA_SETTINGS[:path]}"
+          }
+        end
+      end
+
+      # Uncomment to download the Elasticsearch DPK
+      # vmconfig.vm.provision "download-es", type: "shell" do |boot|
+      #   boot.path = "scripts/provision-download.ps1"
+      #   boot.upload_path = "C:/temp/provision-download.ps1"
+      #   boot.env = {
+      #     "MOS_USERNAME"  => "#{MOS_USERNAME}",
+      #     "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
+      #     "PATCH_ID"      => "#{ES_PATCH_ID}",
+      #     "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{ES_PATCH_ID}"
+      #   }
+      # end
+
     elsif OPERATING_SYSTEM.upcase == "LINUX"
       vmconfig.vm.provision "shell" do |script|
         script.path = "scripts/provision.sh"

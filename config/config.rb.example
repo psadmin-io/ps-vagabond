@@ -39,6 +39,21 @@ PATCH_ID='23711856'
 # undefined it will default to the PATCH_ID.
 #DPK_VERSION = 'FSCM92'
 
+# PEOPLETOOLS_PATCH
+# To apply a PeopleTools Patch to the PeopleSoft Image, you must be using 
+# a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the 
+# Patch ID for PTP_PATCH_ID.
+#APPLY_PT_PATCH='true'
+#PTP_PATCH_ID=''
+
+# ELASTICSARCH
+# Vagabond can download the Elasticsarch DPK, but won't configure it yet.
+#ES_PATCH_ID=''
+
+# CUSTOM DPK ROLE
+# Change the DPK Role in site.pp to something custom. 
+# DPK_ROLE = '::io_role::io_tools_demo'
+
 # HOSTONLY NETWORK_SETTINGS (default)
 # Uncomment the following to configure the VM for host-only networking.
 # The VM will only be accessible from your local machine.
@@ -95,6 +110,9 @@ PATCH_ID='23711856'
 # Uncomment and modify the following to setup PeopleSoft Test Framework.
 #PTF_SETUP = 'true'
 
+# CLIENT MISC
+#IE_HOMEPAGE = 'http://localhost:8000/ps/signon.html'
+
 ##############
 #  Defaults  #
 ##############
@@ -113,6 +131,9 @@ DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
 CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
 PTF_SETUP = 'false' unless defined? PTF_SETUP
+APPLY_PT_PATCH = 'false' unless defined? APPLY_PT_PATCH
+DPK_ROLE = '::pt_role::pt_tools_midtier' unless defined? DPK_ROLE
+IE_HOMEPAGE = 'http://localhost:8000/ps/signon.html' unless defined? IE_HOMEPAGE
 
 if OPERATING_SYSTEM.upcase == "WINDOWS"
   PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME
