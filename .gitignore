@@ -6,6 +6,7 @@
 config/config.rb
 config/psft_customizations.yaml
 config/PSCFG.CFG
+config/client.reg
 
 # Local notes file
 NOTES.md

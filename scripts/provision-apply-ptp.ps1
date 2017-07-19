@@ -150,16 +150,20 @@ function create_ca_environment() {
 function patch_database (){
   # Apply PTP
   Write-Host "[${computername}][Task] Apply the PeopleTools Patch to the Database"
+  # Get the new Patch version to apply
+  $dpk_home = hiera dpk_location
+  $PTP_VERSION = ((get-content "${dpk_home}\pt-manifest" | select-string "^version").ToString() -split "=")[1] -replace "\.", ""
+
   if ($DEBUG -eq "true") {
     & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
     -ACTION PTPAPPLY `
     -TGTENV PSFTDB `
-    -UPD PTP85516
+    -UPD "PTP${PTP_VERSION}"
   } else {
     & "C:\Program Files\PeopleSoft\Change Assistant\changeassistant.bat" -MODE UM `
     -ACTION PTPAPPLY `
     -TGTENV PSFTDB `
-    -UPD PTP85516 2>&1 | out-null
+    -UPD "PTP${PTP_VERSION}" 2>&1 | out-null
   }
   Write-Host "[${computername}][Done] Apply the PeopleTools Patch to the Database"
 }
