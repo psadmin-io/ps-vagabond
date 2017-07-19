@@ -132,7 +132,7 @@ PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
 CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
 PTF_SETUP = 'false' unless defined? PTF_SETUP
 APPLY_PT_PATCH = 'false' unless defined? APPLY_PT_PATCH
-DPK_ROLE = '::pt_role::pt_tools_midtier' unless defined? DPK_ROLE
+DPK_ROLE = '' unless defined? DPK_ROLE
 IE_HOMEPAGE = 'http://localhost:8000/ps/signon.html' unless defined? IE_HOMEPAGE
 
 if OPERATING_SYSTEM.upcase == "WINDOWS"
