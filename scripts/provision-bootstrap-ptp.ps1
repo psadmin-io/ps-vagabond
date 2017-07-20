@@ -120,7 +120,7 @@ function execute_psft_dpk_setup() {
   }
   Write-Host "`tUpdate env:PS_HOME to the new location"
   [System.Environment]::SetEnvironmentVariable('PS_HOME', "$(hiera ps_home_location)", 'Machine');
-  Write-Host "`t`tPS_HOME: ${env:PS_HOME}"
+  Write-Host "`t`tPS_HOME: $(hiera ps_home_location)"
   Write-Host "[${computername}][Done] Executing PeopleTools Patch DPK setup script"
 }
 
