@@ -68,14 +68,5 @@ function execute_puppet_apply() {
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
-
 . copy_customizations_file
-# . execute_puppet_apply
-
 Write-Host "YAML Sync Complete"
-
-# $fqdn = facter fqdn
-# $port = hiera pia_http_port
-# $sitename = hiera pia_site_name
-
-# Write-Host "Your login URL is http://${fqdn}:${port}/${sitename}/signon.html" -ForegroundColor White

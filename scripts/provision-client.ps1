@@ -58,6 +58,7 @@ $SHORTCUTS = 'true'
 $SECURITY  = 'true'
 $BROWSER   = 'true'
 $CFG_MGR   = 'true'
+$PROF      = 'true'
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
@@ -206,7 +207,7 @@ function execute_browser_setup {
 }
 
 function execute_profile_setup {
-    #New-Item -path $profile -type file –force
+    # Set psadmin-plus alias
     $psa = "c:/vagrant/scripts/psadmin-plus/PSAdminPlus.ps1"
     $new_profile = "new-alias psa $psa"
     $new_profile | Set-Content $profile
@@ -220,4 +221,4 @@ if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
 if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
 if ($BROWSER   -eq 'true') {. execute_browser_setup}
 if ($CFG_MGR   -eq 'true') {. config_manager_setup}
-if ('true'     -eq 'true') {. execute_profile_setup}
+if ($PROF      -eq 'true') {. execute_profile_setup}

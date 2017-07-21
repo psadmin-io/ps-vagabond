@@ -312,8 +312,6 @@ function cleanup_before_exit {
 #  Main  #
 ##########
 
-# . echobanner
-
 . check_dpk_install_dir
 . check_vagabond_status
 
@@ -321,8 +319,6 @@ function cleanup_before_exit {
 
 . download_patch_files
 . unpack_setup_scripts
-
-# . execute_psft_dpk_setup
 
 # . display_timings_summary
 
