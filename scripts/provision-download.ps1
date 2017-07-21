@@ -167,26 +167,6 @@ function install_additional_packages {
       choco install jq -y 2>&1 | out-null
     }
   }
- $psa = "C:\psft\psadmin-plus"
- $git = "C:\Program Files\Git\bin\git.exe"
- $branch = "powershell"
- if (-Not (Test-Path "$psa")) {
-    Write-Host "Installing psadmin-plus"
-    if ($DEBUG -eq "true") {
-      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch"
-    } else {
-      Start-Process -FilePath "$git" -ArgumentList "clone https://github.com/psadmin-io/psadmin-plus.git $psa --branch $branch " 2>&1 | out-null
-      Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch 2>&1" | out-null
-      Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
-    }    
-  } else {
-    Write-Host "Updating psadmin-plus"
-    Start-Process -FilePath "$git" -ArgumentList "-C $psa checkout $branch" 2>&1 | out-null
-    Start-Process -FilePath "$git" -ArgumentList "-C $psa pull" 2>&1 | out-null
-  }
-    #New-Item -path $profile -type file –force
-    $new_profile = "new-alias psa $psa\psadminplus.ps1"
-    $new_profile | Set-Content $profile
 }
 
 function create_authorization_cookie {
