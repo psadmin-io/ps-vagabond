@@ -205,6 +205,13 @@ function execute_browser_setup {
     Set-Itemproperty -Path $path -Name $name -Value $value
 }
 
+function execute_profile_setup {
+    #New-Item -path $profile -type file –force
+    $psa = "c:/vagrant/scripts/psadmin-plus/PSAdminPlus.ps1"
+    $new_profile = "new-alias psa $psa"
+    $new_profile | Set-Content $profile
+}
+
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 if ($SECURITY  -eq 'true') {. execute_security_setup}
@@ -213,3 +220,4 @@ if ($PTF_SETUP -eq 'true') {. execute_ptf_setup}
 if ($SHORTCUTS -eq 'true') {. execute_shortcut_setup}
 if ($BROWSER   -eq 'true') {. execute_browser_setup}
 if ($CFG_MGR   -eq 'true') {. config_manager_setup}
+if ('true'     -eq 'true') {. execute_profile_setup}
