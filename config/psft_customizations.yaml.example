@@ -1,3 +1,5 @@
+----
+
 peoplesoft_base:   c:/psft
 db_name:           PSFTDB
 db_name_downcase:  psftdb
