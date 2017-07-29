@@ -18,7 +18,7 @@
         Puppet home directory
 
     .EXAMPLE
-        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc
+        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc -PT_VERSION 856
 
 #>
 
@@ -40,35 +40,39 @@ $VerbosePreference = "SilentlyContinue"
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
-$DEBUG = "false"
+$DEBUG = "true"
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
 
-function copy_customizations_file() {
-  Write-Host "Copying customizations file"
+
+function execute_puppet_apply() {
+  Write-Host "Applying Puppet manifests"
+  # Reset Environment and PATH to include bin\puppet
+  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
   if ($PT_VERSION -eq "856") {
     if ($DEBUG -eq "true") {
-      Write-Host "Copying to ${PUPPET_HOME}\data"
-      Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\production\data\psft_customizations.yaml" -Force
+      . refreshenv
+      puppet apply "${PUPPET_HOME}\production\manifests\site.pp" --confdir="${PUPPET_HOME}" --trace --debug
     } else {
-      Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\production\data\psft_customizations.yaml" -Force 2>&1 | out-null
+      . refreshenv | out-null
+      puppet apply "${PUPPET_HOME}\production\manifests\site.pp" 2>&1 | out-null
     }
    }
   else {
     if ($DEBUG -eq "true") {
-      Write-Host "Copying to ${PUPPET_HOME}\data"
-      Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml" -Force
+      . refreshenv
+      puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
     } else {
-      Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml" -Force 2>&1 | out-null
+      . refreshenv | out-null
+      puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
     }
   }
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
-. copy_customizations_file
-
-Write-Host "YAML Sync Complete"
+. execute_puppet_apply
 
 # $fqdn = facter fqdn
 # $port = hiera pia_http_port

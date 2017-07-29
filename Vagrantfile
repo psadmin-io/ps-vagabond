@@ -147,7 +147,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "MOS_USERNAME"  => "#{MOS_USERNAME}",
           "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
           "PATCH_ID"      => "#{PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PT_VERSION"    => "#{PT_VERSION}"
         }
       end
 
@@ -155,22 +156,33 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         yaml.path = "scripts/provision-yaml.ps1"
         yaml.upload_path = "C:/temp/provision-yaml.ps1"
         yaml.env = {
-          "PUPPET_HOME"   => "#{PUPPET_HOME}"
-        }
-      end
-
-      vmconfig.vm.provision "dpk-modules", type: "shell"  do |yaml|
-        yaml.path = "scripts/provision-dpk-modules.ps1"
-        yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
-        yaml.env = {
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
-            "DPK_ROLE"      => "#{DPK_ROLE}"
+          "PT_VERSION"    => "#{PT_VERSION}"
         }
       end
 
-      vmconfig.vm.provision "puppet" do |puppet|
-        puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
-        puppet.manifest_file = "site.pp"
+      vmconfig.vm.provision "dpk-modules", type: "shell" do |modules|
+        modules.path = "scripts/provision-dpk-modules.ps1"
+        modules.upload_path = "C:/temp/provision-dpk-modules.ps1"
+        modules.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}",
+          "DPK_ROLE"      => "#{DPK_ROLE}"
+        }
+      end
+
+      vmconfig.vm.provision "puppet", type: "shell" do |puppet|
+        puppet.path = "scripts/provision-puppet-apply.ps1"
+        puppet.upload_path = "C:/temp/provision-puppet-apply.ps1"
+        puppet.env = {
+          "PUPPET_HOME"   => "#{PUPPET_HOME}",
+          "PT_VERSION"    => "#{PT_VERSION}"
+        }
+        # puppet.manifests_path = ["vm", "#{PUPPET_HOME}/production/manifests"]
+        # puppet.module_path = ["vm", "#{PUPPET_HOME}/production/modules"]
+        # puppet.environment = "production"
+        # puppet.hiera_config_path = ["vm", "#{PUPPET_HOME}"]
+        # puppet.manifest_file = "site.pp"
+
       end
 
       if APPLY_PT_PATCH.downcase == 'true' 
@@ -206,7 +218,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "CA_PATH"        => "#{CA_SETTINGS[:path]}",
           "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
           "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
-          "IE_HOMEPAGE"      => "#{IE_HOMEPAGE}",
+          "IE_HOMEPAGE"    => "#{IE_HOMEPAGE}",
           "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end

@@ -25,6 +25,10 @@ MOS_PASSWORD='MYMOSPASSWORD'
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
 
+# PEOPLETOOLS VERSION
+# Use 856 or 855
+# PT_VERSION='856'
+
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # OPERATING_SYSTEM
@@ -118,6 +122,7 @@ PATCH_ID='23711856'
 ##############
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
+PT_VERSION = "856" unless defined? PT_VERSION
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpk/download" unless defined? DPK_LOCAL_DIR

@@ -36,7 +36,8 @@
 [CmdletBinding()]
 Param(
   [String]$PATCH_ID     = $env:PATCH_ID,
-  [String]$DPK_INSTALL  = $env:DPK_INSTALL
+  [String]$DPK_INSTALL  = $env:DPK_INSTALL,
+  [String]$PT_VERSION   = $env:PT_VERSION
 )
 
 
@@ -49,23 +50,41 @@ $VerbosePreference = "SilentlyContinue"
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
-$DEBUG = "false"
+$DEBUG = "true"
 
 function execute_psft_dpk_setup() {
 
   # $begin=$(get-date)
   Write-Host "Executing DPK setup script"
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
-  if ($DEBUG -eq "true") {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup
+
+  if ($PT_VERSION -eq "856") {
+      Write-Host "Running PeopleTools 8.56 Bootstrap Script"
+    if ($DEBUG -eq "true") {
+        . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
+        --silent `
+        --dpk_src_dir "${DPK_INSTALL}" `
+        --response_file "c:\vagrant\config\response.cfg" `
+        --no_puppet_run
+    } else {
+        . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
+        --dpk_src_dir ${DPK_INSTALL} `
+        --silent `
+        --response_file c:\vagrant\config\response.cfg `
+        --no_puppet_run 2>&1 | out-null
+    }
   } else {
-    . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
-      -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
-      -silent `
-      -no_env_setup 2>&1 | out-null
+    if ($DEBUG -eq "true") {
+        . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+        -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
+        -silent `
+        -no_env_setup
+    } else {
+        . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+        -dpk_src_dir=$(resolve-path $DPK_INSTALL).path `
+        -silent `
+        -no_env_setup 2>&1 | out-null
+    }
   }
 }
 
