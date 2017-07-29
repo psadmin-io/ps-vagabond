@@ -166,7 +166,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         modules.upload_path = "C:/temp/provision-dpk-modules.ps1"
         modules.env = {
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
-          "DPK_ROLE"      => "#{DPK_ROLE}"
+          "DPK_ROLE"      => "#{DPK_ROLE}",
+          "PT_VERSION"    => "#{PT_VERSION}"
         }
       end
 

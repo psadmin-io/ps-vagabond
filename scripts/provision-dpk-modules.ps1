@@ -27,7 +27,8 @@
 [CmdletBinding()]
 Param(
   [String]$PUPPET_HOME = $env:PUPPET_HOME,
-  [String]$DPK_ROLE    = $env:DPK_ROLE
+  [String]$DPK_ROLE    = $env:DPK_ROLE,
+  [String]$PT_VERSION  = $env:PT_VERSION
 )
 
 
@@ -50,7 +51,11 @@ function copy_modules() {
   # -----------------------------
   Write-Host "[${computername}][Task] Update DPK with custom modules"
   # copy-item c:\vagrant\site.pp C:\ProgramData\PuppetLabs\puppet\etc\manifests\site.pp -force
-  copy-item c:\vagrant\modules\* "${PUPPET_HOME}\modules\" -recurse -force
+  if ($PT_VERSION -eq "856"){
+    copy-item c:\vagrant\modules\* "${PUPPET_HOME}\production\modules\" -recurse -force
+  } else {
+    copy-item c:\vagrant\modules\* "${PUPPET_HOME}\modules\" -recurse -force
+  }
   Write-Host "[${computername}][Done] Update DPK with custom modules" -ForegroundColor green
 
 }
@@ -72,7 +77,9 @@ function set_dpk_role() {
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 . copy_modules
-. fix_dpk_bugs
+if ($PT_VERSION -eq "855") {
+  . fix_dpk_bugs
+}
 if (! ($DPK_ROLE -eq '')) {
   . set_dpk_role
 }
