@@ -75,7 +75,7 @@ PATCH_ID='23711856'
 #  Defaults  #
 ##############
 # All of the settings below should be left as-is
-FQDN = 'ps-vagabond' unless defined? FQDN
+FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks" unless defined? DPK_LOCAL_DIR
 # NOTE: The pum setup script will fail unless the DPK_REMOTE_DIR (DPK
