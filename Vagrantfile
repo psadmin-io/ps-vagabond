@@ -80,6 +80,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       #vbox.linked_clone = true if Vagrant::VERSION =~ /^1.8/
     end
 
+    # HyperV
+    vmconfig.vm.provider "hyperv" do |hyperv|
+      hyperv.vmname = "#{DPK_VERSION}"
+      hyperv.memory = 8192
+      hyperv.cpus = 2
+      hyperv.vm_integration_services = {
+        guest_service_interface: true,
+        heartbeat: true,
+        key_value_pair_exchange: true,
+        shutdown: true,
+        time_synchronization: true,
+        vss: true
+      }
+    end
+
     ##################
     #  Provisioning  #
     ##################
