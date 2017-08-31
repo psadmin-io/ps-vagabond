@@ -36,10 +36,11 @@ readonly DOWNLOAD_LOGFILE="${TMPDIR}/download-aria2log-$(date +%m-%d-%y-%H:%M).l
 readonly AUTH_OUTPUT="${TMPDIR}/auth_output"
 readonly PATCH_SEARCH_OUTPUT="${TMPDIR}/patch_search_output"
 readonly PATCH_FILE_LIST="${TMPDIR}/file_list"
-readonly PUPPET_HOME="/etc/puppet"
+readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
+readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq")
+declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests")
 declare -A timings
 
 ###############
@@ -99,12 +100,6 @@ function check_vagabond_status() {
   else
     echodebug "Found Vagabond status file ${VAGABOND_STATUS}"
   fi
-}
-
-function record_step_success() {
-  local step=$1
-  echodebug "Recording success for ${step}"
-  echo "${FUNCNAME[0]}"
 }
 
 function record_step_success() {
@@ -223,13 +218,102 @@ function unpack_setup_scripts() {
   fi
 }
 
+function determine_tools_version() {
+  TOOLS_VERSION=$(awk -F "=" '/version/ {print $2}' ${DPK_INSTALL}/setup/bs-manifest)
+  TOOLS_MAJOR_VERSION=$(printf $TOOLS_VERSION | cut -f 1 -d '.')
+  TOOLS_MINOR_VERSION=$(printf $TOOLS_VERSION | cut -f 2 -d '.')
+  TOOLS_PATCH_VERSION=$(printf $TOOLS_VERSION | cut -f 3 -d '.')
+  echodebug "Tools Version: ${TOOLS_VERSION}"
+  echodebug "Tools Major Version: ${TOOLS_MAJOR_VERSION}"
+  echodebug "Tools Minor Version: ${TOOLS_MINOR_VERSION}"
+  echodebug "Tools Patch Version: ${TOOLS_PATCH_VERSION}"
+}
+
+function determine_puppet_home() {
+  case ${TOOLS_MINOR_VERSION} in
+    "55" )
+        PUPPET_HOME="/etc/puppet"
+      ;;
+    "56" )
+        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
+      ;;
+    * )
+        echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
+      ;;
+  esac
+  echodebug "Puppet Home Directory: ${PUPPET_HOME}"
+}
+
 function copy_customizations_file() {
   echoinfo "Copying customizations file"
   if [[ -n ${DEBUG+x} ]]; then
-    sudo cp -fv /vagrant/config/psft_customizations.yaml /etc/puppet/data/psft_customizations.yaml
+    sudo cp -fv /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
   else
-    sudo cp -f /vagrant/config/psft_customizations.yaml /etc/puppet/data/psft_customizations.yaml
+    sudo cp -f /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
   fi
+}
+
+function lookup_cust_value() {
+  local value=$1
+  < "${CUSTOMIZATION_FILE}" shyaml get-value $value
+}
+
+function generate_response_file() {
+  echoinfo "Generating response file"
+  local begin=$(date +%s)
+cat > "${DPK_INSTALL}/response.cfg" << EOF
+psft_base_dir="${PSFT_BASE_DIR}"
+install_type = PUM
+env_type  = "fulltier"
+db_type = DEMO
+db_name = "PSFTDB"
+db_service_name = "PSFTDB"
+db_host = "localhost"
+admin_pwd = "Passw0rd_"
+connect_id = people
+connect_pwd = "peop1e"
+access_pwd  = "SYSADM"
+opr_pwd = "PS"
+domain_conn_pwd = "Passw0rd_"
+weblogic_admin_pwd  = "Passw0rd#"
+webprofile_user_pwd = "PTWEBSERVER"
+gw_user_pwd = "password"
+EOF
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[generate_response_file]=$tottime
+}
+
+function execute_puppet_apply() {
+  local begin=$(date +%s)
+  echoinfo "Applying Puppet manifests"
+  case ${TOOLS_MINOR_VERSION} in
+    "55" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply --verbose "${PUPPET_HOME}/manifests/site.pp"
+        else
+          sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
+    "56" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            --verbose \
+            "${PUPPET_HOME}/production/manifests/site.pp"
+        else
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
+    * )
+        echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
+      ;;
+  esac
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[execute_puppet_apply]=$tottime
 }
 
 function execute_psft_dpk_setup() {
@@ -237,35 +321,51 @@ function execute_psft_dpk_setup() {
   echoinfo "Setting file execution attribute on psft-dpk-setup.sh"
   chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
   echoinfo "Executing DPK setup script"
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-      --dpk_src_dir="${DPK_INSTALL}" \
-      --silent \
-      --no_env_setup
-  else
-    sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-      --dpk_src_dir="${DPK_INSTALL}" \
-      --silent \
-      --no_env_setup > /dev/null 2>&1
-  fi
+  case ${TOOLS_MINOR_VERSION} in
+    "55" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --silent \
+            --no_env_setup
+          # Only copy the customizations file if using
+          # a pre-855 DPK
+          copy_customizations_file
+          execute_puppet_apply
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --silent \
+            --no_env_setup > /dev/null 2>&1
+          # Only copy the customizations file if using
+          # a pre-855 DPK
+          copy_customizations_file
+          execute_puppet_apply
+        fi
+      ;;
+    "56" )
+        generate_response_file
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg"
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+        fi
+      ;;
+    * )
+        echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
+      ;;
+  esac
   local end=$(date +%s)
   local tottime="$((end - begin))"
   timings[execute_psft_dpk_setup]=$tottime
-}
-
-function execute_puppet_apply() {
-  # TODO - possibly break this out into a separate provisioning script
-  #        that gets applied every 'vagrant up'
-  local begin=$(date +%s)
-  echoinfo "Applying Puppet manifests"
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo puppet apply --verbose "${PUPPET_HOME}/manifests/site.pp"
-  else
-    sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
-  fi
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[execute_puppet_apply]=$tottime
 }
 
 function fix_init_script() {
@@ -329,12 +429,12 @@ install_additional_packages
 download_patch_files
 unpack_setup_scripts
 
+# Determine the tools version and configure appropriately
+determine_tools_version
+determine_puppet_home
+
 # Running the setup script
 execute_psft_dpk_setup
-
-# Applying the puppet manifests
-copy_customizations_file
-execute_puppet_apply
 
 # Postrequisite fixes
 fix_init_script
