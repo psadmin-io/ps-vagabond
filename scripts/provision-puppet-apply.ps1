@@ -26,10 +26,9 @@
 
 [CmdletBinding()]
 Param(
-  [String]$PATCH_ID         = $env:PATCH_ID,
   [String]$DPK_INSTALL      = $env:DPK_INSTALL,
-  [String]$PSFT_BASE_DIR    = "C:\psft",
-  [String]$PUPPET_HOME      = "C:\ProgramData\PuppetLabs\puppet\etc"
+  [String]$PSFT_BASE_DIR    = $env:PSFT_BASE_DIR,
+  [String]$PUPPET_HOME      = $env:PUPPET_HOME
 )
 
 
@@ -73,15 +72,15 @@ function determine_puppet_home() {
   }  
 
   if ($DEBUG -eq "true" ) {
+      Write-Host "Tools Minor Version: ${TOOLS_MINOR_VERSION}"
       Write-Host "Puppet Home Directory: ${PUPPET_HOME}"
   }
 }
 
-
 function execute_puppet_apply() {
   Write-Host "Applying Puppet manifests"
   # Reset Environment and PATH to include bin\puppet
-  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
   switch ($TOOLS_MINOR_VERSION) {
     "56" {

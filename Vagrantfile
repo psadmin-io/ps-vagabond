@@ -191,8 +191,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         puppet.path = "scripts/provision-puppet-apply.ps1"
         puppet.upload_path = "C:/temp/provision-puppet-apply.ps1"
         puppet.env = {
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
-          "PT_VERSION"    => "#{PT_VERSION}"
         }
         # puppet.manifests_path = ["vm", "#{PUPPET_HOME}/production/manifests"]
         # puppet.module_path = ["vm", "#{PUPPET_HOME}/production/modules"]
