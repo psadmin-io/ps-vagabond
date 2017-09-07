@@ -159,11 +159,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         boot.path = "scripts/provision-bootstrap-ps.ps1"
         boot.upload_path = "C:/temp/provision-bootstrap-ps.ps1"
         boot.env = {
-          "MOS_USERNAME"  => "#{MOS_USERNAME}",
-          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
           "PATCH_ID"      => "#{PATCH_ID}",
           "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
-          "PT_VERSION"    => "#{PT_VERSION}"
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 
@@ -171,8 +170,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         yaml.path = "scripts/provision-yaml.ps1"
         yaml.upload_path = "C:/temp/provision-yaml.ps1"
         yaml.env = {
-          "PUPPET_HOME"   => "#{PUPPET_HOME}",
-          "PT_VERSION"    => "#{PT_VERSION}"
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 
@@ -180,9 +180,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         modules.path = "scripts/provision-dpk-modules.ps1"
         modules.upload_path = "C:/temp/provision-dpk-modules.ps1"
         modules.env = {
-          "PUPPET_HOME"   => "#{PUPPET_HOME}",
-          "DPK_ROLE"      => "#{DPK_ROLE}",
-          "PT_VERSION"    => "#{PT_VERSION}"
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 
