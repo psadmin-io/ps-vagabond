@@ -32,9 +32,10 @@ ps_home:
 ps_apphome_location:  "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
 db_service_name: "PSFTDB"
+
 tns_admin_list:
   "%{hiera('db_name')}":
-    db_host:         "%{::fqdn}"
+    db_host: "localhost"  ## NOTE: Change this to "%{::fqdn}" if using bridged networking
     db_port:         "%{hiera('db_port')}"
     db_protocol:     TCP
     db_service_name: "%{hiera('db_service_name')}"
@@ -45,6 +46,7 @@ pia_domain_list:
     ps_cfg_home_dir:       "%{hiera('ps_config_home')}"
     gateway_user:          "%{hiera('pia_gateway_user')}"
     gateway_user_pwd:      "%{hiera('pia_gateway_user_pwd')}"
+    auth_token_domain: ""  # NOTE: change this to ".%{::domain}" if using bridged networking
     webserver_settings:
       webserver_type:           "%{hiera('webserver_type')}"
       webserver_home:           "%{hiera('weblogic_location')}"
@@ -63,4 +65,4 @@ pia_domain_list:
           profile_user_pwd:    "PTWEBSERVER"
         report_repository_dir: "%{hiera('report_repository_dir')}"
 
-#domain_conn_pwd:
+# domain_conn_pwd: "Passw0rd_"
