@@ -57,6 +57,38 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 $computername = $env:computername
 
+function determine_tools_version() {
+  $TOOLS_VERSION = $(Get-Content ${DPK_INSTALL}/setup/bs-manifest | select-string "version" | % {$_.line.split("=")[1]})
+  $TOOLS_MAJOR_VERSION = $TOOLS_VERSION.split(".")[0]
+  $TOOLS_MINOR_VERSION = $TOOLS_VERSION.split(".")[1]
+  $TOOLS_PATCH_VERSION = $TOOLS_VERSION.split(".")[2]
+
+  if ($DEBUG -eq "true") {
+      Write-Host "Tools Version: ${TOOLS_VERSION}"
+      Write-Host "Tools Major Version: ${TOOLS_MAJOR_VERSION}"
+      Write-Host "Tools Minor Version: ${TOOLS_MINOR_VERSION}"
+      Write-Host "Tools Patch Version: ${TOOLS_PATCH_VERSION}"
+  }
+}
+
+function determine_puppet_home() {
+  switch ($TOOLS_MINOR_VERSION) {
+      "55" { 
+          $PUPPET_HOME = "C:\ProgramData\PuppetLabs\puppet\etc"
+       }
+       "56" {
+          $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
+          Write-Host "PeopleTools Patching for 8.56 is not supported yet."
+          exit
+       }
+      Default { Write-Host "PeopleTools version could not be determined in the bs-manifest file."}
+  }  
+
+  if ($DEBUG -eq "true" ) {
+      Write-Host "Puppet Home Directory: ${PUPPET_HOME}"
+  }
+}
+
 Function create-ca-ini
 {
   $base           = hiera peoplesoft_base | Resolve-Path
@@ -201,9 +233,14 @@ function deploy_patched_domains() {
   }
   Write-Host "[${computername}][Done] Deploy patched domains"
 }
+
 # . change_to_midtier
 # . execute_dpk_cleanup
 # . execute_psft_dpk_setup
+
+. determine_tools_version
+. determine_puppet_home
+
 if ($database -eq 'true') {
   . create-ca-ini
   . create_ca_environment

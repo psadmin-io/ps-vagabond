@@ -76,6 +76,8 @@ function determine_puppet_home() {
        }
        "56" {
           $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
+          Write-Host "PeopleTools Patching for 8.56 is not supported yet."
+          exit
        }
       Default { Write-Host "PeopleTools version could not be determined in the bs-manifest file."}
   }  
@@ -90,7 +92,7 @@ function generate_response_file() {
   $template=@"
 psft_base_dir = "${PSFT_BASE_DIR}"
 install_type = "PUM"
-env_type  = "fulltier"
+env_type  = "midtier"
 db_type = "DEMO"
 db_name = "PSFTDB"
 db_service_name = "PSFTDB"
@@ -158,13 +160,12 @@ function execute_dpk_cleanup() {
   switch ($TOOLS_MINOR_VERSION) {
     "56" {
       if ($DEBUG -eq "true") {
-          . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
+          . "${PTP_INSTALL}/setup/psft-dpk-setup.bat" `
           --cleanup `
           --silent `
-          --response_file "${PTP_INSTALL}/response.cfg" `
-          
+          --response_file "${PTP_INSTALL}/response.cfg"
       } else {
-          . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
+          . "${PTP_INSTALL}/setup/psft-dpk-setup.bat" `
           --cleanup `
           --silent `
           --response_file "${PTP_INSTALL}/response.cfg" 2>&1 | out-null
@@ -172,11 +173,11 @@ function execute_dpk_cleanup() {
     } 
     "55" {
       if ($DEBUG -eq "true") {
-        . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+        . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
           -cleanup `
           -ErrorAction SilentlyContinue
       } else {
-        . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
+        . "${PTP_INSTALL}/setup/psft-dpk-setup.ps1" `
           -cleanup `
           -ErrorAction SilentlyContinue 2>&1 | out-null
       }
@@ -204,7 +205,6 @@ function execute_psft_dpk_setup() {
           . "${PTP_INSTALL}/setup/psft-dpk-setup.bat" `
           --env_type midtier `
           --deploy_only `
-          --silent `
           --response_file "${PTP_INSTALL}/response.cfg" `
           --dpk_src_dir "${PTP_INSTALL}" `
           --no_puppet_run
@@ -212,7 +212,6 @@ function execute_psft_dpk_setup() {
           . "${PTP_INSTALL}/setup/psft-dpk-setup.bat" `
           --env_type midtier `
           --deploy_only `
-          --silent `
           --response_file "${PTP_INSTALL}/response.cfg" `
           --dpk_src_dir ${PTP_INSTALL} `
           --no_puppet_run 2>&1 | out-null
@@ -248,4 +247,4 @@ function execute_psft_dpk_setup() {
 . generate_psft_setup_file
 . change_to_midtier
 . execute_dpk_cleanup
-. execute_psft_dpk_setup
+# . execute_psft_dpk_setup
