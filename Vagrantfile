@@ -195,11 +195,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
         }
-        # puppet.manifests_path = ["vm", "#{PUPPET_HOME}/production/manifests"]
-        # puppet.module_path = ["vm", "#{PUPPET_HOME}/production/modules"]
-        # puppet.environment = "production"
-        # puppet.hiera_config_path = ["vm", "#{PUPPET_HOME}"]
-        # puppet.manifest_file = "site.pp"
 
       end
 
