@@ -18,7 +18,7 @@
         Puppet home directory
 
     .EXAMPLE
-        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc
+        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc -PT_VERSION 856
 
 #>
 
@@ -28,8 +28,7 @@
 Param(
   [String]$DPK_INSTALL      = $env:DPK_INSTALL,
   [String]$PSFT_BASE_DIR    = $env:PSFT_BASE_DIR,
-  [String]$PUPPET_HOME      = $env:PUPPET_HOME,
-  [String]$DPK_ROLE         = $env:DPK_ROLE
+  [String]$PUPPET_HOME      = $env:PUPPET_HOME
 )
 
 
@@ -42,9 +41,10 @@ $VerbosePreference = "SilentlyContinue"
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
-$DEBUG = "false"
+$DEBUG = "true"
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
+
 
 function determine_tools_version() {
   $TOOLS_VERSION = $(Get-Content ${DPK_INSTALL}/setup/bs-manifest | select-string "version" | % {$_.line.split("=")[1]})
@@ -77,56 +77,41 @@ function determine_puppet_home() {
   }
 }
 
-function copy_modules() {
+function execute_puppet_apply() {
+  Write-Host "Applying Puppet manifests"
+  # Reset Environment and PATH to include bin\puppet
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-  # Copy io_ DPK code
-  # -----------------------------
-  Write-Host "[${computername}][Task] Update DPK with custom modules"
-  # copy-item c:\vagrant\site.pp C:\ProgramData\PuppetLabs\puppet\etc\manifests\site.pp -force
-  switch ($TOOLS_MINOR_VERSION){
-    "56" {  
-      copy-item c:\vagrant\modules\* "${PUPPET_HOME}\production\modules\" -recurse -force
-    } 
-    "55" {
-      copy-item c:\vagrant\modules\* "${PUPPET_HOME}\modules\" -recurse -force
-    }
-  }
-  Write-Host "[${computername}][Done] Update DPK with custom modules" -ForegroundColor green
-
-}
-
-function fix_dpk_bugs() {
-  # Fix Tuxedo Features Separator Bug
-  # ---------------------------------
-  Write-Host "[${computername}][Task] Fix DPK Bugs"
-  (Get-Content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb).replace("feature_settings_separator = '#'","feature_settings_separator = '/'") | set-content C:\ProgramData\PuppetLabs\puppet\etc\modules\pt_config\lib\puppet\provider\psftdomain.rb
-  Write-Host "[${computername}][Done] Fix DPK Bugs" -ForegroundColor green
-
-}
-function set_dpk_role() {
-  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
   switch ($TOOLS_MINOR_VERSION) {
     "56" {
-      (Get-Content "${PUPPET_HOME}\production\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\production\manifests\site.pp"
+      if ($DEBUG -eq "true") {
+        . refreshenv
+        puppet apply "${PUPPET_HOME}\production\manifests\site.pp" --confdir="${PUPPET_HOME}" --trace --debug
+      } else {
+        . refreshenv | out-null
+        puppet apply "${PUPPET_HOME}\production\manifests\site.pp" 2>&1 | out-null
+      }
     }
     "55" {
-      (Get-Content "${PUPPET_HOME}\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\manifests\site.pp"
+      if ($DEBUG -eq "true") {
+        . refreshenv
+        puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
+      } else {
+        . refreshenv | out-null
+        puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
+      }
     }
-  }
-  Write-Host "[${computername}][Task] Update DPK Role in site.pp"
+  } # end switch
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 . determine_tools_version
 . determine_puppet_home
-. copy_modules
+. execute_puppet_apply
 
-if ($TOOLS_MINOR_VERSION -eq "55") {
-  . fix_dpk_bugs
-}
-if (! ($DPK_ROLE -eq '')) {
-  . set_dpk_role
-}
+# $fqdn = facter fqdn
+# $port = hiera pia_http_port
+# $sitename = hiera pia_site_name
 
-Write-Host "DPK Module Sync Complete"
+# Write-Host "Your login URL is http://${fqdn}:${port}/${sitename}/signon.html" -ForegroundColor White
