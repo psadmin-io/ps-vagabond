@@ -39,6 +39,10 @@ PATCH_ID='23711856'
 # undefined it will default to the PATCH_ID.
 #DPK_VERSION = 'FSCM92'
 
+# PSFT_BASE_DIR
+# the base folder where the DPK will install software
+# PSFT_BASE_DIR='c:/psft'
+
 # PEOPLETOOLS_PATCH
 # To apply a PeopleTools Patch to the PeopleSoft Image, you must be using 
 # a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the 
@@ -52,6 +56,7 @@ PATCH_ID='23711856'
 
 # CUSTOM DPK ROLE
 # Change the DPK Role in site.pp to something custom. 
+# Use `vagrant provision --provision-with=dpk-modules` to update the site.pp file.
 # DPK_ROLE = '::io_role::io_tools_demo'
 
 # HOSTONLY NETWORK_SETTINGS (default)
@@ -79,14 +84,14 @@ PATCH_ID='23711856'
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk
 # files. This defaults to the "dpks/<patch_id>" directory from where ps-vagabond is started.
-#DPK_LOCAL_DIR = 'C:/peoplesoft/dpk/fn92u020'
+# DPK_LOCAL_DIR = 'C:/peoplesoft/dpk/fn92u020'
 
 # DPK_REMOTE_DIR
 # The directory location on the virtual machine where the dpk files will be
 # downloaded, extracted, and run from.  This defaults to the
 # "/media/sf_<dpk_version>" directory on the VM.
-#DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
-#DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
+# DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
+# DPK_REMOTE_DIR = 'C:/psft/dpk'    ## WINDOWS example
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
@@ -95,7 +100,7 @@ PATCH_ID='23711856'
 #       scripts will try to "fix" it by stripping off the domain
 # NOTE: On Windows, use only the hostname, not the domain name. 
 #       VirtualBox will error if the hostname has "." in it
-#FQDN='host.example.com'
+# FQDN='psvagabond'
 
 # CA_SETTINGS
 # Uncomment and modify the following to setup Change Assistant.
@@ -137,6 +142,7 @@ IE_HOMEPAGE = 'http://localhost:8000/ps/signon.html' unless defined? IE_HOMEPAGE
 
 if OPERATING_SYSTEM.upcase == "WINDOWS"
   PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME
+  PSFT_BASE_DIR = "c:/psft" unless defined? PSFT_BASE_DIR
 elsif OPERATING_SYSTEM == "LINUX"
   PUPPET_HOME = "/etc/puppet" unless defined? PUPPET_HOME
 else
