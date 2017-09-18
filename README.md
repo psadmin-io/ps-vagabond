@@ -1,8 +1,6 @@
 ps-vagabond
 ===========
 
-__NOTE__:  This project is still in beta and currently incomplete.
-
 Vagabond is a project to help more easily create and manage PeopleSoft PUM environments on your local machine by using [Vagrant](https://vagrantup.com).  Once downloaded and configured, running `vagrant up` from within your Vagabond instance will...
 
 * Download, configure, and start a base OEL or Windows (evaluation) Virtual Machine for use with the PUM
@@ -86,18 +84,24 @@ Once you've downloaded Vagabond you should have a directory containing the follo
 
 ```
 ps-vagabond
- ├── config
- │   ├── config.rb.example
- │   ├── PSCFG.CFG.example
- │   └── psft_customizations.yaml.example
- ├── dpks
- ├── scripts
- │   └── provision.sh
- ├── README.md
- └── Vagrantfile
+├── LICENSE.md
+├── README.md
+├── Vagrantfile
+├── config
+│   ├── PSCFG.CFG.example
+│   ├── client.reg.example
+│   ├── config.rb.example
+│   ├── psft_customizations.yaml.example
+├── dpks
+├── keys
+└── scripts
+    ├── banner.ps1
+    ├── provision-*.ps1
+    ├── provision.sh
+    ├── rubyGems.pem
 ```
 
-The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`. The `PSCFG.CFG.example` file is used if you want to apply a PeopleTools Patch when provisioning the PeopleSoft Image.
+The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`. The `PSCFG.CFG.example` and `client.reg.example` file is used if you want to apply a PeopleTools Patch when provisioning the PeopleSoft Image.
 
 #### config.rb (required) ####
  
@@ -121,7 +125,7 @@ MOS_PASSWORD='MYMOSPASSWORD'
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
 ```
- 
+
 #### psft_customizations.yaml (optional) ####
 
 Additionally, if you wish to change the defaults that are used by the DPK you can use the psft_customizations.yaml file.
@@ -156,11 +160,25 @@ PTP_PATCH_ID='26201347' # 8.55.17
 
 Uncommenting the `APPLY_PT_PATCH` line will tell Vagabond to run additional provisions that apply a PT Patch to a fully build PeopleSoft Image. You must also provide a valid Patch ID for the PeopleTools Patch you want to apply. Vagabond will automatically download the patch files for you. Once the files are downloaded, Vagabond will apply the patch to the database and rebuild the domains on the new PeopleTools version.
 
+### Operating System
+
+Vagabond supports the Linux and Windows NativeOS Deployment Packages. By default, Vagabond will use the Linux NativeOS DPK with an Oracle Enterprise Linux virtual machine. To enable a Windows build with Vagabond, uncomment this line in the `config/config.rb` file.
+
+```ruby
+
+# OPERATING_SYSTEM
+# Which OS to use as the base box for the DPK.  The available options
+# are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
+# (Windows 2012 R2). If left undefined, it will default to Linux.
+OPERATING_SYSTEM = 'WINDOWS'
+```
+
+The Windows virtual machine is an evaulation version of Windows 2012 R2 and is only intended for demonstration purposes. [You can build your own base Windows VM](TBD) with a licensed copy of Windows to use for testing and production support.
 
 Usage
 -----
 
-Once configured, you simply have to change to the Vagabond instance directory and run `vagrant up`. Vagrant will then download the box image, start the VM, and begin the provisioning process. 
+Once configured, you simply have to change to the Vagabond instance directory and run `vagrant up`. Vagrant will then download the box image, start the VM, and begin the provisioning process.
 
 ```text
 C:\pum_images\hcm92>vagrant up
