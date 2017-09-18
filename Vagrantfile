@@ -118,6 +118,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
     end
 
+    # HyperV
+    vmconfig.vm.provider "hyperv" do |hyperv|
+      hyperv.vmname = "#{DPK_VERSION}"
+      hyperv.memory = 8192
+      hyperv.cpus = 2
+      hyperv.vm_integration_services = {
+        guest_service_interface: true,
+        heartbeat: true,
+        key_value_pair_exchange: true,
+        shutdown: true,
+        time_synchronization: true,
+        vss: true
+      }
+    end
+
     ##################
     #  Provisioning  #
     ##################
@@ -144,10 +159,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         boot.path = "scripts/provision-bootstrap-ps.ps1"
         boot.upload_path = "C:/temp/provision-bootstrap-ps.ps1"
         boot.env = {
-          "MOS_USERNAME"  => "#{MOS_USERNAME}",
-          "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
           "PATCH_ID"      => "#{PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 
@@ -155,22 +170,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         yaml.path = "scripts/provision-yaml.ps1"
         yaml.upload_path = "C:/temp/provision-yaml.ps1"
         yaml.env = {
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
       end
 
-      vmconfig.vm.provision "dpk-modules", type: "shell"  do |yaml|
-        yaml.path = "scripts/provision-dpk-modules.ps1"
-        yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"
-        yaml.env = {
+      vmconfig.vm.provision "dpk-modules", type: "shell" do |modules|
+        modules.path = "scripts/provision-dpk-modules.ps1"
+        modules.upload_path = "C:/temp/provision-dpk-modules.ps1"
+        modules.env = {
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
-            "DPK_ROLE"      => "#{DPK_ROLE}"
+          "DPK_ROLE"      => "#{DPK_ROLE}"
         }
       end
 
-      vmconfig.vm.provision "puppet" do |puppet|
-        puppet.manifests_path = ["vm", "#{PUPPET_HOME}/manifests"]
-        puppet.manifest_file = "site.pp"
+      vmconfig.vm.provision "puppet", type: "shell" do |puppet|
+        puppet.path = "scripts/provision-puppet-apply.ps1"
+        puppet.upload_path = "C:/temp/provision-puppet-apply.ps1"
+        puppet.env = {
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
+          "PUPPET_HOME"   => "#{PUPPET_HOME}",
+        }
+
       end
 
       if APPLY_PT_PATCH.downcase == 'true' 
@@ -206,7 +231,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "CA_PATH"        => "#{CA_SETTINGS[:path]}",
           "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
           "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
-          "IE_HOMEPAGE"      => "#{IE_HOMEPAGE}",
+          "IE_HOMEPAGE"    => "#{IE_HOMEPAGE}",
           "PTF_SETUP"      => "#{PTF_SETUP}"
         }
       end

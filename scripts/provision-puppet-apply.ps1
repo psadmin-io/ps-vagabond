@@ -18,7 +18,7 @@
         Puppet home directory
 
     .EXAMPLE
-        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc
+        provision-puppet.ps1 -PUPPET_HOME C:\ProgramData\PuppetLabs\puppet\etc -PT_VERSION 856
 
 #>
 
@@ -44,6 +44,7 @@ $VerbosePreference = "SilentlyContinue"
 $DEBUG = "true"
 
 #-----------------------------------------------------------[Functions]-----------------------------------------------------------
+
 
 function determine_tools_version() {
   $TOOLS_VERSION = $(Get-Content ${DPK_INSTALL}/setup/bs-manifest | select-string "version" | % {$_.line.split("=")[1]})
@@ -75,39 +76,42 @@ function determine_puppet_home() {
       Write-Host "Puppet Home Directory: ${PUPPET_HOME}"
   }
 }
-function copy_customizations_file() {
-  Write-Host "Copying customizations file"
+
+function execute_puppet_apply() {
+  Write-Host "Applying Puppet manifests"
+  # Reset Environment and PATH to include bin\puppet
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
   switch ($TOOLS_MINOR_VERSION) {
     "56" {
       if ($DEBUG -eq "true") {
-        Write-Host "Copying to ${PUPPET_HOME}\production\data"
-        Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\production\data\psft_customizations.yaml" -Force
+        . refreshenv
+        puppet apply "${PUPPET_HOME}\production\manifests\site.pp" --confdir="${PUPPET_HOME}" --trace --debug
       } else {
-        Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\production\data\psft_customizations.yaml" -Force 2>&1 | out-null
+        . refreshenv | out-null
+        puppet apply "${PUPPET_HOME}\production\manifests\site.pp" 2>&1 | out-null
       }
     }
     "55" {
       if ($DEBUG -eq "true") {
-        Write-Host "Copying to ${PUPPET_HOME}\data"
-        Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml" -Force
+        . refreshenv
+        puppet apply "${PUPPET_HOME}\manifests\site.pp" --trace --debug
       } else {
-        Copy-Item "c:\vagrant\config\psft_customizations.yaml" "${PUPPET_HOME}\data\psft_customizations.yaml" -Force 2>&1 | out-null
+        . refreshenv | out-null
+        puppet apply "${PUPPET_HOME}\manifests\site.pp" 2>&1 | out-null
       }
     }
-  }
+  } # end switch
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
 
 . determine_tools_version
 . determine_puppet_home
-. copy_customizations_file
-
-Write-Host "YAML Sync Complete"
+. execute_puppet_apply
 
 # $fqdn = facter fqdn
 # $port = hiera pia_http_port
 # $sitename = hiera pia_site_name
 
 # Write-Host "Your login URL is http://${fqdn}:${port}/${sitename}/signon.html" -ForegroundColor White
-

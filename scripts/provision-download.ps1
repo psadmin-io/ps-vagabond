@@ -167,6 +167,14 @@ function install_additional_packages {
       choco install jq -y 2>&1 | out-null
     }
   }
+  if (-Not (Test-Path C:\ProgramData\chocolatey\bin\aria2c.exe)) {
+    Write-Host "Installing aria2"
+    if ($DEBUG -eq "true") {
+      choco install aria2 -y
+    } else {
+      choco install aria2 -y 2>&1 | out-null
+    }
+  }
 }
 
 function create_authorization_cookie {
@@ -247,7 +255,14 @@ function download_patch_files {
           --user-agent="Mozilla/5.0" 2>&1 | out-null
       }
     }
-
+	#Confirm zip files exist in download location
+	if (-Not (test-path $DPK_INSTALL/*.zip)){
+	Write-Host "#####################################################################################" -foregroundcolor yellow
+    Write-Host "ERROR!!!!! NO ZIP FILES FOUND IN $DPK_INSTALL directory. `n Confirm PATCH_ID is correct and check %TEMP%\dlLog.LOG" -foregroundcolor yellow
+	Write-Host "#####################################################################################" -foregroundcolor yellow
+    exit 1
+    }
+	
     record_step_success "download_patch_files"
     # local end=$(date +%s)
     # local tottime="$((end - begin))"
@@ -267,6 +282,14 @@ function unpack_setup_scripts() {
     } else {
       get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
     }
+	
+	if (-Not (test-path $DPK_INSTALL/setup/*)){
+	Write-Host "#####################################################################################" -foregroundcolor yellow
+    Write-Host "ERROR!!!!! NO  FILES FOUND IN $DPK_INSTALL/setup directory. `n Check logs in %TEMP%\" -foregroundcolor yellow
+	Write-Host "#####################################################################################" -foregroundcolor yellow
+    exit 1
+    }
+	
     record_step_success "unpack_setup_scripts"
     # local end=$(date +%s)
     # local tottime="$((end - begin))"

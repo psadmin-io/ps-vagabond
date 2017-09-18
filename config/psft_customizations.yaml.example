@@ -38,13 +38,22 @@ ps_home:
 ps_app_home:  
   location:    "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
+db_service_name: "PSFTDB"
+
+tns_admin_list:
+  "%{hiera('db_name')}":
+    db_host: "localhost"  ## NOTE: Change this to "%{::fqdn}" if using bridged networking
+    db_port:         "%{hiera('db_port')}"
+    db_protocol:     TCP
+    db_service_name: "%{hiera('db_service_name')}"
+
 pia_domain_list:
   "%{hiera('pia_domain_name')}":
     os_user:               "%{hiera('domain_user')}"
     ps_cfg_home_dir:       "%{hiera('ps_config_home')}"
     gateway_user:          "%{hiera('pia_gateway_user')}"
     gateway_user_pwd:      "%{hiera('pia_gateway_user_pwd')}"
-    #auth_token_domain:     ".psadmin.io"
+    auth_token_domain: ""  # NOTE: change this to ".%{::domain}" if using bridged networking
     #root_signon_url:       http://psvagabond.psadmin.io:8000/ps/signon.html
 
     webserver_settings:
@@ -76,3 +85,6 @@ pia_domain_list:
           profile_user_pwd:    PTWEBSERVER
 
         report_repository_dir: "%{hiera('report_repository_dir')}"
+
+# domain_conn_pwd: "Passw0rd_"
+
