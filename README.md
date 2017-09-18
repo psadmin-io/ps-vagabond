@@ -172,7 +172,7 @@ Vagabond supports the Linux and Windows NativeOS Deployment Packages. By default
 OPERATING_SYSTEM = 'WINDOWS'
 ```
 
-The Windows virtual machine is an evaulation version of Windows 2012 R2 and is only intended for demonstration purposes. [You can build your own base Windows VM](TBD) with a licensed copy of Windows to use for testing and production support.
+The Windows virtual machine is an evaulation version of Windows 2012 R2 and is only intended for demonstration purposes. [You can build your own base Windows VM](https://www.vagrantup.com/docs/virtualbox/boxes.html) with a licensed copy of Windows to use for testing and production support.
 
 Usage
 -----
@@ -261,7 +261,7 @@ Since Vagabond is just a set of configuration files and provisioning scripts for
 
 ### Manually Download DPK Files
 
-If the host running Vagabond does not have interet access, you can download the DPK files manually for Vagabond. Use a tool like [`getMOSPatch`](TBD) to download the files on your local machine. 
+If the host running Vagabond does not have interet access, you can download the DPK files manually for Vagabond. Use a tool like [`getMOSPatch`](http://psadmin.io/2016/08/23/simplify-peoplesoft-image-downloads/) to download the files on your local machine. 
 
 Let's assume that you have Vagabond installed to `c:\pum\hcm92`. Copy the files to the folder `c:\pum\hcm92\dpk\download\[PATCH_ID]` on the machine running Vagabond.
 
