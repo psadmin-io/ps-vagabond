@@ -9,7 +9,6 @@ Vagabond is a project to help more easily create and manage PeopleSoft PUM envir
 * Copy the psft_customizations.yaml file from the local directory to the VM
 * Apply the DPK Puppet manifests to build out the environment and start the PUM environment
 
-
 ------------------------------------------------------------------------------
 
 Prerequisites
@@ -259,3 +258,20 @@ Since Vagabond is just a set of configuration files and provisioning scripts for
 | Connect to the VM (via RDP)                  | `vagrant rdp                                     |
 | Copy your `psft_customizations.yaml` file    | `vagrant provision --provision-with=yaml`        |
 | Copy custom DPK modules                      | `vagrant provision --provision-with=dpk-modules` |
+
+### Manually Download DPK Files
+
+If the host running Vagabond does not have interet access, you can download the DPK files manually for Vagabond. Use a tool like [`getMOSPatch`](TBD) to download the files on your local machine. 
+
+Let's assume that you have Vagabond installed to `c:\pum\hcm92`. Copy the files to the folder `c:\pum\hcm92\dpk\download\[PATCH_ID]` on the machine running Vagabond.
+
+Next, copy the text below and save it as `vagabond.json` in the same directory: 
+
+```json
+{
+    "download_patch_files":  "true",
+    "unpack_setup_scripts":  "false"
+}
+```
+
+The `vagabond.json` file tracks the download and unzipping status of the DPK files. Setting `"download_patch_files": "true"` will tell Vagabond to skip the download for that patch. Now you can run `vagrant up` and Vagabond will build the PeopleSoft Image.
