@@ -54,8 +54,6 @@ pia_domain_list:
     gateway_user:          "%{hiera('pia_gateway_user')}"
     gateway_user_pwd:      "%{hiera('pia_gateway_user_pwd')}"
     auth_token_domain: ""  # NOTE: change this to ".%{::domain}" if using bridged networking
-    #root_signon_url:       http://psvagabond.psadmin.io:8000/ps/signon.html
-
     webserver_settings:
       webserver_type:           "%{hiera('webserver_type')}"
       webserver_home:           "%{hiera('weblogic_location')}"
@@ -87,4 +85,3 @@ pia_domain_list:
         report_repository_dir: "%{hiera('report_repository_dir')}"
 
 # domain_conn_pwd: "Passw0rd_"
-
