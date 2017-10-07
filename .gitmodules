@@ -1,0 +1,3 @@
+[submodule "scripts/psadmin-plus"]
+	path = scripts/psadmin-plus
+	url = https://github.com/psadmin-io/psadmin-plus.git

@@ -1,16 +1,13 @@
 ps-vagabond
 ===========
 
-__NOTE__:  This project is still in beta and currently incomplete.
-
 Vagabond is a project to help more easily create and manage PeopleSoft PUM environments on your local machine by using [Vagrant](https://vagrantup.com).  Once downloaded and configured, running `vagrant up` from within your Vagabond instance will...
 
-* Download, configure, and start a base OEL Virtual Machine for use with the PUM
+* Download, configure, and start a base OEL or Windows (evaluation) Virtual Machine for use with the PUM
 * Download the PUM DPK files from Oracle Support
 * Unpack the DPK setup zip file and run the psft-dpk-setup script on the VM
 * Copy the psft_customizations.yaml file from the local directory to the VM
 * Apply the DPK Puppet manifests to build out the environment and start the PUM environment
-
 
 ------------------------------------------------------------------------------
 
@@ -86,17 +83,24 @@ Once you've downloaded Vagabond you should have a directory containing the follo
 
 ```
 ps-vagabond
- ├── config
- │   ├── config.rb.example
- │   └── psft_customizations.yaml.example
- ├── dpks
- ├── scripts
- │   └── provision.sh
- ├── README.md
- └── Vagrantfile
+├── LICENSE.md
+├── README.md
+├── Vagrantfile
+├── config
+│   ├── PSCFG.CFG.example
+│   ├── client.reg.example
+│   ├── config.rb.example
+│   ├── psft_customizations.yaml.example
+├── dpks
+├── keys
+└── scripts
+    ├── banner.ps1
+    ├── provision-*.ps1
+    ├── provision.sh
+    ├── rubyGems.pem
 ```
 
-The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`.
+The first thing you'll want to do is copy both the `config/config.rb.example` and `config/psft_customizations.yaml.example` files to `config/config.rb` and `config/psft_customizations.yaml`. The `PSCFG.CFG.example` and `client.reg.example` file is used if you want to apply a PeopleTools Patch when provisioning the PeopleSoft Image.
 
 #### config.rb (required) ####
  
@@ -120,15 +124,60 @@ MOS_PASSWORD='MYMOSPASSWORD'
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
 ```
- 
+
 #### psft_customizations.yaml (optional) ####
 
 Additionally, if you wish to change the defaults that are used by the DPK you can use the psft_customizations.yaml file.
 
+If you make changes to the `psft_customizations.yaml` file, you can tell Vagabond to re-sync the file. Use the command `vagrant provision --provision-with=yaml` and the local `psft_customizations.yaml` file will be copied to `$PUPPET_HOME\etc\data\`
+
+#### Custom DPK Modules (optional) ####
+
+If you want to deploy and test custom DPK modules with Vagabond, copy your Puppet modules and code to `$vagabond_home\config\modules`. Vagabond will check if you have code in the `modules` folder and will copy it to the `$PUPPET_HOME` folder. You can also run `vagrant provision --provision-with=dpk-modules` to re-copy the files into the VM.
+
+If you have a custom DPK Role you want to execute, you can set that in the `config.rb` file. 
+
+```ruby
+# CUSTOM DPK ROLE
+# Change the DPK Role in site.pp to something custom.
+# Use `vagrant provision --provision-with=dpk-modules` to update the site.pp file.
+DPK_ROLE = '::io_role::io_tools_demo'
+```
+
+#### Apply a PeopleTools Patch (optional) ####
+
+The Windows version of Vagabond can download and apply a PeopleTools Patch to the PeopleSoft Image. To apply a patch, uncomment two values in the `config.rb` file:
+
+```ruby
+# PEOPLETOOLS_PATCH
+# To apply a PeopleTools Patch to the PeopleSoft Image, you must be using 
+# a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the 
+# Patch ID for PTP_PATCH_ID.
+APPLY_PT_PATCH='true'
+PTP_PATCH_ID='26201347' # 8.55.17
+```
+
+Uncommenting the `APPLY_PT_PATCH` line will tell Vagabond to run additional provisions that apply a PT Patch to a fully build PeopleSoft Image. You must also provide a valid Patch ID for the PeopleTools Patch you want to apply. Vagabond will automatically download the patch files for you. Once the files are downloaded, Vagabond will apply the patch to the database and rebuild the domains on the new PeopleTools version.
+
+### Operating System
+
+Vagabond supports the Linux and Windows NativeOS Deployment Packages. By default, Vagabond will use the Linux NativeOS DPK with an Oracle Enterprise Linux virtual machine. To enable a Windows build with Vagabond, uncomment this line in the `config/config.rb` file.
+
+```ruby
+
+# OPERATING_SYSTEM
+# Which OS to use as the base box for the DPK.  The available options
+# are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
+# (Windows 2012 R2). If left undefined, it will default to Linux.
+OPERATING_SYSTEM = 'WINDOWS'
+```
+
+The Windows virtual machine is an evaulation version of Windows 2012 R2 and is only intended for demonstration purposes. [You can build your own base Windows VM](https://www.vagrantup.com/docs/virtualbox/boxes.html) with a licensed copy of Windows to use for testing and production support.
+
 Usage
 -----
 
-Once configured, you simply have to change to the Vagabond instance directory and run `vagrant up`. Vagrant will then download the box image, start the VM, and begin the provisioning process. 
+Once configured, you simply have to change to the Vagabond instance directory and run `vagrant up`. Vagrant will then download the box image, start the VM, and begin the provisioning process.
 
 ```text
 C:\pum_images\hcm92>vagrant up
@@ -200,10 +249,29 @@ C:\pum_images\hcm92>
 Since Vagabond is just a set of configuration files and provisioning scripts for Vagrant, all of the delivered Vagrant commands can be used.  The following table lists some of the basic commands.
 
 
-| Task              | Command           | 
-| -------------     | -------------     | 
-| Start the VM      | `vagrant up`      | 
-| Stop the VM       | `vagrant halt`    | 
-| Delete the VM     | `vagrant destroy` | 
-| Connect to the VM | `vagrant ssh`     | 
+| Task                                         | Command                                          | 
+| -------------                                | -------------                                    | 
+| Start the VM                                 | `vagrant up`                                     | 
+| Stop the VM                                  | `vagrant halt`                                   | 
+| Delete the VM                                | `vagrant destroy`                                | 
+| Connect to the VM                            | `vagrant ssh`                                    | 
+| Connect to the VM (via RDP)                  | `vagrant rdp                                     |
+| Copy your `psft_customizations.yaml` file    | `vagrant provision --provision-with=yaml`        |
+| Copy custom DPK modules                      | `vagrant provision --provision-with=dpk-modules` |
 
+### Manually Download DPK Files
+
+If the host running Vagabond does not have interet access, you can download the DPK files manually for Vagabond. Use a tool like [`getMOSPatch`](http://psadmin.io/2016/08/23/simplify-peoplesoft-image-downloads/) to download the files on your local machine. 
+
+Let's assume that you have Vagabond installed to `c:\pum\hcm92`. Copy the files to the folder `c:\pum\hcm92\dpk\download\[PATCH_ID]` on the machine running Vagabond.
+
+Next, copy the text below and save it as `vagabond.json` in the same directory: 
+
+```json
+{
+    "download_patch_files":  "true",
+    "unpack_setup_scripts":  "false"
+}
+```
+
+The `vagabond.json` file tracks the download and unzipping status of the DPK files. Setting `"download_patch_files": "true"` will tell Vagabond to skip the download for that patch. Now you can run `vagrant up` and Vagabond will build the PeopleSoft Image.
