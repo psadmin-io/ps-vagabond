@@ -168,8 +168,11 @@ Vagabond supports the Linux and Windows NativeOS Deployment Packages. By default
 # OPERATING_SYSTEM
 # Which OS to use as the base box for the DPK.  The available options
 # are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
-# (Windows 2012 R2). If left undefined, it will default to Linux.
+# (Windows 2012 R2 or Windows 2016).
+# If left undefined, it will default to Linux.
 OPERATING_SYSTEM = 'WINDOWS'
+# Two Windows Versions are supported, "2012R2" and "2016"
+# WIN_VERSION = "2016"
 ```
 
 The Windows virtual machine is an evaulation version of Windows 2012 R2 and is only intended for demonstration purposes. [You can build your own base Windows VM](https://www.vagrantup.com/docs/virtualbox/boxes.html) with a licensed copy of Windows to use for testing and production support.
