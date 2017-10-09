@@ -245,22 +245,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end
       end
 
-      vmconfig.vm.provision "client", type: "shell"  do |client|
-        client.path        = "scripts/provision-client.ps1"
-        client.upload_path = "C:/temp/provision-client.ps1"
-        client.privileged  = "true"
-        client.env = {
-          "CA_SETUP"       => "#{CA_SETTINGS[:setup]}",
-          "CA_PATH"        => "#{CA_SETTINGS[:path]}",
-          "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
-          "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
-          "IE_HOMEPAGE"    => "#{IE_HOMEPAGE}",
-          "PTF_SETUP"      => "#{PTF_SETUP}"
-        }
+      if CLIENT_TOOLS.downcase == 'true'
+        vmconfig.vm.provision "client", type: "shell"  do |client|
+          client.path        = "scripts/provision-client.ps1"
+          client.upload_path = "C:/temp/provision-client.ps1"
+          client.privileged  = "true"
+          client.env = {
+            "CA_SETUP"       => "#{CA_SETTINGS[:setup]}",
+            "CA_PATH"        => "#{CA_SETTINGS[:path]}",
+            "CA_TYPE"        => "#{CA_SETTINGS[:type]}",
+            "CA_BACKUP"      => "#{CA_SETTINGS[:backup]}",
+            "IE_HOMEPAGE"    => "#{IE_HOMEPAGE}",
+            "PTF_SETUP"      => "#{PTF_SETUP}"
+          }
+        end
       end
 
       if APPLY_PT_PATCH.downcase == 'true'
-
         vmconfig.vm.provision "dpk-modules-ptp", type: "shell"  do |yaml|
           yaml.path = "scripts/provision-dpk-modules.ps1"
           yaml.upload_path = "C:/temp/provision-dpk-modules.ps1"

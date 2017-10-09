@@ -104,6 +104,11 @@ PATCH_ID='23711856'
 #       VirtualBox will error if the hostname has "." in it
 # FQDN='psvagabond'
 
+# CLIENT_TOOLS
+# Set CLIENT_TOOLS to true if you want the PeopleTools Client to 
+# be installed
+# CLIENT_TOOLS = 'true'
+
 # CA_SETTINGS
 # Uncomment and modify the following to setup Change Assistant.
 #CA_SETTINGS = {
