@@ -32,6 +32,8 @@ PATCH_ID='23711856'
 # are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
 # (Windows 2012 R2). If left undefined, it will default to Linux.
 #OPERATING_SYSTEM = 'WINDOWS'
+# Two Windows Versions are supported, "2012R2" and "2016"
+# WIN_VERSION = "2016"
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
@@ -102,6 +104,11 @@ PATCH_ID='23711856'
 #       VirtualBox will error if the hostname has "." in it
 # FQDN='psvagabond'
 
+# CLIENT_TOOLS
+# Set CLIENT_TOOLS to true if you want the PeopleTools Client to 
+# be installed
+# CLIENT_TOOLS = 'true'
+
 # CA_SETTINGS
 # Uncomment and modify the following to setup Change Assistant.
 #CA_SETTINGS = {
@@ -123,6 +130,7 @@ PATCH_ID='23711856'
 ##############
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
+WIN_VERSION = "2016" unless defined? WIN_VERSION
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpk/download" unless defined? DPK_LOCAL_DIR
