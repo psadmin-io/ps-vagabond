@@ -1,10 +1,8 @@
 ---
-
 peoplesoft_base:   c:/psft
 db_name:           PSFTDB
 db_name_downcase:  psftdb
 psft_db:
-  type:            elm
   location:        "%{hiera('psft_db_location')}"
   # container_name:  CDBELM   # can specify or it will be built using CDB+type
 db_user:           PS
@@ -17,7 +15,7 @@ access_id:         SYSADM
 access_pwd:        SYSADM
 
 pia_webprofile_name:    DEV
-ps_config_home:         c:/psft/cfg
+ps_config_home:         "%{hiera('peoplesoft_base')}/cfg"
 
 appserver_domain_name:   "%{hiera('db_name_downcase')}"
 prcs_domain_name:        "%{hiera('db_name_downcase')}"
@@ -70,7 +68,7 @@ pia_domain_list:
         LoggingEnabled:         true
         LogFileFormat:          extended
         BufferSizeKB:           0
-        ELFFields:              'date time cs-method cs-uri sc-status cs-username cs(user-agent) s-ip c-ip cs(X-Forwarded-For) time-taken bytes x-OPRIDLogField'
+        ELFFields:              'date time cs-method cs-uri sc-status cs-username cs(user-agent) s-ip c-ip cs(X-Forwarded-For) time-taken bytes cs(referrer)'
 
     site_list:
       "%{hiera('pia_site_name')}":
