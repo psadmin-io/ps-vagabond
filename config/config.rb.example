@@ -142,6 +142,7 @@ NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
+CLIENT_TOOLS = 'false' unless defined? CLIENT_TOOLS
 CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unless defined? CA_SETTINGS
 PTF_SETUP = 'false' unless defined? PTF_SETUP
 APPLY_PT_PATCH = 'false' unless defined? APPLY_PT_PATCH
