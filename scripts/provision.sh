@@ -362,12 +362,20 @@ function execute_psft_dpk_setup() {
             --silent \
             --response_file="${DPK_INSTALL}/response.cfg" \
             --log_file="${DPK_INSTALL}/vagabond.log"
+            --no_puppet_run
+
+          copy_customizations_file
+          execute_puppet_apply
         else
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
             --dpk_src_dir="${DPK_INSTALL}" \
             --customization_file="${CUSTOMIZATION_FILE}" \
             --silent \
-            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+            --response_file "${DPK_INSTALL}/response.cfg" \
+            --no_puppet_run > /dev/null 2>&1
+
+          copy_customizations_file
+          execute_puppet_apply
         fi
       ;;
     * )
