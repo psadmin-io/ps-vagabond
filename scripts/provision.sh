@@ -360,7 +360,8 @@ function execute_psft_dpk_setup() {
             --dpk_src_dir="${DPK_INSTALL}" \
             --customization_file="${CUSTOMIZATION_FILE}" \
             --silent \
-            --response_file "${DPK_INSTALL}/response.cfg"
+            --response_file="${DPK_INSTALL}/response.cfg" \
+            --log_file="${DPK_INSTALL}/vagabond.log"
         else
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
             --dpk_src_dir="${DPK_INSTALL}" \
