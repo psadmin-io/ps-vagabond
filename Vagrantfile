@@ -41,8 +41,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # VirtualBox
     vmconfig.vm.provider "virtualbox" do |vbox,override|
       vbox.name = "#{DPK_VERSION}"
-      # vbox.memory = 4096
-      vbox.memory = 8192
+      vbox.memory = 6148
+      # vbox.memory = 8192
       vbox.cpus = 2
       vbox.gui = false
       if NETWORK_SETTINGS[:type] == "hostonly"
@@ -79,7 +79,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "jrbing/ps-vagabond"
+      # vmconfig.vm.box = "jrbing/ps-vagabond"
+      vmconfig.vm.box = "psadmin-io/ps-vagabond-oel-offline"
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
     else

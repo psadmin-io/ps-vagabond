@@ -133,11 +133,11 @@ OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
-DPK_LOCAL_DIR = "dpk/download" unless defined? DPK_LOCAL_DIR
+DPK_LOCAL_DIR = "dpks" unless defined? DPK_LOCAL_DIR
 # NOTE: The pum setup script for linux will fail unless the DPK_REMOTE_DIR (DPK
 #       installation directory) is mounted under "/media/sf_*".
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
-DPK_REMOTE_DIR_WIN = "C:/psft/dpk/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
+DPK_REMOTE_DIR_WIN = "C:/psft/dpk/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389"} unless defined? NETWORK_SETTINGS
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP

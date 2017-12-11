@@ -26,7 +26,8 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-#export DEBUG=true
+export DEBUG=true
+export OFFLINE=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -110,32 +111,41 @@ function record_step_success() {
 }
 
 function update_packages() {
-  echoinfo "Updating installed packages"
-  local begin=$(date +%s)
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo yum update -y
-  else
-    sudo yum update -y > /dev/null 2>&1
+  if [[ -n ${OFFLINE+x} ]]; then
+    echoinfo "Skipping Update Packages - Offline Install"
+  else 
+    echoinfo "Updating installed packages"
+    local begin=$(date +%s)
+    if [[ -n ${DEBUG+x} ]]; then
+      sudo yum update -y
+    else
+      sudo yum update -y > /dev/null 2>&1
+    fi
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[update_packages]=$tottime
   fi
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[update_packages]=$tottime
 }
 
 function install_additional_packages() {
-  local begin=$(date +%s)
-  echoinfo "Installing additional packages"
-  for package in "${additional_packages[@]}"; do
-    if [[ -n ${DEBUG+x} ]]; then
-      echodebug "Installing ${package}"
-      sudo yum install -y "${package}"
-    else
-      sudo yum install -y "${package}" > /dev/null 2>&1
-    fi
-  done
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[install_additional_packages]=$tottime
+  if [[ -n ${OFFLINE} ]]; then
+    echoinfo "Skipping Additional Packages - Offline Install"
+  else
+    echoinfo "Updating installed packages"
+    local begin=$(date +%s)
+    echoinfo "Installing additional packages"
+    for package in "${additional_packages[@]}"; do
+      if [[ -n ${DEBUG+x} ]]; then
+        echodebug "Installing ${package}"
+        sudo yum install -y "${package}"
+      else
+        sudo yum install -y "${package}" > /dev/null 2>&1
+      fi
+    done
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[install_additional_packages]=$tottime
+  fi
 }
 
 function create_authorization_cookie() {
@@ -422,11 +432,14 @@ echobanner
 # Prerequisites
 check_dpk_install_dir
 check_vagabond_status
+
 update_packages
 install_additional_packages
 
-# Downloading and unpacking patch files
+# Downloading patch files
 download_patch_files
+
+# Unpack patch files
 unpack_setup_scripts
 
 # Determine the tools version and configure appropriately

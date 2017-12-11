@@ -10,3 +10,6 @@ config/client.reg
 
 # Local notes file
 NOTES.md
+
+# Packaging Files
+*.box
