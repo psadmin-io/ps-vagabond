@@ -361,7 +361,6 @@ function execute_psft_dpk_setup() {
             --customization_file="${CUSTOMIZATION_FILE}" \
             --silent \
             --response_file="${DPK_INSTALL}/response.cfg" \
-            --log_file="${DPK_INSTALL}/vagabond.log" \
             --no_puppet_run
 
           copy_customizations_file
