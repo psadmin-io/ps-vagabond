@@ -1,7 +1,11 @@
 ---
-peoplesoft_base:   c:/psft
+#peoplesoft_base:   c:/psft
+#ps_config_home:    "%{hiera('peoplesoft_base')}/cfg"
+
 db_name:           PSFTDB
 db_name_downcase:  psftdb
+db_port:           1522
+
 psft_db:
   location:        "%{hiera('psft_db_location')}"
   # container_name:  CDBELM   # can specify or it will be built using CDB+type
@@ -15,7 +19,6 @@ access_id:         SYSADM
 access_pwd:        SYSADM
 
 pia_webprofile_name:    DEV
-ps_config_home:         "%{hiera('peoplesoft_base')}/cfg"
 
 appserver_domain_name:   "%{hiera('db_name_downcase')}"
 prcs_domain_name:        "%{hiera('db_name_downcase')}"
@@ -36,7 +39,7 @@ ps_home:
 ps_app_home:  
   location:    "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
-db_service_name: "PSFTDB"
+db_service_name: "%{hiera('db_name')}"
 
 tns_admin_list:
   "%{hiera('db_name')}":
