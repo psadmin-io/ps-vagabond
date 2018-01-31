@@ -256,11 +256,25 @@ function determine_puppet_home() {
 
 function copy_customizations_file() {
   echoinfo "Copying customizations file"
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo cp -fv /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
-  else
-    sudo cp -f /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
-  fi
+  case ${TOOLS_MINOR_VERSION} in
+    "55" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo cp -fv /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
+        else
+          sudo cp -f /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/data/psft_customizations.yaml
+        fi
+      ;;
+    "56" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo cp -fv /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/production/data/psft_customizations.yaml
+        else
+          sudo cp -f /vagrant/config/psft_customizations.yaml ${PUPPET_HOME}/production/data/psft_customizations.yaml
+        fi
+      ;;
+    * )
+        echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
+      ;;
+  esac
 }
 
 function lookup_cust_value() {
@@ -307,12 +321,12 @@ function execute_puppet_apply() {
       ;;
     "56" )
         if [[ -n ${DEBUG+x} ]]; then
-          sudo puppet apply \
+          sudo /opt/puppetlabs/puppet/bin/puppet apply \
             --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
             --verbose \
             "${PUPPET_HOME}/production/manifests/site.pp"
         else
-          sudo puppet apply \
+          sudo /opt/puppetlabs/puppet/bin/puppet apply \
             --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
             "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
         fi
