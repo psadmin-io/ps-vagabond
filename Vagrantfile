@@ -25,6 +25,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define 'ps-vagabond' do |vmconfig|
 
+    if Vagrant.has_plugin?('vagrant-ca-certificates')
+      config.ca_certificates.enabled = true
+      config.ca_certificates.certs = "#{ROOTCA_FILE}"
+    end
+
     # Increase the timeout limit for booting the VM
     vmconfig.vm.boot_timeout = 600
 
@@ -304,7 +309,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "MOS_USERNAME" => "#{MOS_USERNAME}",
           "MOS_PASSWORD" => "#{MOS_PASSWORD}",
           "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}"
+          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
+          "ROOTCA"       => "#{ROOTCA}"
         }
       end
     else

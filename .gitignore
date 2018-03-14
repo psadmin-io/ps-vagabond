@@ -13,3 +13,6 @@ NOTES.md
 
 # Vagrant boxes
 *.box
+
+# Certificates
+ca/*
