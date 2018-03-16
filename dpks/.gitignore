@@ -2,5 +2,6 @@
 # ignore all files in this dir...
 *
 
-# ... except for this one.
+# ... except for this one and the empty download dir.
 !.gitignore
+!download
