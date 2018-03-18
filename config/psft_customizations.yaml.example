@@ -9,8 +9,8 @@ db_port:           1522
 psft_db:
   location:        "%{hiera('psft_db_location')}"
   # container_name:  CDBELM   # can specify or it will be built using CDB+type
-db_user:           PS
-db_user_pwd:       PS
+db_user:           PS   # NOTE: change this to VP1 for IH and FSCM
+db_user_pwd:       PS   # NOTE: change this to VP1 for IH and FSCM
 
 db_connect_id:     people
 db_connect_pwd:    peop1e
@@ -28,7 +28,7 @@ pia_domain_name:         "%{hiera('db_name_downcase')}"
 oracle_client_location: "%{hiera('pt_location')}/oracle-client/12.1.0.2"
 oracle_client:
   location: "%{hiera('oracle_client_location')}"
-   
+
 ps_home_location: "%{hiera('pt_location')}/ps_home%{hiera('tools_version')}"
 ps_home:
   db_type:    "%{hiera('db_platform')}"
@@ -36,7 +36,7 @@ ps_home:
   location:   "%{hiera('ps_home_location')}"
   remove:     true
 
-ps_app_home:  
+ps_app_home:
   location:    "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
 db_service_name: "%{hiera('db_name')}"
@@ -67,7 +67,7 @@ pia_domain_list:
     config_settings:
       Servers/PIA:
         ListenAddress:          0.0.0.0
-      Servers/PIA/WebServer/PIA/WebServerLog/PIA: 
+      Servers/PIA/WebServer/PIA/WebServerLog/PIA:
         LoggingEnabled:         true
         LogFileFormat:          extended
         BufferSizeKB:           0

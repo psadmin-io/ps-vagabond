@@ -46,8 +46,8 @@ PATCH_ID='23711856'
 # PSFT_BASE_DIR='c:/psft'
 
 # PEOPLETOOLS_PATCH
-# To apply a PeopleTools Patch to the PeopleSoft Image, you must be using 
-# a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the 
+# To apply a PeopleTools Patch to the PeopleSoft Image, you must be using
+# a Windows NativeOS DPK. Change APPLY_PT_PATCH to 'true' and enter the
 # Patch ID for PTP_PATCH_ID.
 #APPLY_PT_PATCH='true'
 #PTP_PATCH_ID=''
@@ -57,7 +57,7 @@ PATCH_ID='23711856'
 #ES_PATCH_ID=''
 
 # CUSTOM DPK ROLE
-# Change the DPK Role in site.pp to something custom. 
+# Change the DPK Role in site.pp to something custom.
 # Use `vagrant provision --provision-with=dpk-modules` to update the site.pp file.
 # DPK_ROLE = '::io_role::io_tools_demo'
 
@@ -88,26 +88,26 @@ PATCH_ID='23711856'
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk
 # files. This defaults to the "dpks/<patch_id>" directory from where ps-vagabond is started.
-# DPK_LOCAL_DIR = 'C:/peoplesoft/dpk/fn92u020'
+# DPK_LOCAL_DIR = 'C:/peoplesoft/dpks/fn92u020'
 
 # DPK_REMOTE_DIR
 # The directory location on the virtual machine where the dpk files will be
 # downloaded, extracted, and run from.  This defaults to the
 # "/media/sf_<dpk_version>" directory on the VM.
 # DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
-# DPK_REMOTE_DIR = 'C:/psft/dpk'    ## WINDOWS example
+# DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
 # automatically generate a hostname.
 # NOTE: this value must be 30 characters or less, otherwise the DPK
 #       scripts will try to "fix" it by stripping off the domain
-# NOTE: On Windows, use only the hostname, not the domain name. 
+# NOTE: On Windows, use only the hostname, not the domain name.
 #       VirtualBox will error if the hostname has "." in it
 # FQDN='psvagabond'
 
 # CLIENT_TOOLS
-# Set CLIENT_TOOLS to true if you want the PeopleTools Client to 
+# Set CLIENT_TOOLS to true if you want the PeopleTools Client to
 # be installed
 # CLIENT_TOOLS = 'true'
 
@@ -135,11 +135,11 @@ OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
-DPK_LOCAL_DIR = "dpk/download" unless defined? DPK_LOCAL_DIR
+DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 # NOTE: The pum setup script for linux will fail unless the DPK_REMOTE_DIR (DPK
 #       installation directory) is mounted under "/media/sf_*".
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
-DPK_REMOTE_DIR_WIN = "C:/psft/dpk/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
+DPK_REMOTE_DIR_WIN = "C:/psft/dpks/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200"} unless defined? NETWORK_SETTINGS
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
