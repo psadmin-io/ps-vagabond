@@ -21,11 +21,18 @@ MOS_PASSWORD='MYMOSPASSWORD'
 #MOS_USERNAME = ENV['MOS_USERNAME']
 #MOS_PASSWORD = ENV['MOS_PASSWORD']
 
+# OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 # PATCH ID
 # Specify the patch id for the PUM you wish to use
-PATCH_ID='23711856'
+# Otherwise, it uses PATCH_APP to get the latest patch available
+#PATCH_ID='23711856'
 
-# OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# PATCH APP
+# Specify the app version of PUM you wish to use
+# This is used to determine PATCH_ID if that isn't specified 
+# ie. hcm, fscm, elm, crm, cs, ih
+#PATCH_APP=ih
 
 # OPERATING_SYSTEM
 # Which OS to use as the base box for the DPK.  The available options
@@ -134,6 +141,9 @@ PATCH_ID='23711856'
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
 FQDN = 'psvagabond' unless defined? FQDN
+PI_PATCH_NUM_URL = "https://raw.githubusercontent.com/psadmin-io/pi-patch-num/master"
+PATCH_APP = "ih" unless defined? PATCH_APP
+PATCH_ID = `curl -s #{PI_PATCH_NUM_URL}/#{PATCH_APP}` unless defined? PATCH_ID
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 # NOTE: The pum setup script for linux will fail unless the DPK_REMOTE_DIR (DPK
