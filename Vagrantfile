@@ -55,7 +55,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     ######################
 
     case OPERATING_SYSTEM.upcase
-    when "WINDOWS"      
+    when "WINDOWS"
       case WIN_VERSION.upcase
       when "2012R2"
         # Base box
@@ -115,12 +115,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
+        # config.vm.provision "shell",
+          # run: "always",
+          # inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
         config.vm.provision "shell",
           run: "always",
-          inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
-        config.vm.provision "shell",
-          run: "always",
-          inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+          inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
@@ -221,7 +221,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       end
 
-      if APPLY_PT_PATCH.downcase == 'true' 
+      if APPLY_PT_PATCH.downcase == 'true'
         vmconfig.vm.provision "download-ptp", type: "shell" do |boot|
           boot.path = "scripts/provision-download.ps1"
           boot.upload_path = "C:/temp/provision-download.ps1"
