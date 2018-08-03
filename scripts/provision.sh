@@ -39,6 +39,7 @@ readonly PATCH_FILE_LIST="${TMPDIR}/file_list"
 readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
+readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
 
 declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests")
 declare -A timings
@@ -316,6 +317,28 @@ function execute_puppet_apply() {
   timings[execute_puppet_apply]=$tottime
 }
 
+function execute_pre_setup() {
+  local begin=$(date +%s)
+  echoinfo "Executing Pre setup script"
+  if [[ -n ${DEBUG+x} ]]; then
+    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+      echodebug "Pre making PS_CFG_HOME"
+      sudo mkdir -pv "${PSFT_CFG_DIR}"
+      sudo chmod -v 777 "${PSFT_CFG_DIR}"
+    else
+      echodebug 'Skipping pre make PS_CFG_HOME, $PSFT_CFG_DIR not set.'
+    fi
+  else
+    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+      sudo mkdir -p "${PSFT_CFG_DIR}" > /dev/null 2>&1
+      sudo chmod 777 "${PSFT_CFG_DIR}" > /dev/null 2>&1
+    fi
+  fi
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[execute_pre_setup]=$tottime
+}
+
 function execute_psft_dpk_setup() {
   local begin=$(date +%s)
   echoinfo "Setting file execution attribute on psft-dpk-setup.sh"
@@ -434,6 +457,7 @@ determine_tools_version
 determine_puppet_home
 
 # Running the setup script
+execute_pre_setup
 execute_psft_dpk_setup
 
 # Postrequisite fixes
