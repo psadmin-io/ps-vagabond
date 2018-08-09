@@ -141,6 +141,7 @@ DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 DPK_REMOTE_DIR_WIN = "C:/psft/dpks/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200"} unless defined? NETWORK_SETTINGS
+PSFT_CFG_DIR = "/opt/oracle/psft/cfg" unless defined? PSFT_CFG_DIR
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
