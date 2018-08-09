@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-export DEBUG=true
+# export DEBUG=true
 export OFFLINE=true
 
 readonly TMPDIR="$(mktemp -d)"
