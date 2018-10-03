@@ -4,7 +4,6 @@
 require_relative 'config/config'
 
 required_plugins = {
-  'vagrant-vbguest' => '~>0.13.0'
 }
 
 needs_restart = false
@@ -61,12 +60,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
         # vmconfig.vm.box_check_update = true
-        vmconfig.vm.box_version = "1.0.5"
+        # vmconfig.vm.box_version = "1.0.5"
       when "2016"
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-        vmconfig.vm.box_check_update = true
-        vmconfig.vm.box_version = "1.0.1"
+        # vmconfig.vm.box_check_update = true
+        # vmconfig.vm.box_version = "1.0.1"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -76,14 +75,42 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.winrm.password = "vagrant"
       config.winrm.timeout = 10000
       # Plugin settings
-      vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "jrbing/ps-vagabond"
+      # vmconfig.vm.box = "jrbing/ps-vagabond"
+      vmconfig.vm.box = "ol7-latest"
+      vmconfig.vm.box_url = "https://yum.oracle.com/boxes/oraclelinux/latest/ol7-latest.box"
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
+    end
+
+    ###########
+    # Storage #
+    ###########
+
+    case OPERATING_SYSTEM.upcase
+    when "LINUX"
+      # add 2nd disk
+      disk  = "./disk2.vmdk"
+      config.vm.provider "virtualbox" do | p |
+        unless File.exist?(disk)
+          p.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
+        end
+        p.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
+      end
+   
+      # extend default volume group to increase drive space
+      $extend = <<-SCRIPT
+      echo ####### Extending volume group ########
+      echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb
+      pvcreate /dev/sdb1
+      vgextend vg_main /dev/sdb1
+      lvextend -l +100%FREE /dev/mapper/vg_main-lv_root
+      xfs_growfs /dev/mapper/vg_main-lv_root
+      SCRIPT
+      vmconfig.vm.provision "shell", inline: $extend
     end
 
     #############
@@ -120,7 +147,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           # inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
         config.vm.provision "shell",
           run: "always",
-          inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
+          inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end

@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-#export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -40,8 +40,9 @@ readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
+readonly EPEL_URL="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests")
+declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client" "samba-common")
 declare -A timings
 
 ###############
@@ -83,6 +84,30 @@ printf "${BC}  8888P'   \`88888P8 \`8888P88 \`88888P8 88Y8888' \`88888P' dP    d
 printf "${BC}                         .88 ${GC}\n"
 printf "${BC}                     d8888P ${GC}\n"
 printf "\n\n"
+}
+
+function install_extras_repo() {
+  echoinfo "Installing jrbing/ps-extras repository from packagecloud"
+  curl -s https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh | bash
+}
+
+function install_aria_from_repo() {
+  echoinfo "Installing aria2 from repository"
+  yum install -y aria2
+}
+
+function install_epel_repo() {
+  echoinfo "Adding EPEL repo"
+  rpm -UvhF "$EPEL_URL"
+}
+
+function apply_slow_dns_fix() {
+  echoinfo "Applying slow DNS fix (single-request-reopen)"
+  ## https://access.redhat.com/site/solutions/58625 (subscription required)
+  # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
+  # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
+  echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
+  systemctl restart network
 }
 
 function check_dpk_install_dir() {
@@ -134,6 +159,22 @@ function install_additional_packages() {
       sudo yum install -y "${package}" > /dev/null 2>&1
     fi
   done
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[install_additional_packages]=$tottime
+}
+
+function install_prerequisites() {
+  local begin=$(date +%s)
+  echoinfo "Installing prerequisites"
+
+  apply_slow_dns_fix
+  install_epel_repo
+  update_packages
+  install_additional_packages
+  install_extras_repo
+  install_aria_from_repo
+
   local end=$(date +%s)
   local tottime="$((end - begin))"
   timings[install_additional_packages]=$tottime
@@ -445,8 +486,7 @@ echobanner
 # Prerequisites
 check_dpk_install_dir
 check_vagabond_status
-update_packages
-install_additional_packages
+install_prerequisites
 
 # Downloading and unpacking patch files
 download_patch_files
