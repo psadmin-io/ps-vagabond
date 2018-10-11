@@ -164,22 +164,6 @@ function install_additional_packages() {
   timings[install_additional_packages]=$tottime
 }
 
-function install_prerequisites() {
-  local begin=$(date +%s)
-  echoinfo "Installing prerequisites"
-
-  apply_slow_dns_fix
-  install_epel_repo
-  update_packages
-  install_additional_packages
-  install_extras_repo
-  install_aria_from_repo
-
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[install_additional_packages]=$tottime
-}
-
 function create_authorization_cookie() {
   echodebug "Authenticating and generating cookie file"
   # shellcheck disable=2155
@@ -486,7 +470,12 @@ echobanner
 # Prerequisites
 check_dpk_install_dir
 check_vagabond_status
-install_prerequisites
+apply_slow_dns_fix
+install_epel_repo
+update_packages
+install_additional_packages
+install_extras_repo
+install_aria_from_repo
 
 # Downloading and unpacking patch files
 download_patch_files

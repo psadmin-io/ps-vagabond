@@ -110,7 +110,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       lvextend -l +100%FREE /dev/mapper/vg_main-lv_root
       xfs_growfs /dev/mapper/vg_main-lv_root
       SCRIPT
-      vmconfig.vm.provision "shell", inline: $extend
+      vmconfig.vm.provision "shell", run: "once", inline: $extend
     end
 
     #############
@@ -146,26 +146,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           # run: "always",
           # inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
         config.vm.provision "shell",
-          run: "always",
+          run: "once",
           inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
-    end
-
-    # HyperV
-    vmconfig.vm.provider "hyperv" do |hyperv|
-      hyperv.vmname = "#{DPK_VERSION}"
-      hyperv.memory = 8192
-      hyperv.cpus = 2
-      hyperv.vm_integration_services = {
-        guest_service_interface: true,
-        heartbeat: true,
-        key_value_pair_exchange: true,
-        shutdown: true,
-        time_synchronization: true,
-        vss: true
-      }
     end
 
     # HyperV
