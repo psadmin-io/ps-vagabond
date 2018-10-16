@@ -13,3 +13,4 @@ NOTES.md
 
 # Vagrant boxes
 *.box
+*.vmdk

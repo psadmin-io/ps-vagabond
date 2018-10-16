@@ -40,8 +40,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # VirtualBox
     vmconfig.vm.provider "virtualbox" do |vbox,override|
       vbox.name = "#{DPK_VERSION}"
-      # vbox.memory = 4096
-      vbox.memory = 8192
+      vbox.memory = 4096
+      # vbox.memory = 8192
       vbox.cpus = 2
       vbox.gui = false
       if NETWORK_SETTINGS[:type] == "hostonly"
@@ -143,11 +143,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
         # config.vm.provision "shell",
-          # run: "always",
-          # inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
-        config.vm.provision "shell",
-          run: "once",
-          inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+        #   run: "always",
+        #   inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
+        # config.vm.provision "shell",
+        #   run: "aways",
+        #   inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"config.vm.provision "shell",
+        config.vm.provision "shell",  
+          run: "always",
+          inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
