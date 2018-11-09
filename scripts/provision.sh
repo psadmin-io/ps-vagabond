@@ -110,6 +110,11 @@ function apply_slow_dns_fix() {
   systemctl restart network
 }
 
+function start_smb() {
+  echoinfo "Starting Samba"
+  systemctl start smb.service
+}
+
 function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
     echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
@@ -476,6 +481,7 @@ update_packages
 install_additional_packages
 install_extras_repo
 install_aria_from_repo
+start_smb
 
 # Downloading and unpacking patch files
 download_patch_files

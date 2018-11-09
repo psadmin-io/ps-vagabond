@@ -93,7 +93,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "LINUX"
       # add 2nd disk
-      disk  = "./disk2.vmdk"
+      # disk  = "./disk2.vmdk"
+      line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
+      vb_machine_folder = line.split(':')[1].strip()
+      disk = File.join(vb_machine_folder, "#{DPK_VERSION}", 'disk2.vmdk')
+
       config.vm.provider "virtualbox" do | p |
         unless File.exist?(disk)
           p.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
