@@ -238,6 +238,9 @@ function determine_puppet_home() {
     "56" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
+    "57" )
+        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -308,6 +311,18 @@ function execute_puppet_apply() {
             "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
         fi
       ;;
+      "57" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            --verbose \
+            "${PUPPET_HOME}/production/manifests/site.pp"
+        else
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -367,6 +382,22 @@ function execute_psft_dpk_setup() {
         fi
       ;;
     "56" )
+        generate_response_file
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg"
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+        fi
+      ;;
+      "57" )
         generate_response_file
         if [[ -n ${DEBUG+x} ]]; then
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
