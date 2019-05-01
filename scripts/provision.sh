@@ -89,6 +89,7 @@ function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
     echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
     mkdir -p "${DPK_INSTALL}"
+	chmod 777 "${DPK_INSTALL}"
   else
     echodebug "Found DPK installation directory ${DPK_INSTALL}"
   fi
@@ -209,7 +210,11 @@ function unpack_setup_scripts() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
     local begin=$(date +%s)
     echoinfo "Unpacking DPK setup scripts"
-    unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    if [[ -n ${DEBUG+x} ]]; then
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}"
+    else
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    fi
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"
@@ -263,7 +268,7 @@ function lookup_cust_value() {
 }
 
 function generate_response_file() {
-  echoinfo "Generating response file"
+  echodebug "Generating response file"
   local begin=$(date +%s)
 cat > "${DPK_INSTALL}/response.cfg" << EOF
 psft_base_dir="${PSFT_BASE_DIR}"
