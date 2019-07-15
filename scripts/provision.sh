@@ -39,6 +39,7 @@ readonly PATCH_FILE_LIST="${TMPDIR}/file_list"
 readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
+readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
 
 declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests")
 declare -A timings
@@ -237,6 +238,9 @@ function determine_puppet_home() {
     "56" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
+    "57" )
+        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -307,6 +311,18 @@ function execute_puppet_apply() {
             "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
         fi
       ;;
+      "57" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            --verbose \
+            "${PUPPET_HOME}/production/manifests/site.pp"
+        else
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -314,6 +330,28 @@ function execute_puppet_apply() {
   local end=$(date +%s)
   local tottime="$((end - begin))"
   timings[execute_puppet_apply]=$tottime
+}
+
+function execute_pre_setup() {
+  local begin=$(date +%s)
+  echoinfo "Executing Pre setup script"
+  if [[ -n ${DEBUG+x} ]]; then
+    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+      echodebug "Pre making PS_CFG_HOME"
+      sudo mkdir -pv "${PSFT_CFG_DIR}"
+      sudo chmod -v 777 "${PSFT_CFG_DIR}"
+    else
+      echodebug 'Skipping pre make PS_CFG_HOME, $PSFT_CFG_DIR not set.'
+    fi
+  else
+    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+      sudo mkdir -p "${PSFT_CFG_DIR}" > /dev/null 2>&1
+      sudo chmod 777 "${PSFT_CFG_DIR}" > /dev/null 2>&1
+    fi
+  fi
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[execute_pre_setup]=$tottime
 }
 
 function execute_psft_dpk_setup() {
@@ -344,6 +382,22 @@ function execute_psft_dpk_setup() {
         fi
       ;;
     "56" )
+        generate_response_file
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg"
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+        fi
+      ;;
+      "57" )
         generate_response_file
         if [[ -n ${DEBUG+x} ]]; then
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
@@ -434,6 +488,7 @@ determine_tools_version
 determine_puppet_home
 
 # Running the setup script
+execute_pre_setup
 execute_psft_dpk_setup
 
 # Postrequisite fixes

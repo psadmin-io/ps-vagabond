@@ -11,8 +11,8 @@
 # MOS username and password must be specified in order to
 # download the DPK files from Oracle.
 
-MOS_USERNAME='USER@EXAMPLE.COM'
-MOS_PASSWORD='MYMOSPASSWORD'
+#MOS_USERNAME='USER@EXAMPLE.COM'
+#MOS_PASSWORD='MYMOSPASSWORD'
 
 # Alternatively, if you wish to store your credentials in environment
 # variables simply remove the above lines and uncomment the two
@@ -39,7 +39,7 @@ PATCH_ID='23711856'
 # A name describing which dpk is being used. This is primarily used for
 # defining the virtual machine name to be used within VirtualBox. If
 # undefined it will default to the PATCH_ID.
-#DPK_VERSION = 'FSCM92'
+#DPK_VERSION = 'VMNAME'
 
 # PSFT_BASE_DIR
 # the base folder where the DPK will install software
@@ -88,7 +88,7 @@ PATCH_ID='23711856'
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk
 # files. This defaults to the "dpks/<patch_id>" directory from where ps-vagabond is started.
-# DPK_LOCAL_DIR = 'C:/peoplesoft/dpks/fn92u020'
+# DPK_LOCAL_DIR = 'C:/psft/dpks'
 
 # DPK_REMOTE_DIR
 # The directory location on the virtual machine where the dpk files will be
@@ -141,6 +141,7 @@ DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 DPK_REMOTE_DIR_WIN = "C:/psft/dpks/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200"} unless defined? NETWORK_SETTINGS
+PSFT_CFG_DIR = "/opt/oracle/psft/cfg" unless defined? PSFT_CFG_DIR
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY

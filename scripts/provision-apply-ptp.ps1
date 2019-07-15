@@ -76,11 +76,16 @@ function determine_puppet_home() {
       "55" { 
           $PUPPET_HOME = "C:\ProgramData\PuppetLabs\puppet\etc"
        }
-       "56" {
-          $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
-          Write-Host "PeopleTools Patching for 8.56 is not supported yet."
-          exit
-       }
+      "56" {
+        $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
+        Write-Host "PeopleTools Patching for 8.56 is not supported yet."
+        exit
+      }
+      "57" {
+        $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
+        Write-Host "PeopleTools Patching for 8.57 is not supported yet."
+        exit
+     }
       Default { Write-Host "PeopleTools version could not be determined in the bs-manifest file."}
   }  
 

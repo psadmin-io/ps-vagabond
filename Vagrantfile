@@ -304,7 +304,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "MOS_USERNAME" => "#{MOS_USERNAME}",
           "MOS_PASSWORD" => "#{MOS_PASSWORD}",
           "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}"
+          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
+          "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}"
         }
       end
     else
