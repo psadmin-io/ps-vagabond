@@ -259,6 +259,7 @@ Since Vagabond is just a set of configuration files and provisioning scripts for
 | Delete the VM                                | `vagrant destroy`                                | 
 | Connect to the VM                            | `vagrant ssh`                                    | 
 | Connect to the VM (via RDP)                  | `vagrant rdp`                                    |
+| Pre-load app cache                           | `vagrant provision --provision-with=cache`       |
 | Copy your `psft_customizations.yaml` file    | `vagrant provision --provision-with=yaml`        |
 | Copy custom DPK modules                      | `vagrant provision --provision-with=dpk-modules` |
 
