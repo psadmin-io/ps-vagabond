@@ -23,10 +23,6 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  if Vagrant.has_plugin?("vagrant-vbguest")
-    config.vbguest.auto_update = false  
-  end
-
   config.vm.define 'ps-vagabond' do |vmconfig|
 
     # Increase the timeout limit for booting the VM
