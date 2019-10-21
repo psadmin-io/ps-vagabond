@@ -23,6 +23,10 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false  
+  end
+
   config.vm.define 'ps-vagabond' do |vmconfig|
 
     # Increase the timeout limit for booting the VM
@@ -104,6 +108,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_rdp_port],
         host: NETWORK_SETTINGS[:host_rdp_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_es_port],
+        host: NETWORK_SETTINGS[:host_es_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_kb_port],
+        host: NETWORK_SETTINGS[:host_kb_port]
     end
 
     # Bridged network adapter
@@ -307,6 +317,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
           "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}"
         }
+      end
+
+      vmconfig.vm.provision "cache", type: "shell" do |script|
+        script.path = "scripts/preloadcache.sh"
+        script.upload_path = "/tmp/preloadcache.sh"
       end
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
