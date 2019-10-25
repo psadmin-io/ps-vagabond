@@ -239,10 +239,6 @@ function deploy_patched_domains() {
   Write-Host "[${computername}][Done] Deploy patched domains"
 }
 
-# . change_to_midtier
-# . execute_dpk_cleanup
-# . execute_psft_dpk_setup
-
 . determine_tools_version
 . determine_puppet_home
 

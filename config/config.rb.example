@@ -73,7 +73,9 @@ PATCH_ID='23711856'
   #:host_rdp_port => "33389",
   #:guest_rdp_port => "3389",
   #:host_es_port => "9200",
-  #:guest_es_port => "9200"
+  #:guest_es_port => "9200",
+  #:host_kb_port => "5601",
+  #:guest_kb_port => "5601"
 #}
 
 # BRIDGED NETWORK_SETTINGS
