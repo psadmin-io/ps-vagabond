@@ -145,7 +145,7 @@ function create_authorization_cookie() {
   # shellcheck disable=2155
   local MOS_TOKEN="$(curl --silent --head https://updates.oracle.com/Orion/Services/download | grep Location | cut -d '=' -f 2|cut -d ' ' -f 1)"
   local AUTH_DATA="ssousername=$MOS_USERNAME&password=$MOS_PASSWORD&site2pstoretoken=$MOS_TOKEN"
-  wget --secure-protocol=TLSv1 \
+  wget --secure-protocol=auto \
     --save-cookies="${COOKIE_FILE}" \
     --keep-session-cookies \
     --no-check-certificate \
@@ -161,7 +161,7 @@ function download_search_results() {
   echodebug "Downloading search page results for ${PATCH_ID}"
   # plat_lang 226P = Linux x86_64
   # plat_lang 233P = Windows x86_64
-  wget --secure-protocol=TLSv1 \
+  wget --secure-protocol=auto \
     --no-check-certificate \
     --load-cookies="${COOKIE_FILE}" \
     --output-document="${PATCH_SEARCH_OUTPUT}" \
