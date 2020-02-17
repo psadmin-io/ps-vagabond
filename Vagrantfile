@@ -57,16 +57,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "WINDOWS"
       case WIN_VERSION.upcase
-      when "2012R2"
-        # Base box
-        vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
-        # vmconfig.vm.box_check_update = true
-        vmconfig.vm.box_version = "1.0.5"
       when "2016"
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
         vmconfig.vm.box_check_update = true
-        config.vm.box_version = "1.0.3"
+        config.vm.box_version = "1.0.4"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -102,9 +97,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         guest: NETWORK_SETTINGS[:guest_listener_port],
         host: NETWORK_SETTINGS[:host_listener_port]
       config.vm.network "forwarded_port",
-        guest: NETWORK_SETTINGS[:guest_rdp_port],
-        host: NETWORK_SETTINGS[:host_rdp_port]
-      config.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_es_port],
         host: NETWORK_SETTINGS[:host_es_port]
       config.vm.network "forwarded_port",
@@ -130,21 +122,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
-    end
-
-    # HyperV
-    vmconfig.vm.provider "hyperv" do |hyperv|
-      hyperv.vmname = "#{DPK_VERSION}"
-      hyperv.memory = 8192
-      hyperv.cpus = 2
-      hyperv.vm_integration_services = {
-        guest_service_interface: true,
-        heartbeat: true,
-        key_value_pair_exchange: true,
-        shutdown: true,
-        time_synchronization: true,
-        vss: true
-      }
     end
 
     # HyperV
