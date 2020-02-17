@@ -48,6 +48,7 @@ Param(
 $ErrorActionPreference = "Stop"
 $DebugPreference = "SilentlyContinue"
 $VerbosePreference = "SilentlyContinue"
+[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 #------------------------------------------------------------[Variables]----------------------------------------------------------
 
@@ -264,9 +265,6 @@ function download_patch_files {
     }
 	
     record_step_success "download_patch_files"
-    # local end=$(date +%s)
-    # local tottime="$((end - begin))"
-    # timings[download_patch_files]=$tottime
   } else {
     Write-Host "Patch files already downloaded"
   }
@@ -275,7 +273,6 @@ function download_patch_files {
 function unpack_setup_scripts() {
   $status = get-content $VAGABOND_STATUS | convertfrom-json
   if ( $status.unpack_setup_scripts -eq "false") {
-    # local begin=$(date +%s)
     Write-Host "Unpacking DPK setup scripts"
     if ($DEBUG -eq "true") {
       get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
@@ -283,40 +280,18 @@ function unpack_setup_scripts() {
       get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
     }
 	
-	if (-Not (test-path $DPK_INSTALL/setup/*)){
-	Write-Host "#####################################################################################" -foregroundcolor yellow
-    Write-Host "ERROR!!!!! NO  FILES FOUND IN $DPK_INSTALL/setup directory. `n Check logs in %TEMP%\" -foregroundcolor yellow
-	Write-Host "#####################################################################################" -foregroundcolor yellow
-    exit 1
+	  if (-Not (test-path $DPK_INSTALL/setup/*)){
+      Write-Host "#####################################################################################" -foregroundcolor yellow
+      Write-Host "ERROR!!!!! NO  FILES FOUND IN $DPK_INSTALL/setup directory. `n Check logs in %TEMP%\" -foregroundcolor yellow
+      Write-Host "#####################################################################################" -foregroundcolor yellow
+      exit 1
     }
 	
     record_step_success "unpack_setup_scripts"
-    # local end=$(date +%s)
-    # local tottime="$((end - begin))"
-    # timings[unpack_setup_scripts]=$tottime
   } else {
     Write-Host "Setup scripts already unpacked"
   }
 }
-
-# function display_timings_summary {
-#   $divider='============================================================'
-#   $total_duration = 0
-
-#   for duration in "${timings[@]}"; do
-#     total_duration=$((duration + total_duration))
-#   done
-
-#   Write-Host "TASK`t`tDURATION"
-#   Write-Host "${divider}"
-#   for key in "${!timings[@]}"; do
-#     local converted_timing=$(date -u -d @${timings[$key]} +"%T")
-#     printf "$format" "$key" "${converted_timing}"
-#   done
-#   Write-Host "%$width.${width}s\n" "$divider"
-#   Write-Host "$format" "TOTAL TIME:" $(date -u -d @${total_duration} +"%T")
-#   Write-Host "`n"
-# }
 
 function cleanup_before_exit {
   if ($DEBUG -eq "true") {
@@ -325,8 +300,6 @@ function cleanup_before_exit {
     Write-Host "Cleaning up temporary files"
     Remove-Item $env:TEMP -Recurse -Force 2>&1 | out-null
   }
-
-  # $fqdn = facter fqdn
 }
 
 #-----------------------------------------------------------[Execution]-----------------------------------------------------------
@@ -343,7 +316,4 @@ function cleanup_before_exit {
 . download_patch_files
 . unpack_setup_scripts
 
-# . display_timings_summary
-
-# Issue 27 - commenting out for now
 # . cleanup_before_exit

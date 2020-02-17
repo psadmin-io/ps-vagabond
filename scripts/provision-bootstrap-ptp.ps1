@@ -212,7 +212,6 @@ function execute_dpk_cleanup() {
 
 function execute_psft_dpk_setup() {
 
-  # $begin=$(get-date)
   Write-Host "[${computername}][Task] Executing PeopleTools Patch DPK setup script"
   Write-Host "PTP INSTALL: ${PTP_INSTALL}"
   

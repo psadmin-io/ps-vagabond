@@ -4,7 +4,7 @@
 require_relative 'config/config'
 
 required_plugins = {
-  'vagrant-vbguest' => '~>0.13.0'
+  'vagrant-vbguest' => '~>0.20.0'
 }
 
 needs_restart = false
@@ -66,7 +66,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
         vmconfig.vm.box_check_update = true
-        vmconfig.vm.box_version = "1.0.1"
+        config.vm.box_version = "1.0.3"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -104,6 +104,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_rdp_port],
         host: NETWORK_SETTINGS[:host_rdp_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_es_port],
+        host: NETWORK_SETTINGS[:host_es_port]
+      config.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_kb_port],
+        host: NETWORK_SETTINGS[:host_kb_port]
     end
 
     # Bridged network adapter
@@ -307,6 +313,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
           "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}"
         }
+      end
+
+      vmconfig.vm.provision "cache", type: "shell" do |script|
+        script.path = "scripts/preloadcache.sh"
+        script.upload_path = "/tmp/preloadcache.sh"
       end
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
