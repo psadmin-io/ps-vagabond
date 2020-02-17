@@ -263,7 +263,7 @@ function lookup_cust_value() {
 }
 
 function generate_response_file() {
-  echoinfo "Generating response file"
+  echodebug "Generating response file"
   local begin=$(date +%s)
 cat > "${DPK_INSTALL}/response.cfg" << EOF
 psft_base_dir="${PSFT_BASE_DIR}"
