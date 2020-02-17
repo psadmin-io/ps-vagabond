@@ -85,6 +85,36 @@ printf "${BC}                     d8888P ${GC}\n"
 printf "\n\n"
 }
 
+function install_extras_repo() {
+  echoinfo "Installing jrbing/ps-extras repository from packagecloud"
+  curl -s https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh | bash
+}
+
+function install_aria_from_repo() {
+  echoinfo "Installing aria2 from repository"
+  yum install -y aria2
+}
+
+function install_epel_repo() {
+  echoinfo "Adding EPEL repo"
+  rpm -UvhF "$EPEL_URL"
+}
+
+function apply_slow_dns_fix() {
+  echoinfo "Applying slow DNS fix (single-request-reopen)"
+  ## https://access.redhat.com/site/solutions/58625 (subscription required)
+  # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
+  # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
+  echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
+  systemctl restart network
+}
+
+function start_smb() {
+  echoinfo "Starting Samba"
+  systemctl start smb.service
+}
+
+
 function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
     echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
@@ -241,6 +271,9 @@ function determine_puppet_home() {
     "57" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
+    "58" )
+        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -312,6 +345,18 @@ function execute_puppet_apply() {
         fi
       ;;
       "57" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            --verbose \
+            "${PUPPET_HOME}/production/manifests/site.pp"
+        else
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
+      "58" )
         if [[ -n ${DEBUG+x} ]]; then
           sudo puppet apply \
             --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
@@ -413,6 +458,22 @@ function execute_psft_dpk_setup() {
             --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
         fi
       ;;
+      "58" )
+        generate_response_file
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg"
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+        fi
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -476,8 +537,13 @@ echobanner
 # Prerequisites
 check_dpk_install_dir
 check_vagabond_status
+apply_slow_dns_fix
+install_epel_repo
 update_packages
 install_additional_packages
+install_extras_repo
+install_aria_from_repo
+start_smb
 
 # Downloading and unpacking patch files
 download_patch_files
