@@ -35,6 +35,10 @@ PATCH_ID='23711856'
 # One Windows Versions is supported, "2016"
 #WIN_VERSION = "2016"
 
+# MEMORY
+# The amount of RAM to allocate to the Virtual Machine
+MEMORY='8192'
+
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
 # defining the virtual machine name to be used within VirtualBox. If
@@ -75,6 +79,14 @@ PATCH_ID='23711856'
   #:host_kb_port => "5601",
   #:guest_kb_port => "5601"
 #}
+
+# PRIVATE NETWORK_SETTINGS
+# Uncomment and modify the following to use with a private network.  This is useful
+# for making a small private network.
+# NETWORK_SETTINGS = {
+#   :type => "private",
+#   :ip_address => "192.168.56.103"
+# }
 
 # BRIDGED NETWORK_SETTINGS
 # Uncomment and modify the following to use bridged networking.  This is useful
@@ -133,6 +145,7 @@ PATCH_ID='23711856'
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
+MEMORY = "4096" unless defined? MEMORY
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
@@ -140,7 +153,7 @@ DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 #       installation directory) is mounted under "/media/sf_*".
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 DPK_REMOTE_DIR_WIN = "C:/psft/dpks/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
-NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_es_port => "9200", :guest_es_port => "9200", :host_kb_port => "5601", :guest_kb_port => "5601"} unless defined? NETWORK_SETTINGS
+NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200", :host_kb_port => "5601", :guest_kb_port => "5601"} unless defined? NETWORK_SETTINGS
 PSFT_CFG_DIR = "/opt/oracle/psft/cfg" unless defined? PSFT_CFG_DIR
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP

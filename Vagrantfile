@@ -87,13 +87,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "2016"
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-<<<<<<< HEAD
         vmconfig.vm.box_check_update = false
         vmconfig.vm.box_version = "1.0.5"
-=======
-        vmconfig.vm.box_check_update = true
-        config.vm.box_version = "1.0.4"
->>>>>>> ec696452d7eef464c4f3bfc8af8c0c025a275c73
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -151,11 +146,7 @@ SCRIPT
         vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_listener_port],
         host: NETWORK_SETTINGS[:host_listener_port]
-<<<<<<< HEAD
         vmconfig.vm.network "forwarded_port",
-=======
-      config.vm.network "forwarded_port",
->>>>>>> ec696452d7eef464c4f3bfc8af8c0c025a275c73
         guest: NETWORK_SETTINGS[:guest_es_port],
         host: NETWORK_SETTINGS[:host_es_port]
         vmconfig.vm.network "forwarded_port",
@@ -181,14 +172,11 @@ SCRIPT
 
     end
 
-<<<<<<< HEAD
     # Private network with pre-set IP address
     if NETWORK_SETTINGS[:TYPE] == "private"
       vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
     end
 
-=======
->>>>>>> ec696452d7eef464c4f3bfc8af8c0c025a275c73
     ##################
     #  Provisioning  #
     ##################
