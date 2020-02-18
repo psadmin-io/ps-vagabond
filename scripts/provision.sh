@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-#export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -40,8 +40,9 @@ readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
+readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
+declare -a additional_packages=("oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
 declare -A timings
 
 ###############
@@ -85,33 +86,85 @@ printf "${BC}                     d8888P ${GC}\n"
 printf "\n\n"
 }
 
+function echomotd(){
+
+  echo "Welcome to Vagabond - PeopleSoft Images on Vagrant
+
+  List Domains:         psa list
+  Domain Status:        psa status [type] [domain]
+  Stop Domains:         psa stop [type] [domain]
+  Start Domains:        psa start [type] [domain]
+  Restart Domains:      psa restart [type] [domain]
+  Bounce Domains:       psa bounce [type] [domain]
+    Bounce will: stop, clear cache and IPC, reload config, start
+
+  Domain Types: web, app, prcs, all
+  
+  Examples:
+    psa list
+    psa status app
+    psa bounce
+    psa restart web
+    psa stop app APPDOM
+    psa restart prcs 
+
+" | sudo tee /etc/motd
+
+}
+
+function install_prereqs() {
+
+  check_dpk_install_dir
+  check_vagabond_status
+  apply_slow_dns_fix
+  update_packages
+  install_additional_packages
+  install_extras_repo
+  install_aria_from_repo
+  start_smb
+
+}
+
 function install_extras_repo() {
-  echoinfo "Installing jrbing/ps-extras repository from packagecloud"
-  curl -s https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh | bash
+  echoinfo "Installing jrbing/ps-extras"
+  if [[ -n ${DEBUG+x} ]]; then
+    curl -s "${EXTRAS_URL}" | bash
+  else
+    curl -s "${EXTRAS_URL}" | bash > /dev/null 2>&1
+  fi
 }
 
 function install_aria_from_repo() {
-  echoinfo "Installing aria2 from repository"
-  yum install -y aria2
-}
-
-function install_epel_repo() {
-  echoinfo "Adding EPEL repo"
-  rpm -UvhF "$EPEL_URL"
+  echodebug "Installing aria2 from repository"
+  if [[ -n ${DEBUG+x} ]]; then
+    yum install -y aria2
+  else
+    yum install -y aria2 > /dev/null 2>&1
+  fi
 }
 
 function apply_slow_dns_fix() {
-  echoinfo "Applying slow DNS fix (single-request-reopen)"
+  echodebug "Applying slow DNS fix (single-request-reopen)"
   ## https://access.redhat.com/site/solutions/58625 (subscription required)
   # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
   # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
-  echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
-  systemctl restart network
+  if [[ -n ${DEBUG+x} ]]; then
+    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
+    systemctl restart network
+  else
+    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
+    systemctl restart network > /dev/null 2>&1
+  fi
+  
 }
 
 function start_smb() {
-  echoinfo "Starting Samba"
-  systemctl start smb.service
+  echodebug "Starting Samba"
+  if [[ -n ${DEBUG+x} ]]; then
+    systemctl start smb.service
+  else
+    systemctl start smb.service > /dev/null 2>&1
+  fi
 }
 
 
@@ -401,7 +454,7 @@ function execute_pre_setup() {
 
 function execute_psft_dpk_setup() {
   local begin=$(date +%s)
-  echoinfo "Setting file execution attribute on psft-dpk-setup.sh"
+  echodebug "Setting file execution attribute on psft-dpk-setup.sh"
   chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
   echoinfo "Executing DPK setup script"
   case ${TOOLS_MINOR_VERSION} in
@@ -494,6 +547,23 @@ function fix_init_script() {
   sudo systemctl daemon-reload
 }
 
+function install_psadmin_plus(){
+  local begin=$(date +%s)
+  echoinfo "Install psadmin_plus"
+
+  if [[ -n ${DEBUG+x} ]]; then
+    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus
+  else 
+    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
+  fi
+  
+  echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile
+
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[install_psadmin_plus]=$tottime
+}
+
 function display_timings_summary() {
   local divider='=============================='
   divider=$divider$divider
@@ -533,17 +603,10 @@ trap cleanup_before_exit EXIT
 ##########
 
 echobanner
+echomotd
 
 # Prerequisites
-check_dpk_install_dir
-check_vagabond_status
-apply_slow_dns_fix
-install_epel_repo
-update_packages
-install_additional_packages
-install_extras_repo
-install_aria_from_repo
-start_smb
+install_prereqs
 
 # Downloading and unpacking patch files
 download_patch_files
@@ -559,6 +622,7 @@ execute_psft_dpk_setup
 
 # Postrequisite fixes
 fix_init_script
+install_psadmin_plus
 
 # Summary information
 display_timings_summary

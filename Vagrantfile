@@ -46,6 +46,35 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       if NETWORK_SETTINGS[:type] == "hostonly"
         vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
+
+      case OPERATING_SYSTEM.upcase
+      when "LINUX"
+        # add disk file for PeopleSoft
+        line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
+        vb_machine_folder = line.split(':')[1].strip()
+        disk = File.join(vb_machine_folder, "#{DPK_VERSION}", 'data001.vdi')
+        
+        unless File.exist?(disk)
+          vbox.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
+        end
+        vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
+      end
+
+    end
+
+    # HyperV
+    vmconfig.vm.provider "hyperv" do |hyperv|
+      hyperv.vmname = "#{DPK_VERSION}"
+      hyperv.memory = "#{MEMORY}"
+      hyperv.cpus = 2
+      hyperv.vm_integration_services = {
+        guest_service_interface: true,
+        heartbeat: true,
+        key_value_pair_exchange: true,
+        shutdown: true,
+        time_synchronization: true,
+        vss: true
+      }
     end
 
     ######################
@@ -55,31 +84,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "WINDOWS"
       case WIN_VERSION.upcase
-      when "2012R2"
-        # Base box
-        vmconfig.vm.box = "psadmin-io/ps-vagabond-win"
-        # vmconfig.vm.box_check_update = true
-        vmconfig.vm.box_version = "1.0.5"
       when "2016"
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-        vmconfig.vm.box_check_update = true
-        config.vm.box_version = "1.0.4"
+        vmconfig.vm.box_check_update = false
+        vmconfig.vm.box_version = "1.0.5"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
       # WinRM communication settings
       vmconfig.vm.communicator = "winrm"
-      config.winrm.username = "vagrant"
-      config.winrm.password = "vagrant"
-      config.winrm.timeout = 10000
+      vmconfig.winrm.username = "vagrant"
+      vmconfig.winrm.password = "vagrant"
+      vmconfig.winrm.timeout = 10000
       # Plugin settings
       vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
-      # vmconfig.vm.box = "jrbing/ps-vagabond"
-      vmconfig.vm.box = "ol7-latest"
-      vmconfig.vm.box_url = "https://yum.oracle.com/boxes/oraclelinux/latest/ol7-latest.box"
+      vmconfig.vm.box = "bento/oracle-7.7"
+      vmconfig.vm.box_check_update = false
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
     else
@@ -92,29 +115,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     case OPERATING_SYSTEM.upcase
     when "LINUX"
-      # add 2nd disk
-      # disk  = "./disk2.vmdk"
-      line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
-      vb_machine_folder = line.split(':')[1].strip()
-      disk = File.join(vb_machine_folder, "#{DPK_VERSION}", 'disk2.vmdk')
-
-      config.vm.provider "virtualbox" do | p |
-        unless File.exist?(disk)
-          p.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
-        end
-        p.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
-      end
-   
-      # extend default volume group to increase drive space
+      # extend volume group to for PeopleSoft
       $extend = <<-SCRIPT
-      echo ####### Extending volume group ########
-      echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb
-      pvcreate /dev/sdb1
-      vgextend vg_main /dev/sdb1
-      lvextend -l +100%FREE /dev/mapper/vg_main-lv_root
-      xfs_growfs /dev/mapper/vg_main-lv_root
-      SCRIPT
-      vmconfig.vm.provision "shell", run: "once", inline: $extend
+echo ####### Extending volume group ########
+echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb
+pvcreate /dev/sdb1
+vgextend ol /dev/sdb1
+lvcreate --name ps -l +100%FREE ol
+mkfs.xfs /dev/ol/ps
+mkdir -p /opt/oracle
+mount /dev/ol/ps /opt/oracle
+echo "/dev/mapper/ol-ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab
+SCRIPT
+
+      vmconfig.vm.provision "storage", type: "shell", run: "once", inline: $extend
     end
 
     #############
@@ -125,17 +139,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Host-only network adapter
     if NETWORK_SETTINGS[:type] == "hostonly"
-      config.vm.network "private_network", type: "dhcp"
-      config.vm.network "forwarded_port",
+      vmconfig.vm.network "private_network", type: "dhcp"
+      vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_http_port],
         host: NETWORK_SETTINGS[:host_http_port]
-      config.vm.network "forwarded_port",
+        vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_listener_port],
         host: NETWORK_SETTINGS[:host_listener_port]
-      config.vm.network "forwarded_port",
+        vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_es_port],
         host: NETWORK_SETTINGS[:host_es_port]
-      config.vm.network "forwarded_port",
+        vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
     end
@@ -149,10 +163,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
-        # config.vm.provision "shell",
-          # run: "always",
-          # inline: "route add default gw #{NETWORK_SETTINGS[:gateway]}"
-        config.vm.provision "shell",
+        vmconfig.vm.provision "shell",
           run: "always",
           inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
       else
@@ -161,34 +172,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     end
 
+    # Private network with pre-set IP address
     if NETWORK_SETTINGS[:TYPE] == "private"
-      case OPERATING_SYSTEM.upcase
-      when "WINDOWS"
-        vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
-      when "LINUX"
-        vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
-        config.vm.provision "shell",
-          run: "always",
-          inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
-      else
-        raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
-      end
-    
-    end
-
-    # HyperV
-    vmconfig.vm.provider "hyperv" do |hyperv|
-      hyperv.vmname = "#{DPK_VERSION}"
-      hyperv.memory = 8192
-      hyperv.cpus = 2
-      hyperv.vm_integration_services = {
-        guest_service_interface: true,
-        heartbeat: true,
-        key_value_pair_exchange: true,
-        shutdown: true,
-        time_synchronization: true,
-        vss: true
-      }
+      vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
     end
 
     ##################
@@ -332,7 +318,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # end
 
     elsif OPERATING_SYSTEM.upcase == "LINUX"
-      vmconfig.vm.provision "shell" do |script|
+
+      $guestadditions = <<-SCRIPT
+echo "[OEL7_Release5]
+name=Oracle Linux 7 (x86_64) UEK Release 5
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/UEKR5/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+" | sudo tee /etc/yum.repos.d/oel7r5.repo
+sudo yum install -y kernel-uek-$(uname -r) kernel-uek-devel-$(uname -r)
+sudo /sbin/rcvboxadd setup
+      SCRIPT
+
+      vmconfig.vm.provision "guestadditions-lnx", type: "shell", run: "once", inline: $guestadditions
+
+      vmconfig.vm.provision "bootstrap-lnx", type: "shell" do |script|
         script.path = "scripts/provision.sh"
         script.upload_path = "/tmp/provision.sh"
         script.env = {
@@ -344,7 +345,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         }
       end
 
-      vmconfig.vm.provision "cache", type: "shell" do |script|
+      vmconfig.vm.provision "cache-lnx", type: "shell" do |script|
         script.path = "scripts/preloadcache.sh"
         script.upload_path = "/tmp/preloadcache.sh"
       end
@@ -361,7 +362,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # initialize: vagrant pushover-init
     # configure: $EDITOR .vagrant/pushover.rb
     if Vagrant.has_plugin?("vagrant-pushover")
-      config.pushover.read_key
+      vmconfig.pushover.read_key
     end
 
     #################
