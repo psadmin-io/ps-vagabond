@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-export DEBUG=true
+# export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -172,6 +172,7 @@ function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
     echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
     mkdir -p "${DPK_INSTALL}"
+	chmod 777 "${DPK_INSTALL}"
   else
     echodebug "Found DPK installation directory ${DPK_INSTALL}"
   fi
@@ -227,6 +228,7 @@ function create_authorization_cookie() {
   # shellcheck disable=2155
   local MOS_TOKEN="$(curl --silent --head https://updates.oracle.com/Orion/Services/download | grep Location | cut -d '=' -f 2|cut -d ' ' -f 1)"
   local AUTH_DATA="ssousername=$MOS_USERNAME&password=$MOS_PASSWORD&site2pstoretoken=$MOS_TOKEN"
+
   wget --secure-protocol=auto \
     --save-cookies="${COOKIE_FILE}" \
     --keep-session-cookies \
@@ -243,6 +245,7 @@ function download_search_results() {
   echodebug "Downloading search page results for ${PATCH_ID}"
   # plat_lang 226P = Linux x86_64
   # plat_lang 233P = Windows x86_64
+
   wget --secure-protocol=auto \
     --no-check-certificate \
     --load-cookies="${COOKIE_FILE}" \
@@ -254,7 +257,7 @@ function download_search_results() {
 function extract_download_links() {
   echodebug "Extracting download links"
   grep "btn_Download" "${PATCH_SEARCH_OUTPUT}" | \
-    egrep ".*" | \
+    grep -E ".*" | \
     sed 's/ //g' | \
     sed "s/.*href=\"//g" | \
     sed "s/\".*//g" \
@@ -292,7 +295,11 @@ function unpack_setup_scripts() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
     local begin=$(date +%s)
     echoinfo "Unpacking DPK setup scripts"
-    unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    if [[ -n ${DEBUG+x} ]]; then
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}"
+    else
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    fi
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"
@@ -439,10 +446,10 @@ function execute_pre_setup() {
       sudo mkdir -pv "${PSFT_CFG_DIR}"
       sudo chmod -v 777 "${PSFT_CFG_DIR}"
     else
-      echodebug 'Skipping pre make PS_CFG_HOME, $PSFT_CFG_DIR not set.'
+      echodebug 'Skipping pre make PS_CFG_HOME, PSFT_CFG_DIR not set.'
     fi
   else
-    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+    if [ -n "${PSFT_CFG_DIR}" ]; then
       sudo mkdir -p "${PSFT_CFG_DIR}" > /dev/null 2>&1
       sudo chmod 777 "${PSFT_CFG_DIR}" > /dev/null 2>&1
     fi
@@ -603,9 +610,9 @@ trap cleanup_before_exit EXIT
 ##########
 
 echobanner
-echomotd
 
 # Prerequisites
+echomotd
 install_prereqs
 
 # Downloading and unpacking patch files
