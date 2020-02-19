@@ -118,14 +118,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # extend volume group to for PeopleSoft
       $extend = <<-SCRIPT
 echo ####### Extending volume group ########
-echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb
-pvcreate /dev/sdb1
-vgextend ol /dev/sdb1
-lvcreate --name ps -l +100%FREE ol
-mkfs.xfs /dev/ol/ps
-mkdir -p /opt/oracle
-mount /dev/ol/ps /opt/oracle
-echo "/dev/mapper/ol-ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab
+echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb > /dev/null 2>&1
+pvcreate /dev/sdb1 > /dev/null 2>&1
+vgextend ol /dev/sdb1 > /dev/null 2>&1
+lvcreate --name ps -l +100%FREE ol > /dev/null 2>&1
+mkfs.xfs /dev/ol/ps > /dev/null 2>&1
+mkdir -p /opt/oracle > /dev/null 2>&1
+mount /dev/ol/ps /opt/oracle > /dev/null 2>&1
+echo "/dev/mapper/ol-ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
 SCRIPT
 
       vmconfig.vm.provision "storage", type: "shell", run: "once", inline: $extend
@@ -326,9 +326,9 @@ baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/UEKR5/x86_64
 enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-" | sudo tee /etc/yum.repos.d/oel7r5.repo
-sudo yum install -y kernel-uek-$(uname -r) kernel-uek-devel-$(uname -r)
-sudo /sbin/rcvboxadd setup
+" | sudo tee /etc/yum.repos.d/oel7r5.repo > /dev/null 2>&1
+sudo yum install -y kernel-uek-$(uname -r) kernel-uek-devel-$(uname -r) > /dev/null 2>&1
+sudo /sbin/rcvboxadd setup > /dev/null 2>&1
       SCRIPT
 
       vmconfig.vm.provision "guestadditions-lnx", type: "shell", run: "once", inline: $guestadditions

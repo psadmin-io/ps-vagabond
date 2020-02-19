@@ -108,7 +108,7 @@ function echomotd(){
     psa stop app APPDOM
     psa restart prcs 
 
-" | sudo tee /etc/motd
+" | sudo tee /etc/motd > /dev/null 2>&1
 
 }
 
@@ -564,7 +564,7 @@ function install_psadmin_plus(){
     sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
   fi
   
-  echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile
+  echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
 
   local end=$(date +%s)
   local tottime="$((end - begin))"
