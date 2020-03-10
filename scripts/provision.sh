@@ -544,14 +544,21 @@ function execute_psft_dpk_setup() {
 }
 
 function fix_init_script() {
-  # For some reason the psft-db init script fails upon subsequent
-  # reboots of the VM due to the LD_LIBRARY_PATH variable not being
-  # available.  Since this works on prior versions of RHEL/OEL, I
-  # can only assume it's due to a difference in the way that
-  # systemd manages legacy init scripts.
-  echoinfo "Applying fix for psft-db init script"
-  sudo sed -i '/^LD_LIBRARY_PATH/s/^/export /' /etc/init.d/psft-db
-  sudo systemctl daemon-reload
+  case ${TOOLS_MINOR_VERSION} in
+    "55"|"56"|"57" )
+      # For some reason the psft-db init script fails upon subsequent
+      # reboots of the VM due to the LD_LIBRARY_PATH variable not being
+      # available.  Since this works on prior versions of RHEL/OEL, I
+      # can only assume it's due to a difference in the way that
+      # systemd manages legacy init scripts.
+      echoinfo "Applying fix for psft-db init script"
+      sudo sed -i '/^LD_LIBRARY_PATH/s/^/export /' /etc/init.d/psft-db
+      sudo systemctl daemon-reload
+      ;;
+    * )
+      # 8.58 moved to systemd
+      ;;
+  esac
 }
 
 function install_psadmin_plus(){
