@@ -51,7 +51,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "LINUX"
         # add disk file for PeopleSoft
         line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
-        vb_machine_folder = line.split(':')[1].strip()
+        vb_machine_folder = line.split(':',2)[1].strip()
         disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
         
         unless File.exist?(disk)
