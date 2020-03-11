@@ -268,9 +268,12 @@ function download_patch_files() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
     echoinfo "Downloading patch files"
     local begin=$(date +%s)
+    
     create_authorization_cookie
     download_search_results
     extract_download_links
+
+    echodebug "Downloading .zip files for ${PATCH_ID}"
     aria2c \
       --input-file="${PATCH_FILE_LIST}" \
       --dir="${DPK_INSTALL}" \
@@ -282,6 +285,7 @@ function download_patch_files() {
       --file-allocation=none \
       --log="${DOWNLOAD_LOGFILE}" \
       --log-level="info"
+      
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"

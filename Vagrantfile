@@ -51,11 +51,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "LINUX"
         # add disk file for PeopleSoft
         line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
-        vb_machine_folder = line.split(':')[1].strip()
-        disk = File.join(vb_machine_folder, "#{DPK_VERSION}", 'data001.vdi')
+        vb_machine_folder = line.split(':',2)[1].strip()
+        disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
         
         unless File.exist?(disk)
-          vbox.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
+          vbox.customize ['createhd', '--filename', disk, '--size', 105 * 1024]
         end
         vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
       end
@@ -97,8 +97,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.winrm.username = "vagrant"
       vmconfig.winrm.password = "vagrant"
       vmconfig.winrm.timeout = 10000
-      # Plugin settings
-      vmconfig.vbguest.auto_update = false
     when "LINUX"
       # Base box
       vmconfig.vm.box = "bento/oracle-7.7"
@@ -165,7 +163,7 @@ SCRIPT
         # with Linux in order to make the machine available from other networks.
         vmconfig.vm.provision "shell",
           run: "always",
-          inline: "nmcli connection modify \"enp0s3\" ipv4.never-default yes && nmcli connection modify \"System enp0s8\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
+          inline: "nmcli connection modify \"eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
