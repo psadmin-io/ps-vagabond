@@ -52,10 +52,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # add disk file for PeopleSoft
         line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
         vb_machine_folder = line.split(':')[1].strip()
-        disk = File.join(vb_machine_folder, "#{DPK_VERSION}", 'data001.vdi')
+        disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
         
         unless File.exist?(disk)
-          vbox.customize ['createhd', '--filename', disk, '--size', 100 * 1024]
+          vbox.customize ['createhd', '--filename', disk, '--size', 105 * 1024]
         end
         vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
       end
