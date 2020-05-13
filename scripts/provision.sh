@@ -231,7 +231,6 @@ function create_authorization_cookie() {
 
   wget --secure-protocol=auto \
     --save-cookies="${COOKIE_FILE}" \
-
     --keep-session-cookies \
     --no-check-certificate \
     --post-data="$AUTH_DATA" \
