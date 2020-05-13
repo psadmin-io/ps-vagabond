@@ -101,6 +101,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Base box
       vmconfig.vm.box = "bento/oracle-7.7"
       vmconfig.vm.box_check_update = false
+
+      # Bento Oracle 7.7 already has vbguest installed.
+      #   You can update this manually after provisioning.
+      config.vbguest.auto_update = false
+	  
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
     else
@@ -316,20 +321,6 @@ SCRIPT
       # end
 
     elsif OPERATING_SYSTEM.upcase == "LINUX"
-
-      $guestadditions = <<-SCRIPT
-echo "[OEL7_Release5]
-name=Oracle Linux 7 (x86_64) UEK Release 5
-baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/UEKR5/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-" | sudo tee /etc/yum.repos.d/oel7r5.repo > /dev/null 2>&1
-sudo yum install -y kernel-uek-$(uname -r) kernel-uek-devel-$(uname -r) > /dev/null 2>&1
-sudo /sbin/rcvboxadd setup > /dev/null 2>&1
-      SCRIPT
-
-      vmconfig.vm.provision "guestadditions-lnx", type: "shell", run: "once", inline: $guestadditions
 
       vmconfig.vm.provision "bootstrap-lnx", type: "shell" do |script|
         script.path = "scripts/provision.sh"
