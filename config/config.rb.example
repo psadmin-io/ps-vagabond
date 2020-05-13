@@ -30,10 +30,14 @@ PATCH_ID='23711856'
 # OPERATING_SYSTEM
 # Which OS to use as the base box for the DPK.  The available options
 # are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
-# (Windows 2012 R2). If left undefined, it will default to Linux.
+# If left undefined, it will default to Linux.
 #OPERATING_SYSTEM = 'WINDOWS'
-# Two Windows Versions are supported, "2012R2" and "2016"
-# WIN_VERSION = "2016"
+# One Windows Versions is supported, "2016"
+#WIN_VERSION = "2016"
+
+# MEMORY
+# The amount of RAM to allocate to the Virtual Machine
+MEMORY='8192'
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
@@ -70,13 +74,19 @@ PATCH_ID='23711856'
   #:guest_http_port => "8000",
   #:host_listener_port => "1522",
   #:guest_listener_port => "1522",
-  #:host_rdp_port => "33389",
-  #:guest_rdp_port => "3389",
   #:host_es_port => "9200",
   #:guest_es_port => "9200",
   #:host_kb_port => "5601",
   #:guest_kb_port => "5601"
 #}
+
+# PRIVATE NETWORK_SETTINGS
+# Uncomment and modify the following to use with a private network.  This is useful
+# for making a small private network.
+# NETWORK_SETTINGS = {
+#   :type => "private",
+#   :ip_address => "192.168.56.103"
+# }
 
 # BRIDGED NETWORK_SETTINGS
 # Uncomment and modify the following to use bridged networking.  This is useful
@@ -90,14 +100,14 @@ PATCH_ID='23711856'
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk
 # files. This defaults to the "dpks/<patch_id>" directory from where ps-vagabond is started.
-# DPK_LOCAL_DIR = 'C:/psft/dpks'
+#DPK_LOCAL_DIR = 'C:/psft/dpks'
 
 # DPK_REMOTE_DIR
 # The directory location on the virtual machine where the dpk files will be
 # downloaded, extracted, and run from.  This defaults to the
 # "/media/sf_<dpk_version>" directory on the VM.
-# DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
-# DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
+#DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
+#DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
@@ -106,12 +116,12 @@ PATCH_ID='23711856'
 #       scripts will try to "fix" it by stripping off the domain
 # NOTE: On Windows, use only the hostname, not the domain name.
 #       VirtualBox will error if the hostname has "." in it
-# FQDN='psvagabond'
+#FQDN='psvagabond'
 
 # CLIENT_TOOLS
 # Set CLIENT_TOOLS to true if you want the PeopleTools Client to
 # be installed
-# CLIENT_TOOLS = 'true'
+#CLIENT_TOOLS = 'true'
 
 # CA_SETTINGS
 # Uncomment and modify the following to setup Change Assistant.
@@ -135,6 +145,7 @@ PATCH_ID='23711856'
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
+MEMORY = "4096" unless defined? MEMORY
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR

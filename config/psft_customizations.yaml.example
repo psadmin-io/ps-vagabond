@@ -2,7 +2,7 @@
 #peoplesoft_base:   /opt/oracle/psft
 #peoplesoft_base:   c:/psft
 
-#ps_config_home:         "%{hiera('peoplesoft_base')}/cfg"
+ps_config_home:         "%{hiera('peoplesoft_base')}/cfg"
 #ps_home_location:       "%{hiera('pt_location')}/..."
 #inventory_location:     "%{hiera('db_location')}/oraInventory"
 #oracle_client_location: "%{hiera('pt_location')}/oracle-client/..."

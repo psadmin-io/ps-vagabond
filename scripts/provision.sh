@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-#export DEBUG=true
+# export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -40,8 +40,9 @@ readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
+readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests")
+declare -a additional_packages=("oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
 declare -A timings
 
 ###############
@@ -85,10 +86,93 @@ printf "${BC}                     d8888P ${GC}\n"
 printf "\n\n"
 }
 
+function echomotd(){
+
+  echo "Welcome to Vagabond - PeopleSoft Images on Vagrant
+
+  List Domains:         psa list
+  Domain Status:        psa status [type] [domain]
+  Stop Domains:         psa stop [type] [domain]
+  Start Domains:        psa start [type] [domain]
+  Restart Domains:      psa restart [type] [domain]
+  Bounce Domains:       psa bounce [type] [domain]
+    Bounce will: stop, clear cache and IPC, reload config, start
+
+  Domain Types: web, app, prcs, all
+  
+  Examples:
+    psa list
+    psa status app
+    psa bounce
+    psa restart web
+    psa stop app APPDOM
+    psa restart prcs 
+
+" | sudo tee /etc/motd > /dev/null 2>&1
+
+}
+
+function install_prereqs() {
+
+  check_dpk_install_dir
+  check_vagabond_status
+  apply_slow_dns_fix
+  update_packages
+  install_additional_packages
+  install_extras_repo
+  install_aria_from_repo
+  start_smb
+
+}
+
+function install_extras_repo() {
+  echoinfo "Installing jrbing/ps-extras"
+  if [[ -n ${DEBUG+x} ]]; then
+    curl -s "${EXTRAS_URL}" | bash
+  else
+    curl -s "${EXTRAS_URL}" | bash > /dev/null 2>&1
+  fi
+}
+
+function install_aria_from_repo() {
+  echodebug "Installing aria2 from repository"
+  if [[ -n ${DEBUG+x} ]]; then
+    yum install -y aria2
+  else
+    yum install -y aria2 > /dev/null 2>&1
+  fi
+}
+
+function apply_slow_dns_fix() {
+  echodebug "Applying slow DNS fix (single-request-reopen)"
+  ## https://access.redhat.com/site/solutions/58625 (subscription required)
+  # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
+  # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
+  if [[ -n ${DEBUG+x} ]]; then
+    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
+    systemctl restart network
+  else
+    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
+    systemctl restart network > /dev/null 2>&1
+  fi
+  
+}
+
+function start_smb() {
+  echodebug "Starting Samba"
+  if [[ -n ${DEBUG+x} ]]; then
+    systemctl start smb.service
+  else
+    systemctl start smb.service > /dev/null 2>&1
+  fi
+}
+
+
 function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
     echodebug "DPK installation directory ${DPK_INSTALL} does not exist"
     mkdir -p "${DPK_INSTALL}"
+	chmod 777 "${DPK_INSTALL}"
   else
     echodebug "Found DPK installation directory ${DPK_INSTALL}"
   fi
@@ -174,7 +258,7 @@ function download_search_results() {
 function extract_download_links() {
   echodebug "Extracting download links"
   grep "btn_Download" "${PATCH_SEARCH_OUTPUT}" | \
-    egrep ".*" | \
+    grep -E ".*" | \
     sed 's/ //g' | \
     sed "s/.*href=\"//g" | \
     sed "s/\".*//g" \
@@ -185,9 +269,12 @@ function download_patch_files() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
     echoinfo "Downloading patch files"
     local begin=$(date +%s)
+    
     create_authorization_cookie
     download_search_results
     extract_download_links
+
+    echodebug "Downloading .zip files for ${PATCH_ID}"
     aria2c \
       --input-file="${PATCH_FILE_LIST}" \
       --dir="${DPK_INSTALL}" \
@@ -199,6 +286,7 @@ function download_patch_files() {
       --file-allocation=none \
       --log="${DOWNLOAD_LOGFILE}" \
       --log-level="info"
+      
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"
@@ -212,7 +300,11 @@ function unpack_setup_scripts() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
     local begin=$(date +%s)
     echoinfo "Unpacking DPK setup scripts"
-    unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    if [[ -n ${DEBUG+x} ]]; then
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}"
+    else
+      unzip -u "${DPK_INSTALL}/*_1of*.zip" -d "${DPK_INSTALL}" > /dev/null 2>&1
+    fi
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"
@@ -244,6 +336,9 @@ function determine_puppet_home() {
     "57" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
+    "58" )
+        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -266,7 +361,7 @@ function lookup_cust_value() {
 }
 
 function generate_response_file() {
-  echoinfo "Generating response file"
+  echodebug "Generating response file"
   local begin=$(date +%s)
 cat > "${DPK_INSTALL}/response.cfg" << EOF
 psft_base_dir="${PSFT_BASE_DIR}"
@@ -326,6 +421,18 @@ function execute_puppet_apply() {
             "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
         fi
       ;;
+      "58" )
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            --verbose \
+            "${PUPPET_HOME}/production/manifests/site.pp"
+        else
+          sudo puppet apply \
+            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
+            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
+        fi
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -344,10 +451,10 @@ function execute_pre_setup() {
       sudo mkdir -pv "${PSFT_CFG_DIR}"
       sudo chmod -v 777 "${PSFT_CFG_DIR}"
     else
-      echodebug 'Skipping pre make PS_CFG_HOME, $PSFT_CFG_DIR not set.'
+      echodebug 'Skipping pre make PS_CFG_HOME, PSFT_CFG_DIR not set.'
     fi
   else
-    if [ ! -z "${PSFT_CFG_DIR}" ]; then
+    if [ -n "${PSFT_CFG_DIR}" ]; then
       sudo mkdir -p "${PSFT_CFG_DIR}" > /dev/null 2>&1
       sudo chmod 777 "${PSFT_CFG_DIR}" > /dev/null 2>&1
     fi
@@ -359,7 +466,7 @@ function execute_pre_setup() {
 
 function execute_psft_dpk_setup() {
   local begin=$(date +%s)
-  echoinfo "Setting file execution attribute on psft-dpk-setup.sh"
+  echodebug "Setting file execution attribute on psft-dpk-setup.sh"
   chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
   echoinfo "Executing DPK setup script"
   case ${TOOLS_MINOR_VERSION} in
@@ -416,6 +523,22 @@ function execute_psft_dpk_setup() {
             --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
         fi
       ;;
+      "58" )
+        generate_response_file
+        if [[ -n ${DEBUG+x} ]]; then
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg"
+        else
+          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
+            --dpk_src_dir="${DPK_INSTALL}" \
+            --customization_file="${CUSTOMIZATION_FILE}" \
+            --silent \
+            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
+        fi
+      ;;
     * )
         echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
       ;;
@@ -426,14 +549,38 @@ function execute_psft_dpk_setup() {
 }
 
 function fix_init_script() {
-  # For some reason the psft-db init script fails upon subsequent
-  # reboots of the VM due to the LD_LIBRARY_PATH variable not being
-  # available.  Since this works on prior versions of RHEL/OEL, I
-  # can only assume it's due to a difference in the way that
-  # systemd manages legacy init scripts.
-  echoinfo "Applying fix for psft-db init script"
-  sudo sed -i '/^LD_LIBRARY_PATH/s/^/export /' /etc/init.d/psft-db
-  sudo systemctl daemon-reload
+  case ${TOOLS_MINOR_VERSION} in
+    "55"|"56"|"57" )
+      # For some reason the psft-db init script fails upon subsequent
+      # reboots of the VM due to the LD_LIBRARY_PATH variable not being
+      # available.  Since this works on prior versions of RHEL/OEL, I
+      # can only assume it's due to a difference in the way that
+      # systemd manages legacy init scripts.
+      echoinfo "Applying fix for psft-db init script"
+      sudo sed -i '/^LD_LIBRARY_PATH/s/^/export /' /etc/init.d/psft-db
+      sudo systemctl daemon-reload
+      ;;
+    * )
+      # 8.58 moved to systemd
+      ;;
+  esac
+}
+
+function install_psadmin_plus(){
+  local begin=$(date +%s)
+  echoinfo "Install psadmin_plus"
+
+  if [[ -n ${DEBUG+x} ]]; then
+    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus
+  else 
+    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
+  fi
+  
+  echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
+
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[install_psadmin_plus]=$tottime
 }
 
 function display_timings_summary() {
@@ -477,10 +624,8 @@ trap cleanup_before_exit EXIT
 echobanner
 
 # Prerequisites
-check_dpk_install_dir
-check_vagabond_status
-update_packages
-install_additional_packages
+echomotd
+install_prereqs
 
 # Downloading and unpacking patch files
 download_patch_files
@@ -496,6 +641,7 @@ execute_psft_dpk_setup
 
 # Postrequisite fixes
 fix_init_script
+install_psadmin_plus
 
 # Summary information
 display_timings_summary
