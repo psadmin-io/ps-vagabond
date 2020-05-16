@@ -107,7 +107,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vbguest.auto_update = false
 	  
       # Sync folder to be used for downloading the dpks
-      vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}"
+      vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}", mount_options: ["dmode=775,fmode=777"]
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
     end

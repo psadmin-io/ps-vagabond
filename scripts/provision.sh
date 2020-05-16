@@ -466,7 +466,12 @@ function execute_pre_setup() {
 function execute_psft_dpk_setup() {
   local begin=$(date +%s)
   echodebug "Setting file execution attribute on psft-dpk-setup.sh"
-  chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
+  
+  # This should already be executable, but just in case it's not
+  if [[ ! -x "${DPK_INSTALL}/setup/psft-dpk-setup.sh" ]]; then
+	chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
+  fi  
+  
   echoinfo "Executing DPK setup script"
   case ${TOOLS_MINOR_VERSION} in
     "55" )
