@@ -42,7 +42,7 @@ readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
 readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
+declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
 declare -A timings
 
 ###############
@@ -466,7 +466,12 @@ function execute_pre_setup() {
 function execute_psft_dpk_setup() {
   local begin=$(date +%s)
   echodebug "Setting file execution attribute on psft-dpk-setup.sh"
-  chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
+  
+  # This should already be executable, but just in case it's not
+  if [[ ! -x "${DPK_INSTALL}/setup/psft-dpk-setup.sh" ]]; then
+	chmod +x "${DPK_INSTALL}/setup/psft-dpk-setup.sh"
+  fi  
+  
   echoinfo "Executing DPK setup script"
   case ${TOOLS_MINOR_VERSION} in
     "55" )
