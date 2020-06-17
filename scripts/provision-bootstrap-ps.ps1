@@ -72,10 +72,7 @@ function determine_puppet_home() {
         "55" { 
             $PUPPET_HOME = "C:\ProgramData\PuppetLabs\puppet\etc"
         }
-        "56" {
-            $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
-        }
-        "57" {
+        {$_ -in "56", "57", "58"} {
             $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
         }
         Default { Write-Host "PeopleTools version could not be determined in the bs-manifest file."}
@@ -119,8 +116,8 @@ function execute_psft_dpk_setup() {
   Write-Host "DPK INSTALL: ${DPK_INSTALL}"
 
   switch ($TOOLS_MINOR_VERSION) {
-    "57" {
-        Write-Host "Running PeopleTools 8.57 Bootstrap Script"
+    {$_ -in "56", "57", "58"} {
+        Write-Host "Running PeopleTools 8.$_ Bootstrap Script"
         if ($DEBUG -eq "true") {
             . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
             --silent `
@@ -134,23 +131,7 @@ function execute_psft_dpk_setup() {
             --response_file "${DPK_INSTALL}/response.cfg" `
             --no_puppet_run 2>&1 | out-null
         }
-    } 
-    "56" {
-        Write-Host "Running PeopleTools 8.56 Bootstrap Script"
-        if ($DEBUG -eq "true") {
-            . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
-            --silent `
-            --dpk_src_dir "${DPK_INSTALL}" `
-            --response_file "${DPK_INSTALL}/response.cfg" `
-            --no_puppet_run
-        } else {
-            . "${DPK_INSTALL}/setup/psft-dpk-setup.bat" `
-            --dpk_src_dir ${DPK_INSTALL} `
-            --silent `
-            --response_file "${DPK_INSTALL}/response.cfg" `
-            --no_puppet_run 2>&1 | out-null
-        }
-    } 
+    }  
     "55" {
         if ($DEBUG -eq "true") {
             . "${DPK_INSTALL}/setup/psft-dpk-setup.ps1" `
