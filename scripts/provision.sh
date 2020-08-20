@@ -379,6 +379,7 @@ domain_conn_pwd = "Passw0rd_"
 weblogic_admin_pwd  = "Passw0rd#"
 webprofile_user_pwd = "PTWEBSERVER"
 gw_user_pwd = "password"
+gw_keystore_pwd = "password"
 EOF
   local end=$(date +%s)
   local tottime="$((end - begin))"
