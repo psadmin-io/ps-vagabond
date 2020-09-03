@@ -4,6 +4,7 @@
 require_relative 'config/config'
 
 required_plugins = {
+  'vagrant-reload' => '0.0.1'
 }
 
 needs_restart = false
@@ -185,6 +186,12 @@ SCRIPT
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
+
+      vmconfig.vm.provision "shell",
+        run: "always",
+        inline: "slmgr -rearm"
+
+      vmconfig.vm.provision :reload
 
       vmconfig.vm.provision "banner", type: "shell" do |boot|
         boot.path = "scripts/banner.ps1"
