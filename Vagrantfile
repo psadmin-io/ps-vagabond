@@ -4,6 +4,7 @@
 require_relative 'config/config'
 
 required_plugins = {
+  'vagrant-reload' => '0.0.1'
 }
 
 needs_restart = false
@@ -88,7 +89,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # Base box
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
         vmconfig.vm.box_check_update = false
-        vmconfig.vm.box_version = "1.0.5"
+        vmconfig.vm.box_version = "1.0.4"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -185,6 +186,12 @@ SCRIPT
     ##################
 
     if OPERATING_SYSTEM.upcase == "WINDOWS"
+
+      vmconfig.vm.provision "shell",
+        run: "always",
+        inline: "slmgr -rearm"
+
+      vmconfig.vm.provision :reload
 
       vmconfig.vm.provision "banner", type: "shell" do |boot|
         boot.path = "scripts/banner.ps1"

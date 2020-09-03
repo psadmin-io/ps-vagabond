@@ -236,7 +236,7 @@ function create_authorization_cookie() {
     --post-data="$AUTH_DATA" \
     --user="$MOS_USERNAME" \
     --password="$MOS_PASSWORD" \
-    "https://updates.oracle.com/Orion/SimpleSearch/switch_to_saved_searches" \
+    "https://updates.oracle.com/Orion/Services/download" \
     --output-document="${AUTH_OUTPUT}" \
     --output-file="${AUTH_LOGFILE}"
 }

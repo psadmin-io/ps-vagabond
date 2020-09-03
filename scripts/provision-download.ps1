@@ -150,16 +150,7 @@ function install_additional_packages {
     }
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
   }
-  if (-Not (Test-Path C:\ProgramData\chocolatey\bin\wget.exe)) {
-    Write-Host "Installing wget"
-    if ($DEBUG -eq "true") {
-      choco install wget -y
-    } else {
-      choco install wget -y 2>&1 | out-null
-    }
-  }
-  If (Test-Path Alias:wget) { Remove-Item Alias:wget 2>&1 | out-null }
-  If (Test-Path Alias:wget) { Remove-Item Alias:wget 2>&1 | out-null }
+
   if (-Not (Test-Path C:\ProgramData\chocolatey\bin\jq.exe)) {
     Write-Host "Installing jq"
     if ($DEBUG -eq "true") {
@@ -168,59 +159,156 @@ function install_additional_packages {
       choco install jq -y 2>&1 | out-null
     }
   }
-  if (-Not (Test-Path C:\ProgramData\chocolatey\bin\aria2c.exe)) {
-    Write-Host "Installing aria2"
-    if ($DEBUG -eq "true") {
-      choco install aria2 -y
-    } else {
-      choco install aria2 -y 2>&1 | out-null
-    }
+}
+
+
+# Functions from Andy Dorfman
+# https://gist.githubusercontent.com/umaritimus/fcca0abad0c85d29e0df729e6ae57229
+
+Function Get-MyOracleSupportSession {
+  [CmdletBinding(DefaultParameterSetName='Anonymous')]
+
+  Param (
+      [Parameter(Position = 0, Mandatory = $True, ParameterSetName = 'Credential')][System.Management.Automation.PSCredential]${Credential},
+      [Parameter(Position = 0, Mandatory = $True, ParameterSetName = 'Password')][String]${Username},
+      [Parameter(Position = 0, Mandatory = $True, ParameterSetName = 'Password')][String]${Password}
+  )
+
+  Begin {
+      ${ProgressPreference} = 'SilentlyContinue'
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
+
+      If (${PsCmdlet}.ParameterSetName -ne "Anonymous") {
+          If (${PsCmdlet}.ParameterSetName -eq "Credential" -and ${Credential} -ne [System.Management.Automation.PSCredential]::Empty) {
+              ${Username} = ${Credential}.UserName
+              ${Password} = ${Credential}.GetNetworkCredential().Password
+          }
+      }
+
+      ${RequestBody} = "ssousername=$([System.Net.WebUtility]::UrlEncode(${Username}))&password=$([System.Net.WebUtility]::UrlEncode(${Password}))"
   }
+
+  Process {
+      # Discover the URL of the authenticator
+      ${Location} = [System.Uri](
+          (
+              (
+                  Invoke-WebRequest `
+                      -Uri "https://updates.oracle.com/Orion/Services/metadata?table=aru_platforms" `
+                      -UserAgent "Mozilla/5.0" `
+                      -UseBasicParsing `
+                      -MaximumRedirection 0 `
+                      -ErrorAction SilentlyContinue `
+                  | Select-Object -ExpandProperty RawContent
+              ).toString() -Split '[\r\n]' | Select-String "Location"
+          ).ToString() -Split ' '
+      )[1]
+
+      # Acquire MOS session
+      Invoke-WebRequest `
+          -Uri ${Location}.AbsoluteUri `
+          -UserAgent "Mozilla/5.0" `
+          -UseBasicParsing `
+          -SessionVariable MyOracleSupportSession `
+          -Method Post `
+          -Body ${RequestBody} `
+      | Out-Null
+
+      # IF ORA_UCM_INFO cookie is present => authentication succeeded
+      If ($(${MyOracleSupportSession}.Cookies.GetCookieHeader("$(${Location}.Scheme)://$($Location.Host)") | Select-String "ORA_UCM_INFO=").Matches.Success) {
+          Return ${MyOracleSupportSession}
+      } Else {
+          Throw "Authentication request failed for ${UserName}"
+      }
+  }
+
 }
 
-function create_authorization_cookie {
-  if (Test-Path $COOKIE_FILE) { Remove-Item $COOKIE_FILE }
-  $MOS_TOKEN = ([System.Uri](((Invoke-WebRequest -Uri "https://updates.oracle.com/Orion/SimpleSearch" `
-                                                -UserAgent "Mozilla/5.0" `
-                                                -UseBasicParsing `
-                                                -MaximumRedirection 0 `
-                                                -ErrorAction SilentlyContinue |
-              Select-Object -ExpandProperty RawContent).toString() -Split  '[\r\n]' |
-              Select-String "Location").ToString() -Split  ' ')[1] -Split '=')[1]
+Function Import-MyOracleSupportPatches {
+  [CmdletBinding()]
 
-  $AUTH_DATA="ssousername=${MOS_USERNAME}&password=${MOS_PASSWORD}&site2pstoretoken=${MOS_TOKEN}"
-  $AuthURL = "https://login.oracle.com/sso/auth"
+  Param(
+      [Parameter(Mandatory = $True)][Microsoft.PowerShell.Commands.WebRequestSession] ${MyOracleSupportSession},
+      [Parameter(Mandatory = $True)][String] ${PatchNumber},
+      [Parameter(Mandatory = $False)][String] ${Platform} = '233',
+      [Parameter(Mandatory = $False)][String] ${PatchPassword} = ${Null},
+      [Parameter(Mandatory = $False)][String] ${PatchDownloadLocation} = ${Env:TEMP},
+      [Parameter(Mandatory = $False)][Switch] ${Force}
+  )
 
-  Invoke-WebRequest -Uri $AuthURL `
-                    -UserAgent "Mozilla/5.0" `
-                    -SessionVariable MOSSession `
-                    -Method Post `
-                    -UseBasicParsing `
-                    -Body $AUTH_DATA | Out-Null
+  Begin {
+      ${ProgressPreference} = 'SilentlyContinue'
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
 
-  wget --secure-protocol=TLSv1 `
-       --save-cookies="${COOKIE_FILE}" `
-       --keep-session-cookies `
-       --no-check-certificate `
-       --post-data="${AUTH_DATA}" `
-       --user="${MOS_USERNAME}" `
-       --password="${MOS_PASSWORD}" `
-       "https://updates.oracle.com/Orion/SimpleSearch/switch_to_saved_searches"  `
-       --output-document="${AUTH_OUTPUT}" `
-       --output-file="${AUTH_LOGFILE}"
-}
+      # Check if the mos session is valid
+      If (-Not $(${MyOracleSupportSession}.Cookies.GetCookieHeader('https://login.oracle.com') | Select-String "ORA_UCM_INFO=").Matches.Success) {
+          Throw "MyOracleSupport authenticated session couldn't be acquired"
+      }
+  }
 
-function download_search_results {
-  Write-Host "Downloading search page results for ${PATCH_ID}"
-  $SEARCH_LOGFILE = Invoke-WebRequest -uri "https://updates.oracle.com/Orion/SimpleSearch/process_form?search_type=patch&patch_number=${PATCH_ID}&plat_lang=233P" `
-                                      -UserAgent "Mozilla/5.0" `
-                                      -WebSession $MOSSession `
-                                      -UseBasicParsing
-}
+  Process {
+      # Get the Patch page for parsing
+      $PatchPage = Invoke-WebRequest `
+          -Uri "https://updates.oracle.com/Orion/PatchDetails/process_form?patch_num=${PatchNumber}&plat_lang=${Platform}P&plat_lang=2000P&patch_password=${PatchPassword}&" `
+          -UserAgent "Mozilla/5.0" `
+          -WebSession $MyOracleSupportSession `
+          -UseBasicParsing
 
-function extract_download_links {
-  if (test-path $PATCH_FILE_LIST) {remove-item $PATCH_FILE_LIST}
-  (($SEARCH_LOGFILE.RawContent -Split '\r\n' | Select-String 'id="btn_Download"') -Split '"' | Select-String 'updates.oracle.com') | set-content $PATCH_FILE_LIST
+      # Get the patch description
+      # TODO: add patch description to patch metadata
+      ${PatchDescription} = (
+          ($PatchPage.RawContent -Split '\n' | Select-String -Pattern 'Description\<\/font\>' -Context 2,3) -Replace '\r\n' `
+          | Select-String -Pattern '<font class=OraDataText>(.*)</font>' -AllMatches `
+          | ForEach-Object { ${_}.Matches} `
+          | ForEach-Object { ${_}.Groups[1].Value }
+      ).Trim()
+
+      Write-Verbose "Patch Description - ${PatchDescription}"
+
+      $PatchFiles = (($PatchPage.RawContent -Split '\r\n' | select-String 'id="btn_Download"') -Split '"' | Select-String 'updates.oracle.com')
+
+      If (${PatchFiles}.Length -eq 0) {
+          ${PatchFiles} = ($PatchPage.RawContent.Split([Environment]::NewLine) | select-String -Pattern 'href=\"\b(https://updates.oracle.com/.*)\b\&\"\x3E' -AllMatches) | ForEach-Object { ${_}.Matches.Groups[1].Value }
+      }
+
+      # Create download location if doesn't exist
+      If (-not (Test-Path ${PatchDownloadLocation} -ErrorAction SilentlyContinue)) {
+          New-Item -Path "${PatchDownloadLocation}" -ItemType Directory -Force | Out-Null
+      }
+
+      # Generate Array of patch_file locations
+      ${ImportedPatches} = New-Object System.Collections.ArrayList
+
+      # Process Patch file downloads
+      # TODO: make it parallel
+      For (${i} = 0; ${i} -lt ${PatchFiles}.Count; ${i}++) {
+          ${PatchFile} = ${PatchFiles}[${i}]
+
+          ${Source} = [System.Uri]${PatchFile}.ToString()
+          ${Destination} = "${PatchDownloadLocation}\$($source.Segments[-1])"
+
+          ${ImportedPatches}.Add(${Destination}) | Out-Null
+
+          # If the patch file already exists, skip it; otherwise, if doesn't yet exists or -Force flag is set, then download it
+          # TODO: do SHA-256 check
+          If (${Force} -or (-not $( Try { Test-Path -Path "${Destination}" -ErrorAction SilentlyContinue } Catch { $False } )) ) {
+              Write-Verbose "[Task] Download ${Destination}"
+              Invoke-WebRequest `
+                  -Uri ${Source} `
+                  -UserAgent "Mozilla/5.0" `
+                  -WebSession ${MyOracleSupportSession} `
+                  -UseBasicParsing `
+                  -TimeoutSec 600 `
+                  -Method Get `
+                  -OutFile ${Destination}
+          } Else {
+              Write-Verbose "[Skip] ${Destination} already exists."
+          }
+
+      }
+
+      Return ${ImportedPatches}
+  }
 }
 
 function download_patch_files {
@@ -228,39 +316,22 @@ function download_patch_files {
   if ( $status.download_patch_files -eq "false") {
     Write-Host "Downloading patch files"
     $begin=$(get-date)
-    . create_authorization_cookie
 
-    If ($($MOSSession.Cookies.GetCookieHeader("https://login.oracle.com") | Select-String "ORA_UCM_INFO=").Matches.Success) {
-      . download_search_results
-      . extract_download_links
-
-      if ($DEBUG -eq "true") {
-        aria2c --input-file $PATCH_FILE_LIST `
-          --dir $DPK_INSTALL `
-          --load-cookies "${env:TEMP}/mos.cookies" `
-          --max-connection-per-server=5 `
-          --max-concurrent-downloads=5 `
-          --file-allocation=none `
-          --log="${env:TEMP}/dlLog.log" `
-          --log-level="info" `
-          --user-agent="Mozilla/5.0"
-      } else {
-        aria2c --input-file $PATCH_FILE_LIST `
-          --dir $DPK_INSTALL `
-          --load-cookies "${env:TEMP}/mos.cookies" `
-          --max-connection-per-server=5 `
-          --max-concurrent-downloads=5 `
-          --file-allocation=none `
-          --log="${env:TEMP}/dlLog.log" `
-          --log-level="info" `
-          --user-agent="Mozilla/5.0" 2>&1 | out-null
-      }
+    $PASSWORD = ConvertTo-SecureString $MOS_PASSWORD -AsPlainText -Force
+    $MOS_CREDENTIAL = New-Object System.Management.Automation.PSCredential ($MOS_USERNAME, $PASSWORD)
+    if ($DEBUG -eq "true") {
+      $MOS_SESSION = Get-MyOracleSupportSession -Credential $MOS_CREDENTIAL -Verbose
+    } else {
+      $MOS_SESSION = Get-MyOracleSupportSession -Credential $MOS_CREDENTIAL
     }
-	#Confirm zip files exist in download location
-	if (-Not (test-path $DPK_INSTALL/*.zip)){
-	Write-Host "#####################################################################################" -foregroundcolor yellow
-    Write-Host "ERROR!!!!! NO ZIP FILES FOUND IN $DPK_INSTALL directory. `n Confirm PATCH_ID is correct and check %TEMP%\dlLog.LOG" -foregroundcolor yellow
-	Write-Host "#####################################################################################" -foregroundcolor yellow
+    
+    $PATCH_LIST = Import-MyOracleSupportPatches -MyOracleSupportSession $MOS_SESSION -PatchNumber $PATCH_ID -PatchDownloadLocation $DPK_INSTALL
+
+    #Confirm zip files exist in download location
+    if (-Not (test-path $DPK_INSTALL/*.zip)){
+      Write-Host "#####################################################################################" -foregroundcolor yellow
+      Write-Host "ERROR!!!!! NO ZIP FILES FOUND IN $DPK_INSTALL directory. `n Confirm PATCH_ID is correct and check DPK_INSTALL for log files" -foregroundcolor yellow
+      Write-Host "#####################################################################################" -foregroundcolor yellow
     exit 1
     }
 	
@@ -276,8 +347,10 @@ function unpack_setup_scripts() {
     Write-Host "Unpacking DPK setup scripts"
     if ($DEBUG -eq "true") {
       get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}
+      remove-item *UPD*.zip
     } else {
       get-childitem "${DPK_INSTALL}/*.zip" | % { Expand-Archive $_ -DestinationPath ${DPK_INSTALL} -Force}  2>&1 | out-null
+      remove-item *UPD*.zip 2>&1 | out-null
     }
 	
 	  if (-Not (test-path $DPK_INSTALL/setup/*)){
@@ -316,4 +389,4 @@ function cleanup_before_exit {
 . download_patch_files
 . unpack_setup_scripts
 
-# . cleanup_before_exit
+. cleanup_before_exit
