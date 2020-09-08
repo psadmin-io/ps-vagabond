@@ -27,7 +27,7 @@ PATCH_ID='23711856'
 
 # ELASTICSEARCH/LOGSTASH/KIBANA
 # Specify the patch id for the ELK install you wish to use
-ELK_PATCH_ID='31611911'
+ELK_PATCH_ID='31611912'
 
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -145,7 +145,7 @@ MEMORY='8192'
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
 WIN_VERSION = "2016" unless defined? WIN_VERSION
-MEMORY = "4096" unless defined? MEMORY
+MEMORY = "8192" unless defined? MEMORY
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR

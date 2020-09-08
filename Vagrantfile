@@ -315,18 +315,6 @@ SCRIPT
         end
       end
 
-      # Uncomment to download the Elasticsearch DPK
-      # vmconfig.vm.provision "download-es", type: "shell" do |boot|
-      #   boot.path = "scripts/provision-download.ps1"
-      #   boot.upload_path = "C:/temp/provision-download.ps1"
-      #   boot.env = {
-      #     "MOS_USERNAME"  => "#{MOS_USERNAME}",
-      #     "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
-      #     "PATCH_ID"      => "#{ES_PATCH_ID}",
-      #     "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{ES_PATCH_ID}"
-      #   }
-      # end
-
     elsif OPERATING_SYSTEM.upcase == "LINUX"
 
       vmconfig.vm.provision "bootstrap-lnx", type: "shell" do |script|
@@ -336,6 +324,7 @@ SCRIPT
           "MOS_USERNAME" => "#{MOS_USERNAME}",
           "MOS_PASSWORD" => "#{MOS_PASSWORD}",
           "PATCH_ID"     => "#{PATCH_ID}",
+          "ELK_PATCH_ID" => "#{ELK_PATCH_ID}",
           "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
           "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}"
         }
