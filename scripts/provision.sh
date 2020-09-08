@@ -25,8 +25,9 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_USERNAME:?"MOS_USERNAME must be specified in config.rb"}
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
+: ${ELK_PATCH_ID:?"ELK_PATCH_ID must be specified in config.rb"}
 
-# export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -242,7 +243,7 @@ function create_authorization_cookie() {
 }
 
 function download_search_results() {
-  echodebug "Downloading search page results for ${PATCH_ID}"
+  echodebug "Downloading search page results for ${1}"
   # plat_lang 226P = Linux x86_64
   # plat_lang 233P = Windows x86_64
 
@@ -251,7 +252,7 @@ function download_search_results() {
     --load-cookies="${COOKIE_FILE}" \
     --output-document="${PATCH_SEARCH_OUTPUT}" \
     --output-file="${SEARCH_LOGFILE}" \
-    "https://updates.oracle.com/Orion/SimpleSearch/process_form?search_type=patch&patch_number=${PATCH_ID}&plat_lang=226P"
+    "https://updates.oracle.com/Orion/SimpleSearch/process_form?search_type=patch&patch_number=${1}&plat_lang=226P"
 }
 
 function extract_download_links() {
@@ -270,21 +271,10 @@ function download_patch_files() {
     local begin=$(date +%s)
     
     create_authorization_cookie
-    download_search_results
-    extract_download_links
+    download_search_results $PATCH_ID
+    extract_download_links $PATCH_ID
 
-    echodebug "Downloading .zip files for ${PATCH_ID}"
-    aria2c \
-      --input-file="${PATCH_FILE_LIST}" \
-      --dir="${DPK_INSTALL}" \
-      --load-cookies="${COOKIE_FILE}" \
-      --user-agent="Mozilla/5.0" \
-      --max-connection-per-server=5 \
-      --max-concurrent-downloads=5 \
-      --quiet=true \
-      --file-allocation=none \
-      --log="${DOWNLOAD_LOGFILE}" \
-      --log-level="info"
+    download_from_mos $PATCH_ID
       
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
@@ -293,6 +283,47 @@ function download_patch_files() {
   else
     echoinfo "Patch files already downloaded"
   fi
+}
+
+function download_elk_patch_files() {
+  if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
+    echoinfo "Downloading patch files"
+    local begin=$(date +%s)
+    
+    create_authorization_cookie
+    download_search_results $ELK_PATCH_ID
+    extract_download_links $ELK_PATCH_ID
+
+    download_from_mos $ELK_PATCH_ID
+      
+    record_step_success "${FUNCNAME[0]}"
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[download_patch_files]=$tottime
+  else
+    echoinfo "Patch files already downloaded"
+  fi
+}
+
+function download_from_mos(){
+  local begin=$(date +%s)
+  echodebug "Downloading .zip files for ${1}"
+
+  aria2c \
+    --input-file="${PATCH_FILE_LIST}" \
+    --dir="${DPK_INSTALL}" \
+    --load-cookies="${COOKIE_FILE}" \
+    --user-agent="Mozilla/5.0" \
+    --max-connection-per-server=5 \
+    --max-concurrent-downloads=5 \
+    --quiet=true \
+    --file-allocation=none \
+    --log="${DOWNLOAD_LOGFILE}" \
+    --log-level="info"
+  
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[download_from_mos]=$tottime
 }
 
 function unpack_setup_scripts() {
@@ -380,6 +411,7 @@ weblogic_admin_pwd  = "Passw0rd#"
 webprofile_user_pwd = "PTWEBSERVER"
 gw_user_pwd = "password"
 gw_keystore_pwd = "password"
+user_home_dir = "/home"
 EOF
   local end=$(date +%s)
   local tottime="$((end - begin))"
@@ -634,6 +666,7 @@ install_prereqs
 
 # Downloading and unpacking patch files
 download_patch_files
+download_elk_patch_files
 unpack_setup_scripts
 
 # Determine the tools version and configure appropriately

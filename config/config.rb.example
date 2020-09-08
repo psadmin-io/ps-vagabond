@@ -25,6 +25,10 @@
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
 
+# ELASTICSEARCH/LOGSTASH/KIBANA
+# Specify the patch id for the ELK install you wish to use
+ELK_PATCH_ID='31611911'
+
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # OPERATING_SYSTEM
@@ -55,10 +59,6 @@ MEMORY='8192'
 # Patch ID for PTP_PATCH_ID.
 #APPLY_PT_PATCH='true'
 #PTP_PATCH_ID=''
-
-# ELASTICSARCH
-# Vagabond can download the Elasticsarch DPK, but won't configure it yet.
-#ES_PATCH_ID=''
 
 # CUSTOM DPK ROLE
 # Change the DPK Role in site.pp to something custom.
