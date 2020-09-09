@@ -123,7 +123,7 @@ function install_prereqs() {
   install_extras_repo
   install_aria_from_repo
   start_smb
-
+  set_max_vm
 }
 
 function install_extras_repo() {
@@ -168,6 +168,23 @@ function start_smb() {
   fi
 }
 
+function set_max_vm(){
+  local begin=$(date +%s)
+
+  echodebug "Set Max VM Areas for Elasticsearch"
+  if ! grep -q "vm.max_map_count=262144"  /etc/sysctl.conf; then
+    if [[ -n ${DEBUG+x} ]]; then
+      echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+    else 
+      echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1
+    fi
+  fi
+  
+  
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[set_max_vm]=$tottime
+}
 
 function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
