@@ -395,14 +395,14 @@ function generate_response_file() {
   local begin=$(date +%s)
 cat > "${DPK_INSTALL}/response.cfg" << EOF
 psft_base_dir="${PSFT_BASE_DIR}"
-install_type = PUM
+install_type = "PUM"
 env_type  = "fulltier"
-db_type = DEMO
+db_type = "DEMO"
 db_name = "PSFTDB"
 db_service_name = "PSFTDB"
 db_host = "localhost"
 admin_pwd = "Passw0rd_"
-connect_id = people
+connect_id = "people"
 connect_pwd = "peop1e"
 access_pwd  = "SYSADM"
 opr_pwd = "PS"
@@ -412,6 +412,8 @@ webprofile_user_pwd = "PTWEBSERVER"
 gw_user_pwd = "password"
 gw_keystore_pwd = "password"
 user_home_dir = "/home"
+psft_es_esadmin_pwd = "Passw0rd#"
+psft_es_espeople_pwd = "peop1e"
 EOF
   local end=$(date +%s)
   local tottime="$((end - begin))"

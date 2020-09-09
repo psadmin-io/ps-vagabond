@@ -25,7 +25,7 @@
 # Specify the patch id for the PUM you wish to use
 PATCH_ID='23711856'
 
-# ELASTICSEARCH/LOGSTASH/KIBANA
+# ELASTICSEARCH/LOGSTASH/KIBANA PATCH ID
 # Specify the patch id for the ELK install you wish to use
 ELK_PATCH_ID='31611912'
 
@@ -41,7 +41,7 @@ ELK_PATCH_ID='31611912'
 
 # MEMORY
 # The amount of RAM to allocate to the Virtual Machine
-MEMORY='8192'
+# MEMORY='8192'
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
