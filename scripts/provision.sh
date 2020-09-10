@@ -381,6 +381,8 @@ webprofile_user_pwd = "PTWEBSERVER"
 gw_user_pwd = "password"
 gw_keystore_pwd = "password"
 user_home_dir = "/home"
+psft_es_esadmin_pwd = "Passw0rd#"
+psft_es_espeople_pwd = "peop1e"
 EOF
   local end=$(date +%s)
   local tottime="$((end - begin))"
