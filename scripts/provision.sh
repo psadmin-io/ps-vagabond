@@ -40,9 +40,9 @@ readonly PSFT_BASE_DIR="/opt/oracle/psft"
 readonly VAGABOND_STATUS="${DPK_INSTALL}/vagabond.json"
 readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
-readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
+# readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client")
+declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client" "aria2")
 declare -A timings
 
 ###############
@@ -71,19 +71,20 @@ function echoerror() {
 }
 
 function echobanner() {
-local BC="\033[1;34m"
-local EC="\033[0m"
-local GC="\033[1;32m"
-printf "\n\n"
-printf "${BC}                                      dP                               dP ${GC}\n"
-printf "${BC}                                      88                               88 ${GC}\n"
-printf "${BC}  dP   .dP .d8888b. .d8888b. .d8888b. 88d888b. .d8888b. 88d888b. .d888b88 ${GC}\n"
-printf "${BC}  88   d8' 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 ${GC}\n"
-printf "${BC}  88 .88'  88.  .88 88.  .88 88.  .88 88.  .88 88.  .88 88    88 88.  .88 ${GC}\n"
-printf "${BC}  8888P'   \`88888P8 \`8888P88 \`88888P8 88Y8888' \`88888P' dP    dP \`88888P8 ${GC}\n"
-printf "${BC}                         .88 ${GC}\n"
-printf "${BC}                     d8888P ${GC}\n"
-printf "\n\n"
+  local BC="\033[1;34m"
+  local EC="\033[0m"
+  local GC="\033[1;32m"
+  
+  printf "\n\n"
+  printf "${BC}                                      dP                               dP ${GC}\n"
+  printf "${BC}                                      88                               88 ${GC}\n"
+  printf "${BC}  dP   .dP .d8888b. .d8888b. .d8888b. 88d888b. .d8888b. 88d888b. .d888b88 ${GC}\n"
+  printf "${BC}  88   d8' 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 88'  \`88 ${GC}\n"
+  printf "${BC}  88 .88'  88.  .88 88.  .88 88.  .88 88.  .88 88.  .88 88    88 88.  .88 ${GC}\n"
+  printf "${BC}  8888P'   \`88888P8 \`8888P88 \`88888P8 88Y8888' \`88888P' dP    dP \`88888P8 ${GC}\n"
+  printf "${BC}                         .88 ${GC}\n"
+  printf "${BC}                     d8888P ${GC}\n"
+  printf "\n\n"
 }
 
 function echomotd(){
@@ -109,38 +110,15 @@ function echomotd(){
     psa restart prcs 
 
 " | sudo tee /etc/motd > /dev/null 2>&1
-
 }
 
 function install_prereqs() {
-
   check_dpk_install_dir
   check_vagabond_status
   apply_slow_dns_fix
   update_packages
   install_additional_packages
-  install_extras_repo
-  install_aria_from_repo
   start_smb
-
-}
-
-function install_extras_repo() {
-  echoinfo "Installing jrbing/ps-extras"
-  if [[ -n ${DEBUG+x} ]]; then
-    curl -s "${EXTRAS_URL}" | bash
-  else
-    curl -s "${EXTRAS_URL}" | bash > /dev/null 2>&1
-  fi
-}
-
-function install_aria_from_repo() {
-  echodebug "Installing aria2 from repository"
-  if [[ -n ${DEBUG+x} ]]; then
-    yum install -y aria2
-  else
-    yum install -y aria2 > /dev/null 2>&1
-  fi
 }
 
 function apply_slow_dns_fix() {
@@ -155,7 +133,6 @@ function apply_slow_dns_fix() {
     echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
     systemctl restart network > /dev/null 2>&1
   fi
-  
 }
 
 function start_smb() {
