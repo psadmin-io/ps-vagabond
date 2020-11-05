@@ -371,7 +371,7 @@ function cleanup_before_exit {
     Write-Host "Temporary files and logs can be found in ${env:TEMP}"
   } else {
     Write-Host "Cleaning up temporary files"
-    Remove-Item $env:TEMP -Recurse -Force 2>&1 | out-null
+    Remove-Item $env:TEMP -Recurse -ErrorAction SilentlyContinue -Force 2>&1 | out-null
   }
 }
 

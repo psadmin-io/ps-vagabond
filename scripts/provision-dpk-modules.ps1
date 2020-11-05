@@ -65,7 +65,7 @@ function determine_puppet_home() {
       "55" { 
           $PUPPET_HOME = "C:\ProgramData\PuppetLabs\puppet\etc"
        }
-       "56" {
+      {$_ -in "56", "57", "58"} {
           $PUPPET_HOME = "${PSFT_BASE_DIR}/dpk/puppet"
        }
       Default { Write-Host "PeopleTools version could not be determined in the bs-manifest file."}
@@ -84,7 +84,7 @@ function copy_modules() {
   Write-Host "[${computername}][Task] Update DPK with custom modules"
   # copy-item c:\vagrant\site.pp C:\ProgramData\PuppetLabs\puppet\etc\manifests\site.pp -force
   switch ($TOOLS_MINOR_VERSION){
-    "56" {  
+    {$_ -in "56", "57", "58"} { 
       copy-item c:\vagrant\modules\* "${PUPPET_HOME}\production\modules\" -recurse -force
     } 
     "55" {
@@ -106,7 +106,7 @@ function fix_dpk_bugs() {
 function set_dpk_role() {
   Write-Host "[${computername}][Task] Update DPK Role in site.pp"
   switch ($TOOLS_MINOR_VERSION) {
-    "56" {
+    {$_ -in "56", "57", "58"} { {
       (Get-Content "${PUPPET_HOME}\production\manifests\site.pp") -replace 'include.*', "include ${DPK_ROLE}" | Set-Content "${PUPPET_HOME}\production\manifests\site.pp"
     }
     "55" {
