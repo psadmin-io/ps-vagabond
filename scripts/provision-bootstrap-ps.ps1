@@ -101,6 +101,7 @@ opr_pwd = "PS"
 weblogic_admin_pwd  = "Passw0rd#"
 webprofile_user_pwd = "PTWEBSERVER"
 gw_user_pwd = "password"
+gw_keystore_pwd = "password"
 "@ 
 
     if ($DEBUG -eq "true") {
