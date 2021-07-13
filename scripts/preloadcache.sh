@@ -76,15 +76,15 @@ function display_timings_summary() {
 
 function download_manifests() {
   local begin=$(date +%s)
-  echoinfo "Downloading Manifests"
+  echoinfo "Copying Manifests"
 
   if [[ -n ${DEBUG+x} ]]; then
-    sudo curl -o $DPK_HOME/production/manifests/loadcache.pp https://gist.githubusercontent.com/iversond/48af2c095c883277fe08f85d415739b1/raw/loadcache.pp
-    sudo curl -o $DPK_HOME/production/manifests/fixdpkbug.pp https://gist.githubusercontent.com/iversond/60f0e820bc476f16d5d6b2161fbbafbb/raw/fixdpkbug.pp
+    sudo cp /vagrant/scripts/loadcache.pp $DPK_HOME/production/manifests/loadcache.pp
+    sudo cp /vagrant/scripts/fixdpkbug.pp $DPK_HOME/production/manifests/fixdpkbug.pp
   else
     cd $DPK_HOME/production
-    sudo curl -o $DPK_HOME/production/manifests/loadcache.pp https://gist.githubusercontent.com/iversond/48af2c095c883277fe08f85d415739b1/raw/loadcache.pp > /dev/null 2>&1
-    sudo curl -o $DPK_HOME/production/manifests/fixdpkbug.pp https://gist.githubusercontent.com/iversond/60f0e820bc476f16d5d6b2161fbbafbb/raw/fixdpkbug.pp > /dev/null 2>&1
+    sudo cp /vagrant/scripts/loadcache.pp $DPK_HOME/production/manifests/loadcache.pp > /dev/null 2>&1
+    sudo cp /vagrant/scripts/fixdpkbug.pp $DPK_HOME/production/manifests/fixdpkbug.pp > /dev/null 2>&1
   fi
 
   local end=$(date +%s)

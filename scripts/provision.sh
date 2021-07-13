@@ -42,7 +42,7 @@ readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
 # readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client" "aria2")
+declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client" "aria2" "policycoreutils-python" "attr")
 declare -A timings
 
 ###############
@@ -306,13 +306,7 @@ function determine_puppet_home() {
     "55" )
         PUPPET_HOME="/etc/puppet"
       ;;
-    "56" )
-        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
-      ;;
-    "57" )
-        PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
-      ;;
-    "58" )
+    "56" | "57" | "58" | "59" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
     * )
@@ -377,31 +371,7 @@ function execute_puppet_apply() {
           sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
         fi
       ;;
-    "56" )
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo puppet apply \
-            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
-            --verbose \
-            "${PUPPET_HOME}/production/manifests/site.pp"
-        else
-          sudo puppet apply \
-            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
-            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
-        fi
-      ;;
-      "57" )
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo puppet apply \
-            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
-            --verbose \
-            "${PUPPET_HOME}/production/manifests/site.pp"
-        else
-          sudo puppet apply \
-            --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
-            "${PUPPET_HOME}/production/manifests/site.pp" > /dev/null 2>&1
-        fi
-      ;;
-      "58" )
+    "56" | "57" | "58" | "59" )
         if [[ -n ${DEBUG+x} ]]; then
           sudo puppet apply \
             --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
@@ -476,39 +446,7 @@ function execute_psft_dpk_setup() {
           execute_puppet_apply
         fi
       ;;
-    "56" )
-        generate_response_file
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --customization_file="${CUSTOMIZATION_FILE}" \
-            --silent \
-            --response_file "${DPK_INSTALL}/response.cfg"
-        else
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --customization_file="${CUSTOMIZATION_FILE}" \
-            --silent \
-            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
-        fi
-      ;;
-      "57" )
-        generate_response_file
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --customization_file="${CUSTOMIZATION_FILE}" \
-            --silent \
-            --response_file "${DPK_INSTALL}/response.cfg"
-        else
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --customization_file="${CUSTOMIZATION_FILE}" \
-            --silent \
-            --response_file "${DPK_INSTALL}/response.cfg" > /dev/null 2>&1
-        fi
-      ;;
-      "58" )
+    "56" | "57" | "58" | "59" )
         generate_response_file
         if [[ -n ${DEBUG+x} ]]; then
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
@@ -566,6 +504,25 @@ function install_psadmin_plus(){
   local end=$(date +%s)
   local tottime="$((end - begin))"
   timings[install_psadmin_plus]=$tottime
+}
+
+function open_firewall_ports(){
+  local begin=$(date +%s)
+  echoinfo "Open Firewall Ports"
+
+  if [[ -n ${DEBUG+x} ]]; then
+    sudo firewall-cmd --permanent --add-port=8000/tcp
+    sudo firewall-cmd --permanent --add-port=1522/tcp
+    sudo firewall-cmd --reload
+  else
+    sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
+    sudo firewall-cmd --permanent --add-port=1522/tcp > /dev/null 2>&1
+    sudo firewall-cmd --reload > /dev/null 2>&1
+  fi
+
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[open_firewall_ports]=$tottime
 }
 
 function display_timings_summary() {
@@ -627,6 +584,7 @@ execute_psft_dpk_setup
 # Postrequisite fixes
 fix_init_script
 install_psadmin_plus
+open_firewall_ports
 
 # Summary information
 display_timings_summary
