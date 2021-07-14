@@ -119,6 +119,7 @@ function install_prereqs() {
   update_packages
   install_additional_packages
   start_smb
+  set_permissivie_selinux
 }
 
 function apply_slow_dns_fix() {
@@ -141,6 +142,15 @@ function start_smb() {
     systemctl start smb.service
   else
     systemctl start smb.service > /dev/null 2>&1
+  fi
+}
+
+function set_permissivie_selinux() {
+  echodebug "Set SELinux to Permissive"
+  if [[ -n ${DEBUG+x} ]]; then
+    echo 0 | sudo tee /sys/fs/selinux/enforce
+  else
+    echo 0 | sudo tee /sys/fs/selinux/enforce > /dev/null 2>&1
   fi
 }
 
@@ -493,13 +503,29 @@ function install_psadmin_plus(){
   local begin=$(date +%s)
   echoinfo "Install psadmin_plus"
 
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus
-  else 
-    sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
-  fi
-  
-  echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
+
+  case ${TOOLS_MINOR_VERSION} in
+    "55"|"56"|"57" )
+      if [[ -n ${DEBUG+x} ]]; then
+        sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus
+      else 
+        sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
+      fi
+      echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
+      ;;
+    "59" )
+      if [[ -n ${DEBUG+x} ]]; then
+        curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem
+        sudo $PSFT_BASE_DIR/psft_puppet_agent/bin/gem install --local psadmin_plus.gem
+      else 
+        curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem > /dev/null 2>&1
+        sudo $PSFT_BASE_DIR/psft_puppet_agent/bin/gem install --local psadmin_plus.gem > /dev/null 2>&1
+      fi
+      echo "PATH=$PATH:$PSFT_BASE_DIR/psft_puppet_agent/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
+      ;;
+    * )
+      echo "Tools Version not supported"
+      ;;
 
   local end=$(date +%s)
   local tottime="$((end - begin))"
