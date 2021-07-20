@@ -526,6 +526,7 @@ function install_psadmin_plus(){
     * )
       echo "Tools Version not supported"
       ;;
+  esac
 
   local end=$(date +%s)
   local tottime="$((end - begin))"
