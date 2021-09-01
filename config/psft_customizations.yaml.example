@@ -13,10 +13,7 @@ ps_config_home:         "%{hiera('peoplesoft_base')}/cfg"
 db_name:           PSFTDB
 db_name_downcase:  psftdb
 db_port:           1522
-
-psft_db:
-  location:        "%{hiera('psft_db_location')}"
-  # container_name:  CDBELM   # can specify or it will be built using CDB+type
+  
 db_user:           PS   # NOTE: change this to VP1 for IH and FSCM
 db_user_pwd:       PS   # NOTE: change this to VP1 for IH and FSCM
 
@@ -44,8 +41,12 @@ ps_home:
   location:   "%{hiera('ps_home_location')}"
   remove:     true
 
-ps_app_home:
-  location:    "%{hiera('peoplesoft_base')}/pt/ps_app_home"
+# These options broke with 8.59 DPK, commenting out for now
+# psft_db:
+#   location:        "%{hiera('psft_db_location')}"
+  # container_name:  CDBELM   # can specify or it will be built using CDB+type
+# ps_app_home:
+#   location:    "%{hiera('peoplesoft_base')}/pt/ps_app_home"
 
 db_service_name: "%{hiera('db_name')}"
 
