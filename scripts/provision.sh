@@ -24,7 +24,8 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 
 : ${MOS_USERNAME:?"MOS_USERNAME must be specified in config.rb"}
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
-: ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
+: ${APP_PATCH_ID:?"APP_PATCH_ID must be specified in config.rb"}
+: ${ELK_PATCH_ID:?"ELK_PATCH_ID must be specified in config.rb"}
 
 # export DEBUG=true
 
@@ -229,7 +230,7 @@ function create_authorization_cookie() {
 }
 
 function download_search_results() {
-  echodebug "Downloading search page results for ${PATCH_ID}"
+  echodebug "Downloading search page results for ${1}"
   # plat_lang 226P = Linux x86_64
   # plat_lang 233P = Windows x86_64
 
@@ -238,7 +239,7 @@ function download_search_results() {
     --load-cookies="${COOKIE_FILE}" \
     --output-document="${PATCH_SEARCH_OUTPUT}" \
     --output-file="${SEARCH_LOGFILE}" \
-    "https://updates.oracle.com/Orion/SimpleSearch/process_form?search_type=patch&patch_number=${PATCH_ID}&plat_lang=226P"
+    "https://updates.oracle.com/Orion/SimpleSearch/process_form?search_type=patch&patch_number=${1}&plat_lang=226P"
 }
 
 function extract_download_links() {
@@ -251,16 +252,16 @@ function extract_download_links() {
     > "${PATCH_FILE_LIST}"
 }
 
-function download_patch_files() {
+function download_app_patch_files() {
   if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
-    echoinfo "Downloading patch files"
+    echoinfo "Downloading App patch files"
     local begin=$(date +%s)
     
     create_authorization_cookie
-    download_search_results
+    download_search_results "${APP_PATCH_ID}"
     extract_download_links
 
-    echodebug "Downloading .zip files for ${PATCH_ID}"
+    echodebug "Downloading .zip files for App DPK ${APP_PATCH_ID}"
     aria2c \
       --input-file="${PATCH_FILE_LIST}" \
       --dir="${DPK_INSTALL}" \
@@ -272,13 +273,44 @@ function download_patch_files() {
       --file-allocation=none \
       --log="${DOWNLOAD_LOGFILE}" \
       --log-level="info"
-      
+
     record_step_success "${FUNCNAME[0]}"
     local end=$(date +%s)
     local tottime="$((end - begin))"
-    timings[download_patch_files]=$tottime
+    timings[download_app_patch_files]=$tottime
   else
-    echoinfo "Patch files already downloaded"
+    echoinfo "App Patch files already downloaded"
+  fi
+}
+
+function download_elk_patch_files() {
+  if [[ $(jq --raw-output ".${FUNCNAME[0]}" < "$VAGABOND_STATUS") == "false" ]]; then
+    echoinfo "Downloading ELK patch files"
+    local begin=$(date +%s)
+    
+    create_authorization_cookie
+    download_search_results "${ELK_PATCH_ID}"
+    extract_download_links
+
+    echodebug "Downloading .zip files for ELK DPK ${ELK_PATCH_ID}"
+    aria2c \
+      --input-file="${PATCH_FILE_LIST}" \
+      --dir="${DPK_INSTALL}" \
+      --load-cookies="${COOKIE_FILE}" \
+      --user-agent="Mozilla/5.0" \
+      --max-connection-per-server=5 \
+      --max-concurrent-downloads=5 \
+      --quiet=true \
+      --file-allocation=none \
+      --log="${DOWNLOAD_LOGFILE}" \
+      --log-level="info"
+
+    record_step_success "${FUNCNAME[0]}"
+    local end=$(date +%s)
+    local tottime="$((end - begin))"
+    timings[download_elk_patch_files]=$tottime
+  else
+    echoinfo "ELK Patch files already downloaded"
   fi
 }
 
@@ -539,10 +571,12 @@ function open_firewall_ports(){
 
   if [[ -n ${DEBUG+x} ]]; then
     sudo firewall-cmd --permanent --add-port=8000/tcp
+    sudo firewall-cmd --permanent --add-port=5601/tcp
     sudo firewall-cmd --permanent --add-port=1522/tcp
     sudo firewall-cmd --reload
   else
     sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
+    sudo firewall-cmd --permanent --add-port=5601/tcp > /dev/null 2>&1
     sudo firewall-cmd --permanent --add-port=1522/tcp > /dev/null 2>&1
     sudo firewall-cmd --reload > /dev/null 2>&1
   fi
@@ -597,7 +631,8 @@ echomotd
 install_prereqs
 
 # Downloading and unpacking patch files
-download_patch_files
+download_app_patch_files
+download_elk_patch_files
 unpack_setup_scripts
 
 # Determine the tools version and configure appropriately

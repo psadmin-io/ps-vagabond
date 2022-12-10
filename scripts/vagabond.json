@@ -1,4 +1,5 @@
 {
-  "download_patch_files": "false",
+  "download_app_patch_files": "false",
+  "download_elk_patch_files": "false",
   "unpack_setup_scripts": "false"
 }

@@ -204,8 +204,8 @@ SCRIPT
         boot.env = {
           "MOS_USERNAME"  => "#{MOS_USERNAME}",
           "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
-          "PATCH_ID"      => "#{PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}"
+          "APP_PATCH_ID"  => "#{APP_PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}"
         }
       end
 
@@ -213,8 +213,8 @@ SCRIPT
         boot.path = "scripts/provision-bootstrap-ps.ps1"
         boot.upload_path = "C:/temp/provision-bootstrap-ps.ps1"
         boot.env = {
-          "PATCH_ID"      => "#{PATCH_ID}",
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "APP_PATCH_ID"  => "#{APP_PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
           "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
@@ -224,7 +224,7 @@ SCRIPT
         yaml.path = "scripts/provision-yaml.ps1"
         yaml.upload_path = "C:/temp/provision-yaml.ps1"
         yaml.env = {
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
           "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}"
         }
@@ -234,7 +234,7 @@ SCRIPT
         modules.path = "scripts/provision-dpk-modules.ps1"
         modules.upload_path = "C:/temp/provision-dpk-modules.ps1"
         modules.env = {
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
           "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
           "DPK_ROLE"      => "#{DPK_ROLE}"
@@ -245,7 +245,7 @@ SCRIPT
         puppet.path = "scripts/provision-puppet-apply.ps1"
         puppet.upload_path = "C:/temp/provision-puppet-apply.ps1"
         puppet.env = {
-          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+          "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
           "PSFT_BASE_DIR" => "#{PSFT_BASE_DIR}",
           "PUPPET_HOME"   => "#{PUPPET_HOME}",
         }
@@ -259,8 +259,8 @@ SCRIPT
           boot.env = {
             "MOS_USERNAME"  => "#{MOS_USERNAME}",
             "MOS_PASSWORD"  => "#{MOS_PASSWORD}",
-            "PATCH_ID"      => "#{PTP_PATCH_ID}",
-            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}"
+            "APP_PATCH_ID"  => "#{APP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}"
           }
         end
 
@@ -268,8 +268,8 @@ SCRIPT
           boot.path = "scripts/provision-bootstrap-ptp.ps1"
           boot.upload_path = "C:/temp/provision-bootstrap-ptp.ps1"
           boot.env = {
-            "PATCH_ID"      => "#{PTP_PATCH_ID}",
-            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
+            "APP_PATCH_ID"  => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
             "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
             "PUPPET_HOME"   => "#{PUPPET_HOME}"
           }
@@ -306,9 +306,9 @@ SCRIPT
           boot.path = "scripts/provision-apply-ptp.ps1"
           boot.upload_path = "C:/temp/provision-apply-ptp.ps1"
           boot.env = {
-            "PATCH_ID"      => "#{PTP_PATCH_ID}",
-            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PATCH_ID}",
-            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{PTP_PATCH_ID}",
+            "APP_PATCH_ID"  => "#{PTP_PATCH_ID}",
+            "DPK_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
+            "PTP_INSTALL"   => "#{DPK_REMOTE_DIR_WIN}/#{APP_PATCH_ID}",
             "PUPPET_HOME"   => "#{PUPPET_HOME}",
             "CA_PATH"       => "#{CA_SETTINGS[:path]}"
           }
@@ -335,9 +335,10 @@ SCRIPT
         script.env = {
           "MOS_USERNAME" => "#{MOS_USERNAME}",
           "MOS_PASSWORD" => "#{MOS_PASSWORD}",
-          "PATCH_ID"     => "#{PATCH_ID}",
-          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{PATCH_ID}",
-          "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}"
+          "APP_PATCH_ID" => "#{APP_PATCH_ID}",
+          "DPK_INSTALL"  => "#{DPK_REMOTE_DIR_LNX}/#{APP_PATCH_ID}",
+          "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}",
+          "ELK_PATCH_ID" => "#{ELK_PATCH_ID}"
         }
       end
 
