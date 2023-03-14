@@ -27,7 +27,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${APP_PATCH_ID:?"APP_PATCH_ID must be specified in config.rb"}
 : ${ELK_PATCH_ID:?"ELK_PATCH_ID must be specified in config.rb"}
 
-# export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"

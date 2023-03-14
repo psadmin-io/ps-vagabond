@@ -100,12 +100,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.winrm.timeout = 10000
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "bento/oracle-7.7"
-      vmconfig.vm.box_check_update = false
+      vmconfig.vm.box = "bento/oracle-7.9"
+      vmconfig.vm.box_check_update = true
 
-      # Bento Oracle 7.7 already has vbguest installed.
+      # Bento Oracle 7.9 already has vbguest installed.
       #   You can update this manually after provisioning.
-      config.vbguest.auto_update = false
+      config.vbguest.auto_update = true
 	  
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}", mount_options: ["dmode=775,fmode=777"]
@@ -340,6 +340,11 @@ SCRIPT
           "PSFT_CFG_DIR" => "#{PSFT_CFG_DIR}",
           "ELK_PATCH_ID" => "#{ELK_PATCH_ID}"
         }
+      end
+
+      vmconfig.vm.provision "bootstrap-es", type: "shell" do |script|
+        script.path = "scripts/provision-es.sh"
+        script.upload_path = "#{DPK_REMOTE_DIR_LNX}/#{APP_PATCH_ID}/setup/provision-es.sh"
       end
 
       vmconfig.vm.provision "cache-lnx", type: "shell" do |script|
