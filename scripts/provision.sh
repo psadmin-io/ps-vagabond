@@ -26,7 +26,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 : ${MOS_PASSWORD:?"MOS_PASSWORD must be specified in config.rb"}
 : ${PATCH_ID:?"PATCH_ID must be specified in config.rb"}
 
-# export DEBUG=true
+export DEBUG=true
 
 readonly TMPDIR="$(mktemp -d)"
 readonly COOKIE_FILE="${TMPDIR}/$$.cookies"
@@ -42,7 +42,7 @@ readonly CUSTOMIZATION_FILE="/vagrant/config/psft_customizations.yaml"
 readonly PSFT_CFG_DIR="${PSFT_CFG_DIR}"
 # readonly EXTRAS_URL="https://packagecloud.io/install/repositories/jrbing/ps-extras/script.rpm.sh"
 
-declare -a additional_packages=("glibc-devel" "oracle-epel-release-el7" "vim-enhanced" "htop" "jq" "python-pip" "PyYAML" "python-requests" "unzip" "samba" "samba-client" "aria2" "policycoreutils-python" "attr")
+declare -a additional_packages=("/lib64/libnsl.so.1" "ncurses-compat-libs" "glibc-devel" "oracle-epel-release-el8" "vim-enhanced" "htop" "jq" "python3-pip" "python3-pyyaml" "python3-requests" "unzip" "samba" "samba-client" "aria2" "attr" "libgcc.i686" "glibc.i686" "net-tools")
 declare -A timings
 
 ###############
@@ -115,26 +115,26 @@ function echomotd(){
 function install_prereqs() {
   check_dpk_install_dir
   check_vagabond_status
-  apply_slow_dns_fix
+  # apply_slow_dns_fix # Removed for OEL 8
   update_packages
   install_additional_packages
   start_smb
   set_permissivie_selinux
 }
 
-function apply_slow_dns_fix() {
-  echodebug "Applying slow DNS fix (single-request-reopen)"
-  ## https://access.redhat.com/site/solutions/58625 (subscription required)
-  # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
-  # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
-  if [[ -n ${DEBUG+x} ]]; then
-    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
-    systemctl restart network
-  else
-    echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
-    systemctl restart network > /dev/null 2>&1
-  fi
-}
+# function apply_slow_dns_fix() {
+#   echodebug "Applying slow DNS fix (single-request-reopen)"
+#   ## https://access.redhat.com/site/solutions/58625 (subscription required)
+#   # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
+#   # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
+#   if [[ -n ${DEBUG+x} ]]; then
+#     echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
+#     systemctl restart network
+#   else
+#     echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
+#     systemctl restart network > /dev/null 2>&1
+#   fi
+# }
 
 function start_smb() {
   echodebug "Starting Samba"
@@ -313,10 +313,10 @@ function determine_tools_version() {
 
 function determine_puppet_home() {
   case ${TOOLS_MINOR_VERSION} in
-    "55" )
-        PUPPET_HOME="/etc/puppet"
+    "55" | "56" | "57" | "58" )
+        echoerror "Tools Version ${TOOLS_VERSION} is no longer supported. Use a previous release of ps-vagabond."
       ;;
-    "56" | "57" | "58" | "59" )
+    "59" | "60" )
         PUPPET_HOME="${PSFT_BASE_DIR}/dpk/puppet"
       ;;
     * )
@@ -374,14 +374,7 @@ function execute_puppet_apply() {
   local begin=$(date +%s)
   echoinfo "Applying Puppet manifests"
   case ${TOOLS_MINOR_VERSION} in
-    "55" )
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo puppet apply --verbose "${PUPPET_HOME}/manifests/site.pp"
-        else
-          sudo puppet apply "${PUPPET_HOME}/manifests/site.pp" > /dev/null 2>&1
-        fi
-      ;;
-    "56" | "57" | "58" | "59" )
+    "59" | "60" )
         if [[ -n ${DEBUG+x} ]]; then
           sudo puppet apply \
             --confdir="${PSFT_BASE_DIR}/dpk/puppet" \
@@ -435,28 +428,7 @@ function execute_psft_dpk_setup() {
   
   echoinfo "Executing DPK setup script"
   case ${TOOLS_MINOR_VERSION} in
-    "55" )
-        if [[ -n ${DEBUG+x} ]]; then
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --silent \
-            --no_env_setup
-          # Only copy the customizations file if using
-          # a pre-855 DPK
-          copy_customizations_file
-          execute_puppet_apply
-        else
-          sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
-            --dpk_src_dir="${DPK_INSTALL}" \
-            --silent \
-            --no_env_setup > /dev/null 2>&1
-          # Only copy the customizations file if using
-          # a pre-855 DPK
-          copy_customizations_file
-          execute_puppet_apply
-        fi
-      ;;
-    "56" | "57" | "58" | "59" )
+    "59" | "60" )
         generate_response_file
         if [[ -n ${DEBUG+x} ]]; then
           sudo "${DPK_INSTALL}/setup/psft-dpk-setup.sh" \
@@ -473,30 +445,12 @@ function execute_psft_dpk_setup() {
         fi
       ;;
     * )
-        echoerror "Tools Version ${TOOLS_VERSION} is not yet supported."
+        echoerror "Tools Version ${TOOLS_VERSION} is not supported."
       ;;
   esac
   local end=$(date +%s)
   local tottime="$((end - begin))"
   timings[execute_psft_dpk_setup]=$tottime
-}
-
-function fix_init_script() {
-  case ${TOOLS_MINOR_VERSION} in
-    "55"|"56"|"57" )
-      # For some reason the psft-db init script fails upon subsequent
-      # reboots of the VM due to the LD_LIBRARY_PATH variable not being
-      # available.  Since this works on prior versions of RHEL/OEL, I
-      # can only assume it's due to a difference in the way that
-      # systemd manages legacy init scripts.
-      echoinfo "Applying fix for psft-db init script"
-      sudo sed -i '/^LD_LIBRARY_PATH/s/^/export /' /etc/init.d/psft-db
-      sudo systemctl daemon-reload
-      ;;
-    * )
-      # 8.58 moved to systemd
-      ;;
-  esac
 }
 
 function install_psadmin_plus(){
@@ -505,17 +459,9 @@ function install_psadmin_plus(){
 
 
   case ${TOOLS_MINOR_VERSION} in
-    "55"|"56"|"57" )
+    "59" | "60" )
       if [[ -n ${DEBUG+x} ]]; then
-        sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus
-      else 
-        sudo /opt/puppetlabs/puppet/bin/gem install psadmin_plus > /dev/null 2>&1
-      fi
-      echo "PATH=$PATH:/opt/puppetlabs/puppet/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
-      ;;
-    "59" )
-      if [[ -n ${DEBUG+x} ]]; then
-        curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem
+        curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem > /dev/null 2>&1
         sudo $PSFT_BASE_DIR/psft_puppet_agent/bin/gem install --local psadmin_plus.gem
       else 
         curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem > /dev/null 2>&1
@@ -533,24 +479,24 @@ function install_psadmin_plus(){
   timings[install_psadmin_plus]=$tottime
 }
 
-function open_firewall_ports(){
-  local begin=$(date +%s)
-  echoinfo "Open Firewall Ports"
+# function open_firewall_ports(){
+#   local begin=$(date +%s)
+#   echoinfo "Open Firewall Ports"
 
-  if [[ -n ${DEBUG+x} ]]; then
-    sudo firewall-cmd --permanent --add-port=8000/tcp
-    sudo firewall-cmd --permanent --add-port=1522/tcp
-    sudo firewall-cmd --reload
-  else
-    sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
-    sudo firewall-cmd --permanent --add-port=1522/tcp > /dev/null 2>&1
-    sudo firewall-cmd --reload > /dev/null 2>&1
-  fi
+#   if [[ -n ${DEBUG+x} ]]; then
+#     sudo firewall-cmd --permanent --add-port=8000/tcp
+#     sudo firewall-cmd --permanent --add-port=1521:1522/tcp
+#     sudo firewall-cmd --reload
+#   else
+#     sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
+#     sudo firewall-cmd --permanent --add-port=1521:1522/tcp > /dev/null 2>&1
+#     sudo firewall-cmd --reload > /dev/null 2>&1
+#   fi
 
-  local end=$(date +%s)
-  local tottime="$((end - begin))"
-  timings[open_firewall_ports]=$tottime
-}
+#   local end=$(date +%s)
+#   local tottime="$((end - begin))"
+#   timings[open_firewall_ports]=$tottime
+# }
 
 function display_timings_summary() {
   local divider='=============================='
@@ -609,9 +555,10 @@ execute_pre_setup
 execute_psft_dpk_setup
 
 # Postrequisite fixes
-fix_init_script
 install_psadmin_plus
-open_firewall_ports
+
+# Oracle Vagrant boxes ship with firewalld disabled - leaving in case this chagnes
+# open_firewall_ports 
 
 # Summary information
 display_timings_summary
