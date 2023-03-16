@@ -68,19 +68,19 @@ MEMORY='10240'
 # HOSTONLY NETWORK_SETTINGS (default)
 # Uncomment the following to configure the VM for host-only networking.
 # The VM will only be accessible from your local machine.
-#NETWORK_SETTINGS = {
-  #:type => "hostonly",
-  #:host_http_port => "8000",
-  #:guest_http_port => "8000",
-  #:host_listener_port => "1522",
-  #:guest_listener_port => "1522",
-  #:host_rdp_port => "3389",
-  #:guest_rdp_port => "3389",
-  #:host_es_port => "9200",
-  #:guest_es_port => "9200",
-  #:host_kb_port => "5601",
-  #:guest_kb_port => "5601"
-#}
+# NETWORK_SETTINGS = {
+#   :type => "hostonly",
+#   :host_http_port => "8000",
+#   :guest_http_port => "8000",
+#   :host_listener_port => "1522",
+#   :guest_listener_port => "1522",
+#   :host_rdp_port => "3389",
+#   :guest_rdp_port => "3389",
+#   :host_es_port => "9200",
+#   :guest_es_port => "9200",
+#   :host_kb_port => "5601",
+#   :guest_kb_port => "5601"
+# }
 
 # PRIVATE NETWORK_SETTINGS
 # Uncomment and modify the following to use with a private network.  This is useful
@@ -93,11 +93,13 @@ MEMORY='10240'
 # BRIDGED NETWORK_SETTINGS
 # Uncomment and modify the following to use bridged networking.  This is useful
 # if you wish to connect to the PUM from another host.
-#NETWORK_SETTINGS = {
-  #:type => "bridged",
-  #:ip_address => "10.10.10.100",
-  #:gateway => "10.10.10.1"
-#}
+# NETWORK_SETTINGS = {
+#   :type => "bridged",
+#   :ip_address => "10.0.1.199",
+#   :gateway => "10.0.1.1",
+#   # domain is optional, set if DCHP doesn't assign domain, requires a hosts entry to access
+#   :domain => "psadmin.local" 
+# }
 
 # DPK_LOCAL_DIR
 # The directory location (relative to the host machine) to download and extract the dpk

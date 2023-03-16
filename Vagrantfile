@@ -149,12 +149,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # with Linux in order to make the machine available from other networks.
         vmconfig.vm.provision "bridge_networking", type: "shell", run: "always",
           inline: "nmcli connection modify \"System eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
+        # if NETWORK_SETTINGS[:domain] != ""
+        vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+          inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+        # end
         vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
-          inline: "nameserver=$(cat /etc/resolv.conf | grep search | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts"
+          inline: "nameserver=$(cat /etc/resolv.conf | grep -m1 search | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
-
     end
 
     # Private network with pre-set IP address
