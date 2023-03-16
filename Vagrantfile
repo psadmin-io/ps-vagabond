@@ -154,7 +154,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
         # end
         vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
-          inline: "nameserver=$(cat /etc/resolv.conf | grep -m1 search | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts"
+          inline: "nameserver=$(cat /etc/resolv.conf | grep search | tail -n1 | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts && echo add \"\'#{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver}\'\" to your hosts file"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
