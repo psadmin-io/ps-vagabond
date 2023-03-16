@@ -97,7 +97,6 @@ MEMORY='10240'
 #   :type => "bridged",
 #   :ip_address => "10.0.1.199",
 #   :gateway => "10.0.1.1",
-#   # domain is optional, set if DCHP doesn't assign domain, requires a hosts entry to access
 #   :domain => "psadmin.local" 
 # }
 
