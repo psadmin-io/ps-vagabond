@@ -76,7 +76,7 @@ $appserver_domain_list.each | $domain_name, $app_domain_info | {
       }
       -> exec { "Bounce ${domain_name} App Domain":
         command => "${gem_home}/psa bounce app ${domain_name}",
-        require => Exec['install-psadmin_plus'],
+        # require => Exec['install-psadmin_plus'],
       }
     }
   }

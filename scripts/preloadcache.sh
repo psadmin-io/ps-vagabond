@@ -23,7 +23,7 @@ IFS=$'\n\t'     # Set the internal field separator to a tab and newline
 
 # export DEBUG=true
 DPK_HOME="/opt/oracle/psft/dpk/puppet"
-PUPPET_BIN="/opt/puppetlabs/puppet/bin"
+PUPPET_BIN="/opt/oracle/psft/psft_puppet_agent/bin"
 declare -A timings
 
 ###############
