@@ -175,7 +175,7 @@ OPERATING_SYSTEM = 'WINDOWS'
 # WIN_VERSION = "2016"
 ```
 
-The Windows virtual machine is an evaulation version of Windows 2016 and is only intended for demonstration purposes. [You can build your own base Windows VM](https://www.vagrantup.com/docs/virtualbox/boxes.html) with a licensed copy of Windows to use for testing and production support.
+The Windows virtual machine is an evaluation version of Windows 2016 and is only intended for demonstration purposes. [You can build your own base Windows VM](https://www.vagrantup.com/docs/virtualbox/boxes.html) with a licensed copy of Windows to use for testing and production support.
 
 Usage
 -----
@@ -184,12 +184,20 @@ Once configured, you simply have to change to the Vagabond instance directory an
 
 ```text
 C:\pum_images\hcm92>vagrant up
+
 Bringing machine 'ps-vagabond' up with 'virtualbox' provider...
-==> ps-vagabond: Cloning VM...
+==> ps-vagabond: Importing base box 'oraclelinux/8'...
 ==> ps-vagabond: Matching MAC address for NAT networking...
-==> ps-vagabond: Checking if box 'jrbing/ps-vagabond' is up to date...
-==> ps-vagabond: Setting the name of the VM: HCM92
+==> ps-vagabond: Checking if box 'oraclelinux/8' version '8.7.411' is up to date...
+==> ps-vagabond: Setting the name of the VM: HR045
 ==> ps-vagabond: Clearing any previously set network interfaces...
+==> ps-vagabond: Available bridged network interfaces:
+1) en0: Wi-Fi
+2) en8: Ethernet
+==> ps-vagabond: When choosing an interface, it is usually the one that is
+==> ps-vagabond: being used to connect to the internet.
+==> ps-vagabond:
+    ps-vagabond: Which interface should the network bridge to? 1
 ==> ps-vagabond: Preparing network interfaces based on configuration...
     ps-vagabond: Adapter 1: nat
     ps-vagabond: Adapter 2: bridged
@@ -201,23 +209,33 @@ Bringing machine 'ps-vagabond' up with 'virtualbox' provider...
     ps-vagabond: SSH address: 127.0.0.1:2222
     ps-vagabond: SSH username: vagrant
     ps-vagabond: SSH auth method: private key
+    ps-vagabond:
+    ps-vagabond: Vagrant insecure key detected. Vagrant will automatically replace
+    ps-vagabond: this with a newly generated keypair for better security.
+    ps-vagabond:
+    ps-vagabond: Inserting generated public key within guest...
+    ps-vagabond: Removing insecure key from the guest if it's present...
+    ps-vagabond: Key inserted! Disconnecting and reconnecting using new SSH key...
 ==> ps-vagabond: Machine booted and ready!
 ==> ps-vagabond: Checking for guest additions in VM...
 ==> ps-vagabond: Setting hostname...
 ==> ps-vagabond: Configuring and enabling network interfaces...
 ==> ps-vagabond: Mounting shared folders...
-    ps-vagabond: /vagrant => C:/pum_images/hcm92
-    ps-vagabond: /media/sf_HCM92 => C:/pum_images/hcm92/dpks
-==> ps-vagabond: Setting hostname...
-==> ps-vagabond: Mounting shared folders...
-    ps-vagabond: /vagrant => /Users/dan/vm/hr033-lnx
-    ps-vagabond: /media/sf_HR033-LNX => /Users/dan/vm/hr033-lnx/dpks/download
+    ps-vagabond: /vagrant => /Users/psadmin/repos/ps-vagabond
+    ps-vagabond: /media/sf_HR045 => /Users/psadmin/repos/ps-vagabond/dpks/download
+==> ps-vagabond: Running provisioner: bridge_networking (shell)...
+    ps-vagabond: Running: inline script
+==> ps-vagabond: Running provisioner: domain_resolver (shell)...
+    ps-vagabond: Running: inline script
+    ps-vagabond: search psadmin.lab
+==> ps-vagabond: Running provisioner: hostname_resolver (shell)...
+    ps-vagabond: Running: inline script
+    ps-vagabond: add '10.0.1.199 psvagabond.psadmin.lab' to your hosts file
 ==> ps-vagabond: Running provisioner: storage (shell)...
     ps-vagabond: Running: inline script
-==> ps-vagabond: Running provisioner: guestadditions-lnx (shell)...
-    ps-vagabond: Running: inline script
+    ps-vagabond: Extending Volume Group
+    ps-vagabond: PeopleSoft Mount: /dev/mapper/vg_main-ps      xfs       150G  1.1G  149G   1% /opt/oracle
 ==> ps-vagabond: Running provisioner: bootstrap-lnx (shell)...
-    ps-vagabond: Running: /var/folders/0k/30qg/T/vagrant-shell20200218-o7cxv7.sh
     ps-vagabond:
     ps-vagabond:
     ps-vagabond:                                       dP                               dP
@@ -228,30 +246,29 @@ Bringing machine 'ps-vagabond' up with 'virtualbox' provider...
     ps-vagabond:   8888P'   `88888P8 `8888P88 `88888P8 88Y8888' `88888P' dP    dP `88888P8
     ps-vagabond:                          .88
     ps-vagabond:                      d8888P
-    ps-vagabond:  ☆  INFO: Updating installed packages
+    ps-vagabond:
+    ps-vagabond:
+    ps-vagabond:  ☆  INFO: Updating installed packagesUpdating installed packages
     ps-vagabond:  ☆  INFO: Installing additional packages
-    ps-vagabond:  ☆  INFO: Installing jrbing/ps-extras
     ps-vagabond:  ☆  INFO: Patch files already downloaded
     ps-vagabond:  ☆  INFO: Setup scripts already unpacked
     ps-vagabond:  ☆  INFO: Executing Pre setup script
     ps-vagabond:  ☆  INFO: Executing DPK setup script
-    ps-vagabond:  ☆  INFO: Applying fix for psft-db init script
     ps-vagabond:  ☆  INFO: Install psadmin_plus
     ps-vagabond:
     ps-vagabond:  TASK                         DURATION
     ps-vagabond: ========================================
-    ps-vagabond:  install_additional_packages  00:00:43
-    ps-vagabond:  update_packages              00:05:00
-    ps-vagabond:  install_psadmin_plus         00:00:02
-    ps-vagabond:  execute_psft_dpk_setup       00:45:47
-    ps-vagabond:  generate_response_file       00:00:00
+    ps-vagabond:  install_psadmin_plus         00:00:01
     ps-vagabond:  execute_pre_setup            00:00:00
+    ps-vagabond:  install_additional_packages  00:01:16
+    ps-vagabond:  update_packages              00:02:44
+    ps-vagabond:  execute_psft_dpk_setup       00:51:33
+    ps-vagabond:  generate_response_file       00:00:00
     ps-vagabond: ========================================
-    ps-vagabond:  TOTAL TIME:                  00:51:32
+    ps-vagabond:  TOTAL TIME:                  00:55:34
     ps-vagabond:
     ps-vagabond:  ☆  INFO: Cleaning up temporary files
 ==> ps-vagabond: Running provisioner: cache-lnx (shell)...
-    ps-vagabond: Running: /var/folders/0k/30qg/T/vagrant-shell20200218-g0qul8.sh
     ps-vagabond:  ☆  INFO: Downloading Manifests
     ps-vagabond:  ☆  INFO: Fix DPK App Engine Bug
     ps-vagabond:  ☆  INFO: Pre-load Application Cache
@@ -270,20 +287,22 @@ C:\pum_images\hcm92>
 Since Vagabond is just a set of configuration files and provisioning scripts for Vagrant, all of the delivered Vagrant commands can be used.  The following table lists some of the basic commands.
 
 
-| Task                                         | Command                                          | 
-| -------------                                | -------------                                    | 
-| Start the VM                                 | `vagrant up`                                     | 
-| Stop the VM                                  | `vagrant halt`                                   | 
-| Delete the VM                                | `vagrant destroy`                                | 
-| Connect to the VM                            | `vagrant ssh`                                    | 
+| Task                                         | Command                                          |
+| -------------                                | -------------                                    |
+| Start the VM                                 | `vagrant up`                                     |
+| Stop the VM                                  | `vagrant halt`                                   |
+| Delete the VM                                | `vagrant destroy`                                |
+| Connect to the VM                            | `vagrant ssh`                                    |
+| Take a VM Snapshot                           | `vagrant snapshot save <name>`                   |
 | Connect to the VM (via RDP)                  | `vagrant rdp`                                    |
 | Pre-load app cache                           | `vagrant provision --provision-with=cache-lnx`   |
 | Copy your `psft_customizations.yaml` file    | `vagrant provision --provision-with=yaml`        |
 | Copy custom DPK modules                      | `vagrant provision --provision-with=dpk-modules` |
 
-To view the DPK script output while the instance is building, you can use the `vagarnt ssh` command to log into the instance. 
+To view the DPK script output while the instance is building, you can use the `vagrant ssh` command to log into the instance. 
 
 ```bash
+vagrant ssh
 tail -f /media/sf_*/*/setup/psft_dpk_setup.log
 ```
 

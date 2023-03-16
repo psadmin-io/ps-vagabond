@@ -479,24 +479,24 @@ function install_psadmin_plus(){
   timings[install_psadmin_plus]=$tottime
 }
 
-# function open_firewall_ports(){
-#   local begin=$(date +%s)
-#   echoinfo "Open Firewall Ports"
+function open_firewall_ports(){
+  local begin=$(date +%s)
+  echoinfo "Open Firewall Ports"
 
-#   if [[ -n ${DEBUG+x} ]]; then
-#     sudo firewall-cmd --permanent --add-port=8000/tcp
-#     sudo firewall-cmd --permanent --add-port=1521:1522/tcp
-#     sudo firewall-cmd --reload
-#   else
-#     sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
-#     sudo firewall-cmd --permanent --add-port=1521:1522/tcp > /dev/null 2>&1
-#     sudo firewall-cmd --reload > /dev/null 2>&1
-#   fi
+  if [[ -n ${DEBUG+x} ]]; then
+    sudo firewall-cmd --permanent --add-port=8000/tcp
+    sudo firewall-cmd --permanent --add-port=1521:1522/tcp
+    sudo firewall-cmd --reload
+  else
+    sudo firewall-cmd --permanent --add-port=8000/tcp > /dev/null 2>&1
+    sudo firewall-cmd --permanent --add-port=1521:1522/tcp > /dev/null 2>&1
+    sudo firewall-cmd --reload > /dev/null 2>&1
+  fi
 
-#   local end=$(date +%s)
-#   local tottime="$((end - begin))"
-#   timings[open_firewall_ports]=$tottime
-# }
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[open_firewall_ports]=$tottime
+}
 
 function display_timings_summary() {
   local divider='=============================='
@@ -556,9 +556,7 @@ execute_psft_dpk_setup
 
 # Postrequisite fixes
 install_psadmin_plus
-
-# Oracle Vagrant boxes ship with firewalld disabled - leaving in case this chagnes
-# open_firewall_ports 
+open_firewall_ports 
 
 # Summary information
 display_timings_summary

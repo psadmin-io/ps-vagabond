@@ -32,8 +32,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Increase the timeout limit for halting the VM
     vmconfig.vm.graceful_halt_timeout = 600
 
-    # Automatically download the latest version of whatever box we're using
-    vmconfig.vm.box_check_update = true
+    # Only download new boxes when the Vagabond picks a new release
+    vmconfig.vm.box_check_update = false
 
     ##############
     #  Provider  #
@@ -90,7 +90,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "2016"
         # Base box``
         vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-        vmconfig.vm.box_check_update = false
         vmconfig.vm.box_version = "1.0.4"
       end
       # Sync folder to be used for downloading the dpks
@@ -102,8 +101,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.winrm.timeout = 10000
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "oraclelinux/8"
-      vmconfig.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/8.json"
+      vmconfig.vm.box = "oraclebase/oracle-8"
+      # vmconfig.vm.box = "oraclelinux/8"
+      # vmconfig.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/8.json"
       # vmconfig.vm.disk :disk, size: "200GB", primary: true
 	  
       # Sync folder to be used for downloading the dpks
@@ -136,6 +136,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
+        vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname)\'\" to your hosts file"
     end
 
     # Bridged network adapter
@@ -149,10 +151,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # with Linux in order to make the machine available from other networks.
         vmconfig.vm.provision "bridge_networking", type: "shell", run: "always",
           inline: "nmcli connection modify \"System eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
-        # if NETWORK_SETTINGS[:domain] != ""
         vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
           inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-        # end
         vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
           inline: "nameserver=$(cat /etc/resolv.conf | grep search | tail -n1 | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts && echo add \"\'#{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver}\'\" to your hosts file"
       else
@@ -317,13 +317,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       $extend = <<-SCRIPT
 echo 'Extending Volume Group'
 echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb > /dev/null 2>&1
-pvcreate /dev/sdb1 > /dev/null 2>&1
-vgextend vg_main /dev/sdb1 > /dev/null 2>&1
-lvcreate --name ps -l +100%FREE vg_main > /dev/null 2>&1
-mkfs.xfs /dev/vg_main/ps > /dev/null 2>&1
+mkfs.xfs /dev/sdb1 > /dev/null 2>&1
 mkdir -p /opt/oracle > /dev/null 2>&1
-mount /dev/vg_main/ps /opt/oracle > /dev/null 2>&1
-echo "/dev/vg_main/ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
+mount /dev/sdb1 /opt/oracle > /dev/null 2>&1
+echo "/dev/sdb1     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
 echo "PeopleSoft Mount: $(df -hT | grep oracle)"
 SCRIPT
 
