@@ -23,7 +23,7 @@
 
 # PATCH ID
 # Specify the patch id for the PUM you wish to use
-PATCH_ID='23711856'
+PATCH_ID='34775556' # HR Image 45
 
 # OPTIONAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -37,7 +37,7 @@ PATCH_ID='23711856'
 
 # MEMORY
 # The amount of RAM to allocate to the Virtual Machine
-MEMORY='8192'
+MEMORY='10240'
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
@@ -74,6 +74,8 @@ MEMORY='8192'
   #:guest_http_port => "8000",
   #:host_listener_port => "1522",
   #:guest_listener_port => "1522",
+  #:host_rdp_port => "3389",
+  #:guest_rdp_port => "3389",
   #:host_es_port => "9200",
   #:guest_es_port => "9200",
   #:host_kb_port => "5601",
