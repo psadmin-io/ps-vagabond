@@ -87,10 +87,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "WINDOWS"
       case WIN_VERSION.upcase
-      when "2016"
-        # Base box``
-        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-        vmconfig.vm.box_version = "1.0.4"
+      when "2019"
+        # Base box
+        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2019"
+        vmconfig.vm.box_version = "1.0.0"
+      when "2019CORE"
+        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2019-core"
+        vmconfig.vm.box_version = "1.0.0"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -102,9 +105,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     when "LINUX"
       # Base box
       vmconfig.vm.box = "generic/oracle8"
-      # vmconfig.vm.box = "oraclelinux/8"
-      # vmconfig.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/8.json"
-      # vmconfig.vm.disk :disk, size: "200GB", primary: true
 	  
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}", mount_options: ["dmode=775,fmode=777"]
