@@ -140,9 +140,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
-      vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
         inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
         inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
     end
 
@@ -157,9 +157,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # with Linux in order to make the machine available from other networks.
         vmconfig.vm.provision "bridge_networking", type: "shell", run: "always",
           inline: "nmcli connection modify \"System eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
-        vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+        vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
           inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-        vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+        vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
           inline: "nameserver=$(cat /etc/resolv.conf | grep search | tail -n1 | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts && echo add \"\'#{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver}\'\" to your hosts file"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
@@ -169,9 +169,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Private network with pre-set IP address
     if NETWORK_SETTINGS[:TYPE] == "private"
       vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
-      vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
         inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
         inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
 
     end
