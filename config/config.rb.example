@@ -10,14 +10,12 @@
 # ORACLE SUPPORT CREDENTIALS
 # MOS username and password must be specified in order to
 # download the DPK files from Oracle.
-
-#MOS_USERNAME='USER@EXAMPLE.COM'
-#MOS_PASSWORD='MYMOSPASSWORD'
+MOS_USERNAME='USER@EXAMPLE.COM'
+MOS_PASSWORD='MYMOSPASSWORD'
 
 # Alternatively, if you wish to store your credentials in environment
 # variables simply remove the above lines and uncomment the two
 # following lines.
-
 #MOS_USERNAME = ENV['MOS_USERNAME']
 #MOS_PASSWORD = ENV['MOS_PASSWORD']
 
@@ -31,19 +29,19 @@ PATCH_ID='34775556' # HR Image 45
 # Which OS to use as the base box for the DPK.  The available options
 # are either 'LINUX' (Oracle Enterprise Linux 7.x) or 'WINDOWS'
 # If left undefined, it will default to Linux.
-#OPERATING_SYSTEM = 'WINDOWS'
-# One Windows Versions is supported, "2016"
-#WIN_VERSION = "2016"
+# OPERATING_SYSTEM = 'LINUX'
+# One Windows Versions is supported, "2019" or "2019CORE"
+# WIN_VERSION = "2019"
 
 # MEMORY
 # The amount of RAM to allocate to the Virtual Machine
-MEMORY='10240'
+# MEMORY='10240'
 
 # DPK_VERSION
 # A name describing which dpk is being used. This is primarily used for
 # defining the virtual machine name to be used within VirtualBox. If
 # undefined it will default to the PATCH_ID.
-#DPK_VERSION = 'VMNAME'
+# DPK_VERSION = 'VMNAME'
 
 # PSFT_BASE_DIR
 # the base folder where the DPK will install software
@@ -70,11 +68,14 @@ MEMORY='10240'
 # The VM will only be accessible from your local machine.
 # NETWORK_SETTINGS = {
 #   :type => "hostonly",
+#   :domain => "psadmin.local", 
 #   :host_http_port => "8000",
 #   :guest_http_port => "8000",
-#   :host_listener_port => "1522",
-#   :guest_listener_port => "1522",
-#   :host_rdp_port => "3389",
+#   :host_listener_port1 => "1521",
+#   :guest_listener_port1 => "1521",
+#   :host_listener_port2 => "1522",
+#   :guest_listener_port2 => "1522",
+#   :host_rdp_port => "33389",
 #   :guest_rdp_port => "3389",
 #   :host_es_port => "9200",
 #   :guest_es_port => "9200",
@@ -87,7 +88,8 @@ MEMORY='10240'
 # for making a small private network.
 # NETWORK_SETTINGS = {
 #   :type => "private",
-#   :ip_address => "192.168.56.103"
+#   :domain => "psadmin.local", 
+#   :ip_address => "10.0.1.199"
 # }
 
 # BRIDGED NETWORK_SETTINGS
@@ -109,8 +111,8 @@ MEMORY='10240'
 # The directory location on the virtual machine where the dpk files will be
 # downloaded, extracted, and run from.  This defaults to the
 # "/media/sf_<dpk_version>" directory on the VM.
-#DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
-#DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
+# DPK_REMOTE_DIR = '/opt/psft/dpks'  ## LINUX example
+# DPK_REMOTE_DIR = 'C:/psft/dpks'    ## WINDOWS example
 
 # FQDN
 # The hostname for the virtual machine.  If undefined, vagrant will
@@ -119,12 +121,12 @@ MEMORY='10240'
 #       scripts will try to "fix" it by stripping off the domain
 # NOTE: On Windows, use only the hostname, not the domain name.
 #       VirtualBox will error if the hostname has "." in it
-#FQDN='psvagabond'
+# FQDN='psvagabond'
 
 # CLIENT_TOOLS
 # Set CLIENT_TOOLS to true if you want the PeopleTools Client to
 # be installed
-#CLIENT_TOOLS = 'true'
+# CLIENT_TOOLS = 'true'
 
 # CA_SETTINGS
 # Uncomment and modify the following to setup Change Assistant.
@@ -147,8 +149,8 @@ MEMORY='10240'
 ##############
 # All of the settings below should be left as-is
 OPERATING_SYSTEM = "LINUX" unless defined? OPERATING_SYSTEM
-WIN_VERSION = "2016" unless defined? WIN_VERSION
-MEMORY = "4096" unless defined? MEMORY
+WIN_VERSION = "2019" unless defined? WIN_VERSION
+MEMORY = "10240" unless defined? MEMORY
 FQDN = 'psvagabond' unless defined? FQDN
 DPK_VERSION = PATCH_ID unless defined? DPK_VERSION
 DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
@@ -156,8 +158,9 @@ DPK_LOCAL_DIR = "dpks/download" unless defined? DPK_LOCAL_DIR
 #       installation directory) is mounted under "/media/sf_*".
 DPK_REMOTE_DIR_LNX = "/media/sf_#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
 DPK_REMOTE_DIR_WIN = "C:/psft/dpks/download/#{DPK_VERSION}" unless defined? DPK_REMOTE_DIR
-NETWORK_SETTINGS = { :type => "hostonly", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port => "1522", :guest_listener_port => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200", :host_kb_port => "5601", :guest_kb_port => "5601"} unless defined? NETWORK_SETTINGS
-PSFT_CFG_DIR = "/opt/oracle/psft/cfg" unless defined? PSFT_CFG_DIR
+NETWORK_SETTINGS = { :type => "hostonly", :domain => "psadmin.local", :host_http_port => "8000", :guest_http_port => "8000", :host_listener_port1 => "1521", :guest_listener_port1 => "1521", :host_listener_port2 => "1522", :guest_listener_port2 => "1522", :host_rdp_port => "33389", :guest_rdp_port => "3389", :host_es_port => "9200", :guest_es_port => "9200", :host_kb_port => "5601", :guest_kb_port => "5601"} unless defined? NETWORK_SETTINGS
+PSFT_BASE_DIR = "/opt/oracle/psft"
+PSFT_CFG_DIR = "#{PSFT_BASE_DIR}/cfg" unless defined? PSFT_CFG_DIR
 
 DPK_BOOTSTRAP = 'true' unless defined? DPK_BOOTSTRAP
 PUPPET_APPLY = 'true' unless defined? PUPPET_APPLY
@@ -166,13 +169,13 @@ CA_SETTINGS = { :setup => false, :path => '', :type => '', :backup => '' } unles
 PTF_SETUP = 'false' unless defined? PTF_SETUP
 APPLY_PT_PATCH = 'false' unless defined? APPLY_PT_PATCH
 DPK_ROLE = '' unless defined? DPK_ROLE
-IE_HOMEPAGE = 'http://localhost:8000/ps/signon.html' unless defined? IE_HOMEPAGE
+IE_HOMEPAGE = 'http://psadmin.psvagabond.local:8000/ps/signon.html' unless defined? IE_HOMEPAGE
 
 if OPERATING_SYSTEM.upcase == "WINDOWS"
   PUPPET_HOME = "C:/ProgramData/PuppetLabs/puppet/etc" unless defined? PUPPET_HOME
-  PSFT_BASE_DIR = "c:/psft" unless defined? PSFT_BASE_DIR
+  PSFT_BASE_DIR = "c:/psft"
 elsif OPERATING_SYSTEM == "LINUX"
-  PUPPET_HOME = "/etc/puppet" unless defined? PUPPET_HOME
+  PUPPET_HOME = "#{PSFT_BASE_DIR}/psft_puppet_agent" unless defined? PUPPET_HOME
 else
   raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
 end

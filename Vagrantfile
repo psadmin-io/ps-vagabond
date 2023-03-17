@@ -101,13 +101,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.winrm.timeout = 10000
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "oraclebase/oracle-8"
+      vmconfig.vm.box = "generic/oracle8"
       # vmconfig.vm.box = "oraclelinux/8"
       # vmconfig.vm.box_url = "https://oracle.github.io/vagrant-projects/boxes/oraclelinux/8.json"
       # vmconfig.vm.disk :disk, size: "200GB", primary: true
 	  
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}", mount_options: ["dmode=775,fmode=777"]
+      vmconfig.vm.synced_folder ".", "/vagrant"
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
     end
@@ -124,9 +125,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_http_port],
         host: NETWORK_SETTINGS[:host_http_port]
+        vmconfig.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_listener_port1],
+        host: NETWORK_SETTINGS[:host_listener_port1]
       vmconfig.vm.network "forwarded_port",
-        guest: NETWORK_SETTINGS[:guest_listener_port],
-        host: NETWORK_SETTINGS[:host_listener_port]
+        guest: NETWORK_SETTINGS[:guest_listener_port2],
+        host: NETWORK_SETTINGS[:host_listener_port2]
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:host_rdp_port],
         host: NETWORK_SETTINGS[:guest_rdp_port]
@@ -136,8 +140,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
-        vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
-        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname)\'\" to your hosts file"
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
     end
 
     # Bridged network adapter
@@ -163,6 +169,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Private network with pre-set IP address
     if NETWORK_SETTINGS[:TYPE] == "private"
       vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "always",
+        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "always",
+        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
+
     end
 
     ##################
@@ -317,11 +328,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       $extend = <<-SCRIPT
 echo 'Extending Volume Group'
 echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb > /dev/null 2>&1
-mkfs.xfs /dev/sdb1 > /dev/null 2>&1
+pvcreate /dev/sdb1 > /dev/null 2>&1
+vgextend ol_oracle8 /dev/sdb1 > /dev/null 2>&1
+lvcreate --name ps -l +100%FREE ol_oracle8 > /dev/null 2>&1
+mkfs.xfs /dev/ol_oracle8/ps > /dev/null 2>&1
 mkdir -p /opt/oracle > /dev/null 2>&1
-mount /dev/sdb1 /opt/oracle > /dev/null 2>&1
-echo "/dev/sdb1     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
-echo "PeopleSoft Mount: $(df -hT | grep oracle)"
+mount /dev/ol_oracle8/ps /opt/oracle > /dev/null 2>&1
+echo "/dev/ol_oracle8/ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
+echo "PeopleSoft Mount: $(df -hT | grep /opt/oracle)"
 SCRIPT
 
       vmconfig.vm.provision "storage", type: "shell", run: "once", inline: $extend
