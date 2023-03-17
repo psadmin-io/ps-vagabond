@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 require_relative 'config/config'
+VAGRANT_EXPERIMENTAL="disks"
 
 required_plugins = {
   'vagrant-reload' => '0.0.1'
@@ -31,37 +32,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Increase the timeout limit for halting the VM
     vmconfig.vm.graceful_halt_timeout = 600
 
-    # Automatically download the latest version of whatever box we're using
-    vmconfig.vm.box_check_update = true
+    # Only download new boxes when the Vagabond picks a new release
+    vmconfig.vm.box_check_update = false
 
     ##############
     #  Provider  #
     ##############
-
-    # VirtualBox
-    vmconfig.vm.provider "virtualbox" do |vbox,override|
-      vbox.name = "#{DPK_VERSION}"
-      vbox.memory = "#{MEMORY}"
-      vbox.cpus = 2
-      vbox.gui = false
-      if NETWORK_SETTINGS[:type] == "hostonly"
-        vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-      end
-
-      case OPERATING_SYSTEM.upcase
-      when "LINUX"
-        # add disk file for PeopleSoft
-        line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
-        vb_machine_folder = line.split(':',2)[1].strip()
-        disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
-        
-        unless File.exist?(disk)
-          vbox.customize ['createhd', '--filename', disk, '--size', 105 * 1024]
-        end
-        vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
-      end
-
-    end
 
     # HyperV
     vmconfig.vm.provider "hyperv" do |hyperv|
@@ -77,6 +53,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vss: true
       }
     end
+    
+    # VirtualBox
+    vmconfig.vm.provider "virtualbox" do |vbox,override|
+      vbox.name = "#{DPK_VERSION}"
+      vbox.memory = "#{MEMORY}"
+      vbox.cpus = 2
+      vbox.gui = false
+      vbox.default_nic_type = "virtio"
+      if NETWORK_SETTINGS[:type] == "hostonly"
+        vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
+
+      case OPERATING_SYSTEM.upcase
+      when "LINUX"
+        # add disk file for PeopleSoft
+        line = `vboxmanage list systemproperties`.split(/\n/).grep(/Default machine folder/).first
+        vb_machine_folder = line.split(':',2)[1].strip()
+        disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
+        
+        unless File.exist?(disk)
+          vbox.customize ['createhd', '--filename', disk, '--size', 150 * 1024]
+        end
+        vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
+      end
+
+    end
 
     ######################
     #  Operating System  #
@@ -85,11 +87,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     case OPERATING_SYSTEM.upcase
     when "WINDOWS"
       case WIN_VERSION.upcase
-      when "2016"
+      when "2019"
         # Base box
-        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2016"
-        vmconfig.vm.box_check_update = false
-        vmconfig.vm.box_version = "1.0.4"
+        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2019"
+        vmconfig.vm.box_version = "1.0.0"
+      when "2019CORE"
+        vmconfig.vm.box = "psadmin-io/ps-vagabond-win-2019-core"
+        vmconfig.vm.box_version = "1.0.0"
       end
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_WIN}"
@@ -100,39 +104,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.winrm.timeout = 10000
     when "LINUX"
       # Base box
-      vmconfig.vm.box = "bento/oracle-7.7"
-      vmconfig.vm.box_check_update = false
-
-      # Bento Oracle 7.7 already has vbguest installed.
-      #   You can update this manually after provisioning.
-      config.vbguest.auto_update = false
+      vmconfig.vm.box = "generic/oracle8"
 	  
       # Sync folder to be used for downloading the dpks
       vmconfig.vm.synced_folder "#{DPK_LOCAL_DIR}", "#{DPK_REMOTE_DIR_LNX}", mount_options: ["dmode=775,fmode=777"]
+      vmconfig.vm.synced_folder ".", "/vagrant"
     else
       raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
-    end
-
-    ###########
-    # Storage #
-    ###########
-
-    case OPERATING_SYSTEM.upcase
-    when "LINUX"
-      # extend volume group to for PeopleSoft
-      $extend = <<-SCRIPT
-echo ####### Extending volume group ########
-echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb > /dev/null 2>&1
-pvcreate /dev/sdb1 > /dev/null 2>&1
-vgextend ol /dev/sdb1 > /dev/null 2>&1
-lvcreate --name ps -l +100%FREE ol > /dev/null 2>&1
-mkfs.xfs /dev/ol/ps > /dev/null 2>&1
-mkdir -p /opt/oracle > /dev/null 2>&1
-mount /dev/ol/ps /opt/oracle > /dev/null 2>&1
-echo "/dev/mapper/ol-ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
-SCRIPT
-
-      vmconfig.vm.provision "storage", type: "shell", run: "once", inline: $extend
     end
 
     #############
@@ -148,14 +126,24 @@ SCRIPT
         guest: NETWORK_SETTINGS[:guest_http_port],
         host: NETWORK_SETTINGS[:host_http_port]
         vmconfig.vm.network "forwarded_port",
-        guest: NETWORK_SETTINGS[:guest_listener_port],
-        host: NETWORK_SETTINGS[:host_listener_port]
-        vmconfig.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_listener_port1],
+        host: NETWORK_SETTINGS[:host_listener_port1]
+      vmconfig.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:guest_listener_port2],
+        host: NETWORK_SETTINGS[:host_listener_port2]
+      vmconfig.vm.network "forwarded_port",
+        guest: NETWORK_SETTINGS[:host_rdp_port],
+        host: NETWORK_SETTINGS[:guest_rdp_port]
+      vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_es_port],
         host: NETWORK_SETTINGS[:host_es_port]
-        vmconfig.vm.network "forwarded_port",
+      vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
+        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
+        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
     end
 
     # Bridged network adapter
@@ -167,18 +155,25 @@ SCRIPT
         vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
         # The following is necessary when using the bridged network adapter
         # with Linux in order to make the machine available from other networks.
-        vmconfig.vm.provision "shell",
-          run: "always",
-          inline: "nmcli connection modify \"eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
+        vmconfig.vm.provision "bridge_networking", type: "shell", run: "always",
+          inline: "nmcli connection modify \"System eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
+        vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
+          inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+        vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
+          inline: "nameserver=$(cat /etc/resolv.conf | grep search | tail -n1 | gawk -F' ' '{ print $2 }') && echo 127.0.0.1 $(hostname).${nameserver} | tee -a /etc/hosts && echo add \"\'#{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver}\'\" to your hosts file"
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
-
     end
 
     # Private network with pre-set IP address
     if NETWORK_SETTINGS[:TYPE] == "private"
       vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
+      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
+        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
+      vmconfig.vm.provision "hostname_resolver", type: "shell", run: "once",
+        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
+
     end
 
     ##################
@@ -191,7 +186,7 @@ SCRIPT
         run: "always",
         inline: "slmgr -rearm"
 
-      vmconfig.vm.provision :reload
+      # vmconfig.vm.provision :reload
 
       vmconfig.vm.provision "banner", type: "shell" do |boot|
         boot.path = "scripts/banner.ps1"
@@ -329,6 +324,22 @@ SCRIPT
 
     elsif OPERATING_SYSTEM.upcase == "LINUX"
 
+      # extend volume group to for PeopleSoft
+      $extend = <<-SCRIPT
+echo 'Extending Volume Group'
+echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/sdb > /dev/null 2>&1
+pvcreate /dev/sdb1 > /dev/null 2>&1
+vgextend ol_oracle8 /dev/sdb1 > /dev/null 2>&1
+lvcreate --name ps -l +100%FREE ol_oracle8 > /dev/null 2>&1
+mkfs.xfs /dev/ol_oracle8/ps > /dev/null 2>&1
+mkdir -p /opt/oracle > /dev/null 2>&1
+mount /dev/ol_oracle8/ps /opt/oracle > /dev/null 2>&1
+echo "/dev/ol_oracle8/ps     /opt/oracle                   xfs     defaults        0 0" | tee -a /etc/fstab > /dev/null 2>&1
+echo "PeopleSoft Mount: $(df -hT | grep /opt/oracle)"
+SCRIPT
+
+      vmconfig.vm.provision "storage", type: "shell", run: "once", inline: $extend
+      
       vmconfig.vm.provision "bootstrap-lnx", type: "shell" do |script|
         script.path = "scripts/provision.sh"
         script.upload_path = "/tmp/provision.sh"

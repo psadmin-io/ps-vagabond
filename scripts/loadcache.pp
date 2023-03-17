@@ -46,16 +46,16 @@ $appserver_domain_list.each | $domain_name, $app_domain_info | {
 
   case $::osfamily {
     'windows': {
-      
+
       notify { 'Creating and running preloaccache.ps1 ': }
       file { "${peoplesoft_base}/preloadcache.ps1":
         ensure  => file,
         content => inline_epp($preload_script_win),
-      } ->
-      exec {'Load-Cache':
+      }
+      -> exec {'Load-Cache':
         command => "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -File ${peoplesoft_base}/preloadcache.ps1"
       }
-      
+
     }
     'RedHat', 'linux': {
       pt_psae {"LOADCACHE-${domain_name}":
@@ -76,7 +76,6 @@ $appserver_domain_list.each | $domain_name, $app_domain_info | {
       }
       -> exec { "Bounce ${domain_name} App Domain":
         command => "${gem_home}/psa bounce app ${domain_name}",
-        require => Exec['install-psadmin_plus'],
       }
     }
   }
