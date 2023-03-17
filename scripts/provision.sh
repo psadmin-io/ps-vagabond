@@ -115,26 +115,11 @@ function echomotd(){
 function install_prereqs() {
   check_dpk_install_dir
   check_vagabond_status
-  # apply_slow_dns_fix # Removed for OEL 8
   update_packages
   install_additional_packages
   start_smb
   set_permissivie_selinux
 }
-
-# function apply_slow_dns_fix() {
-#   echodebug "Applying slow DNS fix (single-request-reopen)"
-#   ## https://access.redhat.com/site/solutions/58625 (subscription required)
-#   # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
-#   # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
-#   if [[ -n ${DEBUG+x} ]]; then
-#     echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network
-#     systemctl restart network
-#   else
-#     echo 'RES_OPTIONS="single-request-reopen"' >> /etc/sysconfig/network > /dev/null 2>&1
-#     systemctl restart network > /dev/null 2>&1
-#   fi
-# }
 
 function start_smb() {
   echodebug "Starting Samba"
@@ -153,7 +138,6 @@ function set_permissivie_selinux() {
     echo 0 | sudo tee /sys/fs/selinux/enforce > /dev/null 2>&1
   fi
 }
-
 
 function check_dpk_install_dir() {
   if [[ ! -d "${DPK_INSTALL}" ]]; then
