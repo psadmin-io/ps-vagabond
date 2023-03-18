@@ -118,7 +118,8 @@ function install_prereqs() {
   update_packages
   install_additional_packages
   start_smb
-  set_permissivie_selinux
+  #set_permissivie_selinux
+  disable_selinux
 }
 
 function start_smb() {
@@ -130,13 +131,31 @@ function start_smb() {
   fi
 }
 
-function set_permissivie_selinux() {
-  echodebug "Set SELinux to Permissive"
+# function set_permissivie_selinux() {
+#   echodebug "Set SELinux to Permissive"
+#   if [[ -n ${DEBUG+x} ]]; then
+#     echo 0 | sudo tee /sys/fs/selinux/enforce
+#   else
+#     echo 0 | sudo tee /sys/fs/selinux/enforce > /dev/null 2>&1
+#   fi
+# }
+
+# Per 2817926.1, DPK doesn't play well with SELinux, in 2023
+function disable_selinux(){
+  local begin=$(date +%s)
+  echoinfo "Disable SELinux for PeopleSoft Images"
+
   if [[ -n ${DEBUG+x} ]]; then
-    echo 0 | sudo tee /sys/fs/selinux/enforce
-  else
-    echo 0 | sudo tee /sys/fs/selinux/enforce > /dev/null 2>&1
+    sudo setenforce 0
+    sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
+  else 
+    sudo setenforce 0 > /dev/null 2>&1
+    sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config > /dev/null 2>&1
   fi
+  
+  local end=$(date +%s)
+  local tottime="$((end - begin))"
+  timings[disable_selinux]=$tottime
 }
 
 function check_dpk_install_dir() {
