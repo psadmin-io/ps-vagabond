@@ -470,7 +470,7 @@ function install_psadmin_plus(){
         curl --insecure https://rubygems.org/downloads/psadmin_plus-2.0.5.gem -o psadmin_plus.gem > /dev/null 2>&1
         sudo $PSFT_BASE_DIR/psft_puppet_agent/bin/gem install --local psadmin_plus.gem > /dev/null 2>&1
       fi
-      echo "PATH=$PATH:$PSFT_BASE_DIR/psft_puppet_agent/bin" | tee -a ~/.bash_profile > /dev/null 2>&1
+      echo "PATH=$PATH:$PSFT_BASE_DIR/psft_puppet_agent/bin" | tee -a /home/vagrant/.bash_profile > /dev/null 2>&1
       ;;
     * )
       echo "Tools Version not supported"
