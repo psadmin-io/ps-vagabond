@@ -140,11 +140,30 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vmconfig.vm.network "forwarded_port",
         guest: NETWORK_SETTINGS[:guest_kb_port],
         host: NETWORK_SETTINGS[:host_kb_port]
-      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
-        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-      vmconfig.vm.provision "hostname_resolver", type: "shell", keep_color: true, run: "once",
-        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
+      vmconfig.vm.provision "networking_setup", type: "shell", run: "once" do |script|
+        script.path = "scripts/networking.sh"
+        script.upload_path = "/tmp/networking.sh"
+        script.env = {
+          "DOMAIN"           => "#{NETWORK_SETTINGS[:domain]}",
+          "NETWORK_SETTINGS" => "#{NETWORK_SETTINGS[:type]}"
+        }
+      end
     end
+
+    # Private network with pre-set IP address
+    if NETWORK_SETTINGS[:TYPE] == "private"
+      vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
+      vmconfig.vm.provision "networking_setup", type: "shell", run: "once" do |script|
+        script.path = "scripts/networking.sh"
+        script.upload_path = "/tmp/networking.sh"
+        script.env = {
+          "IP_ADDRESS"       => "#{NETWORK_SETTINGS[:ip_address]}",
+          "DOMAIN"           => "#{NETWORK_SETTINGS[:domain]}",
+          "NETWORK_SETTINGS" => "#{NETWORK_SETTINGS[:type]}"
+        }
+      end
+    end
+    
 
     # Bridged network adapter
     if NETWORK_SETTINGS[:type] == "bridged"
@@ -153,27 +172,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vmconfig.vm.network "public_network"
       when "LINUX"
         vmconfig.vm.network "public_network", ip: "#{NETWORK_SETTINGS[:ip_address]}"
-        # The following is necessary when using the bridged network adapter
-        # with Linux in order to make the machine available from other networks.
-        vmconfig.vm.provision "bridge_networking", type: "shell", run: "always",
-          inline: "nmcli connection modify \"System eth0\" ipv4.never-default yes && nmcli connection modify \"System eth1\" ipv4.gateway #{NETWORK_SETTINGS[:gateway]} && nmcli networking off && nmcli networking on"
-        vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
-          inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-        vmconfig.vm.provision "hostname_resolver", type: "shell", keep_color: true, run: "once",
-          inline: "nameserver=$(cat /etc/resolv.conf | grep search | tail -n1 | gawk -F' ' '{ print $2 }') && echo #{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver} | tee -a /etc/hosts && echo -e \e[1,36m ===> add \"\'#{NETWORK_SETTINGS[:ip_address]} $(hostname).${nameserver}\'\" to your hosts file \e[0m"
+        vmconfig.vm.provision "networking_setup", type: "shell", run: "once" do |script|
+          script.path = "scripts/networking.sh"
+          script.upload_path = "/tmp/networking.sh"
+          script.env = {
+            "IP_ADDRESS"       => "#{NETWORK_SETTINGS[:ip_address]}",
+            "DOMAIN"           => "#{NETWORK_SETTINGS[:domain]}",
+            "GATEWAY"          => "#{NETWORK_SETTINGS[:gateway]}",
+            "NETWORK_SETTINGS" => "#{NETWORK_SETTINGS[:type]}"
+          }
+        end
       else
         raise Vagrant::Errors::VagrantError.new, "Operating System #{OPERATING_SYSTEM} is not supported"
       end
-    end
-
-    # Private network with pre-set IP address
-    if NETWORK_SETTINGS[:TYPE] == "private"
-      vmconfig.vm.network "private_network", ip: "#{NETWORK_SETTINGS[:ip_address]}", virtualbox__intnet: "public"
-      vmconfig.vm.provision "domain_resolver", type: "shell", run: "once",
-        inline: "echo search #{NETWORK_SETTINGS[:domain]} | tee -a /etc/resolv.conf"
-      vmconfig.vm.provision "hostname_resolver", type: "shell", keep_color: true, run: "once",
-        inline: "privateip=$(ifconfig eth0 | grep 'inet ' | cut -d' ' -f10) && echo add \"\'${privateip} $(hostname).#{NETWORK_SETTINGS[:domain]}\'\" to your hosts file"
-
     end
 
     ##################
