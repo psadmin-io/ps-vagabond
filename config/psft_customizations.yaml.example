@@ -5,7 +5,8 @@ db_user_pwd:       PS
 
 ##### FSCM/IH #####
 #db_user:        VP1
-#db_user_pwd:    VP1
+#db_user_pwd:    VP1 # The 8.60 DPK resets this to PS so you can leave commented
+                     # The important part is the db_user field so the DPK/ACM   has correct security
 
 # peoplesoft_base:   c:/psft
 # db_name:           PSFTDB

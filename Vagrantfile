@@ -73,7 +73,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         disk = File.join(vb_machine_folder.gsub("\\", "/"), "#{DPK_VERSION}", 'data001.vdi')
         
         unless File.exist?(disk)
-          vbox.customize ['createhd', '--filename', disk, '--size', 150 * 1024]
+          vbox.customize ['createhd', '--filename', disk, '--size', 200 * 1024]
         end
         vbox.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk]
       end
